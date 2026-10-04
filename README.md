@@ -1,6 +1,6 @@
 # V2 Shared Site Templates
 
-This is the isolated V2 frontend of the existing Control & Chaos site. Shared layouts are implemented; its content and interactions still use safe preview fixtures. Decap, authentication, payments and Supabase are not connected.
+This is the isolated V2 frontend of the existing Control & Chaos site. Shared layouts are implemented. Decap supports global settings, events, site blog posts and product manuals locally; hosted OAuth/publishing still need setup. Creator content remains safe preview fixtures, with no payments or Supabase connection.
 
 ## Stack
 
@@ -19,6 +19,9 @@ The page bodies originate from the approved flat visual templates. Their appeara
 - `templates/partials`: head/SEO, header, footer, creator hero and profile tabs.
 - `templates/pages`: page-specific Nunjucks content. Captured static HTML is wrapped in `raw` blocks; remove or split those blocks when introducing deliberate template fields.
 - `content/site.json`: shared brand, navigation, fonts and footer settings, ready for a later Decap schema.
+- `content/events`: editable event records rendered into shared cards; published state, order and calendar dates are validated during builds.
+- `content/blog`: staff site news, separate from creator posts. One shared article template and build-derived metadata replace per-post captures.
+- `content/guides`: product manuals, features, commands, specifications and directory cards. One shared manual template generates new published IDs; stable section anchors support external links.
 - `content/pages`: per-page metadata and internal creator/tab presentation configuration. Do not expose presentation attributes as CMS fields.
 - `content/creator-preview.json`: one public-safe creator hero fixture, not production creator persistence.
 - `src/modules`: browser behaviors; `src/main.js` selects the modules needed by the current page.
@@ -34,6 +37,8 @@ npm run dev -- --port 4180
 ```
 
 Open `http://127.0.0.1:4180/`. All page links are flat HTML URLs. `templates.json` lists their original source and fixture state.
+
+For local staff editing, run `npm run cms:local` in a second terminal and open `/admin/`. Its local Login needs no GitHub credentials; it writes to the V2 files, not GitHub. The proxy binds to `127.0.0.1:8081` only. Hosted CMS access still requires GitHub OAuth. See `CMS_SETUP.md` for setup and dependency advisory details.
 
 ```powershell
 npm test
@@ -64,6 +69,6 @@ Navigation, mobile drawer, gallery filters/lightbox and editor section switching
 
 See `HANDOFF.md` for the verified stage, preview URLs, validation commands, and the boundary between these flat references and the future production rewrite.
 
-Next define Decap's staff content schemas and extract the corresponding editable page fields. Then add Supabase authentication/database/private storage with tested permissions and migration/rollback procedures. Do not copy the former browser authentication, string-based dynamic renderers or payment logic into production V2.
+See `CMS_SETUP.md` for OAuth setup and publish/rebuild verification. Settings, events, site news and manuals are implemented. The product catalogue, XP/rules and selected page fields remain code-managed until their CMS fields are agreed. Supabase integration follows later with permissions and migration/rollback tests.
 
-V1 remains untouched. V2 has its own GitHub repository (`haydentomas/controlandchaos.co.uk.v2`) and staging site (`https://controlandchaosv2.netlify.app/`). This shared-template work is local and has not been committed, pushed or deployed.
+V1 remains untouched. V2 has its own GitHub repository (`haydentomas/controlandchaos.co.uk.v2`) and staging site (`https://controlandchaosv2.netlify.app/`). Shared templates were pushed as `c34fde0`; the completed CMS milestone is approved for commit/push. Confirm its Netlify deployment separately. Next create a Supabase development project using `SUPABASE_SETUP.md`; no database connection is implemented yet.

@@ -1,0 +1,14 @@
+<div class="card {% if guide.listing.featured %}card-highlight-gold {% endif %}card-flex-column" data-cms-guide-card>
+  <div class="card-product-media"><img src="{{ guide.listing.image }}" alt="{{ guide.listing.title }}" loading="lazy"></div>
+  <span class="section-tag {% if guide.listing.featured %}tag-burgundy{% else %}manifesto-tag{% endif %} align-start mb-8">{{ guide.listing.badge }}</span>
+  <h3 class="card-title">{{ guide.listing.title }}</h3>
+  <p class="card-desc card-body-grow">{{ guide.listing.description }}</p>
+  <div class="card-actions-bar">
+    <a href="{{ guide.url }}" class="btn btn-gold btn-sm card-body-grow">Read Manual &#8594;</a>
+{% if guide.id == 'xp-titlers' %}
+    <a href="/xp-system.html" class="btn btn-secondary btn-sm">&#9889; XP Levels</a>
+{% else %}
+    <a href="{{ guide.marketplace_url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128722; Marketplace</a>
+{% endif %}
+  </div>
+</div>

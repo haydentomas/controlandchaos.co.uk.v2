@@ -12,3 +12,17 @@ export function pageShellPlugin() {
     transformIndexHtml: { order: 'pre', handler: () => pageShellTags() }
   };
 }
+
+export function adminRoutePlugin() {
+  return {
+    name: 'v2-admin-route',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const url = new URL(request.url, 'http://localhost');
+        if (url.pathname === '/admin' || url.pathname === '/admin/') request.url = `/admin/index.html${url.search}`;
+        if (url.pathname === '/admin/site-preview.css') request.url = '/src/templates.css?direct';
+        next();
+      });
+    }
+  };
+}

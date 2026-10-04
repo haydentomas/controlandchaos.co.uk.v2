@@ -1,0 +1,73 @@
+:root {
+  color-scheme: dark;
+  --cms-canvas: #12100e;
+  --cms-panel: #1a1714;
+  --cms-control: #211d19;
+  --cms-border: #4b4032;
+  --cms-text: #f1ece2;
+  --cms-muted: #b8aea0;
+  --cms-gold: #ebdca9;
+}
+
+html, body { margin: 0; background: var(--cms-canvas) !important; color: var(--cms-text); }
+body, #nc-root { font-family: "Plus Jakarta Sans", sans-serif; }
+#nc-root { color: var(--cms-text); }
+#nc-root [class*="LoginPage"],
+#nc-root [class*="AuthenticationPage"],
+#nc-root [class*="AppMainContainer"],
+#nc-root [class*="EditorContainer"],
+#nc-root [class*="ControlPaneContainer"],
+#nc-root [class*="PreviewPaneContainer"] { background: var(--cms-canvas) !important; }
+#nc-root [class*="ToolbarContainer"],
+#nc-root [class*="Sidebar"],
+#nc-root [class*="AppHeader"],
+#nc-root [class*="ControlContainer"],
+#nc-root [class*="ControlTopbar"],
+#nc-root [class*="TopBar"],
+#nc-root [class*="ListItem"],
+#nc-root [class*="Dropdown"],
+#nc-root [class*="Modal"],
+#nc-root [class*="Card"],
+#nc-root [class*="StyledSplitPane"],
+#nc-root [class*="ControlContainer"] > div,
+#nc-root [class*="ListItem"] > div,
+#nc-root [class$="-control"],
+#nc-root [class$="-menu"],
+#nc-root [class$="-option"],
+#nc-root [class*="CollectionMain"] {
+  background-color: var(--cms-panel) !important;
+  border-color: var(--cms-border) !important;
+  color: var(--cms-text) !important;
+}
+#nc-root [class*="CollectionTopContainer"],
+#nc-root [class*="CollectionTopRow"] { background: var(--cms-panel) !important; color: var(--cms-text) !important; }
+#nc-root input:not([type="checkbox"]):not([type="radio"]),
+#nc-root textarea,
+#nc-root select,
+#nc-root [class*="TextControl"],
+#nc-root [class*="StringControl"] {
+  background: var(--cms-control) !important;
+  color: var(--cms-text) !important;
+  border-color: var(--cms-border) !important;
+  box-shadow: none !important;
+}
+#nc-root input::placeholder, #nc-root textarea::placeholder { color: var(--cms-muted); }
+#nc-root [class$="-singleValue"], #nc-root [class$="-input"] { color: var(--cms-text) !important; }
+#nc-root [class$="-placeholder"], #nc-root [class*="ToolbarSectionBackLink"] { color: var(--cms-muted) !important; }
+#nc-root input[type="checkbox"], #nc-root input[type="radio"] { accent-color: var(--cms-gold); }
+#nc-root label,
+#nc-root [class*="FieldLabel"],
+#nc-root [class*="NestedObjectLabel"] { background-color: var(--cms-panel) !important; color: var(--cms-gold) !important; }
+#nc-root h1, #nc-root h2, #nc-root h3 { color: var(--cms-text); font-family: "Outfit", sans-serif; }
+#nc-root a, #nc-root [class*="Hint"], #nc-root [class*="Description"] { color: var(--cms-muted) !important; }
+#nc-root a:hover { color: var(--cms-gold) !important; }
+#nc-root button { background-color: var(--cms-control) !important; border-color: var(--cms-border) !important; color: var(--cms-text) !important; }
+#nc-root button:hover { background-color: #332b22 !important; }
+#nc-root [class*="LoginButton"], #nc-root [class*="PublishButton"] { background-color: var(--cms-gold) !important; color: #12100e !important; }
+#nc-root [class*="badgeDanger"], #nc-root [class*="Error"] { color: #ffaaa1 !important; }
+#nc-root [class*="active"], #nc-root [aria-current="page"] { color: var(--cms-gold) !important; }
+#nc-root [class*="Resizer"] { background: var(--cms-border) !important; }
+#nc-root :focus-visible { outline: 2px solid var(--cms-gold) !important; outline-offset: 2px; }
+#nc-root [class*="DecapLogoIcon"] [fill="#000"],
+#nc-root [class*="DecapLogoIcon"] [fill="#000000"],
+#nc-root [class*="DecapLogoIcon"] [fill="black"] { fill: var(--cms-text); }

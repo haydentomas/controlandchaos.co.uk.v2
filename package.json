@@ -9,18 +9,24 @@
     "test": "npm run render && node --test scripts/templates.test.mjs scripts/page-shell.test.mjs",
     "test:visual": "node scripts/visual-audit.mjs",
     "dev": "vite",
+    "cms:local": "node scripts/start-cms.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "decap-server": "3.11.3",
     "linkedom": "^0.18.13",
     "postcss": "^8.5.28",
     "postcss-selector-parser": "^7.1.6",
     "postcss-value-parser": "^4.2.0",
+    "sanitize-html": "2.18.0",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "yaml": "2.9.1"
   },
   "dependencies": {
     "dompurify": "^3.4.16",

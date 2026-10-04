@@ -1,0 +1,19 @@
+<div class="card card-flex-column" data-event-category="{{ event.category }}">
+  <div class="flex-between align-start mb-12 gap-8">
+    <span class="section-tag font-2xs m-0">{{ event.category_tag }}</span>
+    <span class="font-mono font-xs text-gold">{{ event.date_display }}</span>
+  </div>
+  <h3 class="card-title font-md mb-10">{{ event.title }}</h3>
+  <div class="font-xs text-muted mb-12 flex-row align-center gap-6">
+    <span>&#128205;</span> <span>{{ event.location }}</span>
+  </div>
+  <p class="card-desc card-body-grow mb-20">{{ event.description }}</p>
+  <div class="card-actions-bar">
+    <a href="{{ event.calendarUrl }}" target="_blank" rel="noopener" class="btn btn-gold btn-sm card-body-grow">
+      <span>&#128197;</span> Add to Google Calendar
+    </a>
+    <a href="{{ event.slurl }}" class="btn btn-secondary btn-sm">
+      <span>&#128205;</span> Teleport (SLurl)
+    </a>
+  </div>
+</div>

@@ -1,24 +1,27 @@
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
-import { readFileSync } from 'node:fs';
-import { cp, rm } from 'node:fs/promises';
+import { cp, readdir, rm, writeFile } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
-import { pageShellPlugin } from './scripts/page-shell.mjs';
-import { generateTemplates, templateWatchPlugin } from './scripts/render-templates.mjs';
+import { adminRoutePlugin, pageShellPlugin } from './scripts/page-shell.mjs';
+import { generateTemplates, staleBlogPages, staleGuidePages, templateWatchPlugin } from './scripts/render-templates.mjs';
 
 export default defineConfig(async () => {
-  await generateTemplates();
-  const manifest = JSON.parse(readFileSync(new URL('./templates.json', import.meta.url), 'utf8'));
+  const pages = await generateTemplates();
   const publicRoot = resolve(import.meta.dirname, 'public');
   const buildRoot = resolve(import.meta.dirname, 'build');
   return {
     plugins: [
-      templateWatchPlugin(), pageShellPlugin(), tailwindcss(),
+      templateWatchPlugin(), adminRoutePlugin(), pageShellPlugin(), tailwindcss(),
       {
         name: 'v2-public-assets',
-        async writeBundle() {
+        async writeBundle(options, bundle) {
           await rm(resolve(buildRoot, 'reference'), { recursive: true, force: true });
+          for (const filename of staleBlogPages(await readdir(buildRoot), pages)) await rm(resolve(buildRoot, filename), { force: true });
+          for (const filename of staleGuidePages(await readdir(buildRoot), pages)) await rm(resolve(buildRoot, filename), { force: true });
           await cp(publicRoot, buildRoot, { recursive: true, filter: source => relative(publicRoot, source).split(sep)[0] !== 'reference' });
+          const stylesheet = Object.values(bundle).find(asset => asset.type === 'asset' && /^assets\/main-.*\.css$/.test(asset.fileName));
+          if (!stylesheet) throw new Error('Missing compiled site stylesheet for CMS previews');
+          await writeFile(resolve(buildRoot, 'admin/site-preview.css'), stylesheet.source);
         }
       }
     ],
@@ -28,7 +31,7 @@ export default defineConfig(async () => {
       emptyOutDir: false,
       copyPublicDir: false,
       rolldownOptions: {
-        input: Object.fromEntries(manifest.map(({ page }) => [page.replace('.html', ''), resolve(import.meta.dirname, page)]))
+        input: Object.fromEntries(pages.map(page => [page.replace('.html', ''), resolve(import.meta.dirname, page)]))
       }
     }
   };

@@ -30,90 +30,12 @@
         <p class="section-subtitle">Select a product to view its complete operational manual, chat commands, and marketplace links.</p>
       </div>
 
-      <div class="grid-3">
-
-        <!-- Guide 1: Vow Collar -->
-        <div class="card card-highlight-gold card-flex-column">
-          <div class="card-product-media">
-            <img src="/images/products/vow-collar.jpg" alt="[C&C] Vow Collar 2026 Package">
-          </div>
-          <span class="section-tag tag-burgundy align-start mb-8">FLAGSHIP MANUAL</span>
-          <h3 class="card-title">[C&amp;C] Vow Collar 2026</h3>
-          <p class="card-desc card-body-grow">
-            Complete guide covering Bento collar locking, Domme HUD tracking, Air Taxes direct debit, and stealth Experience auto-props.
-          </p>
-          <div class="card-actions-bar">
-            <a href="/guide-vow-collar.html" class="btn btn-gold btn-sm card-body-grow">Read Manual →</a>
-            <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">🛒 Marketplace</a>
-          </div>
-        </div>
-
-        <!-- Guide 2: PocketPig -->
-        <div class="card card-flex-column">
-          <div class="card-product-media">
-            <img src="/images/products/pocket-pig.jpg" alt="[C&C] PocketPig Companion">
-          </div>
-          <span class="section-tag manifesto-tag align-start mb-8">COMPANION</span>
-          <h3 class="card-title">[C&amp;C] PocketPig Companion</h3>
-          <p class="card-desc card-body-grow">
-            HUD operation, wallet hunger mechanics, tip-to-feed triggers, and forced pig squeal auditory penalties for FinSubs.
-          </p>
-          <div class="card-actions-bar">
-            <a href="/guide-pocket-pig.html" class="btn btn-gold btn-sm card-body-grow">Read Manual →</a>
-            <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">🛒 Marketplace</a>
-          </div>
-        </div>
-
-        <!-- Guide 3: FootKiss -->
-        <div class="card card-flex-column">
-          <div class="card-product-media">
-            <img src="/images/products/footkiss.png" alt="[C&C] FootKiss & Shoe Worship">
-          </div>
-          <span class="section-tag manifesto-tag align-start mb-8">WORSHIP SYSTEM</span>
-          <h3 class="card-title">[C&amp;C] FootKiss &amp; Shoe Worship</h3>
-          <p class="card-desc card-body-grow">
-            Drop-in shoe scripts, proximity kneel animations, tribute-per-kiss fees, and custom Bento shoe-shine prop setup.
-          </p>
-          <div class="card-actions-bar">
-            <a href="/guide-footkiss.html" class="btn btn-gold btn-sm card-body-grow">Read Manual →</a>
-            <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">🛒 Marketplace</a>
-          </div>
-        </div>
-
-        <!-- Guide 4: Tribute Jars -->
-        <div class="card card-flex-column">
-          <div class="card-product-media">
-            <img src="/images/products/tribute-jar.png" alt="[C&C] Smart Tribute Jars">
-          </div>
-          <span class="section-tag manifesto-tag align-start mb-8">VENUE ESSENTIAL</span>
-          <h3 class="card-title">[C&amp;C] Smart Tribute Jars</h3>
-          <p class="card-desc card-body-grow">
-            Rezzing guide, custom tip button values, Discord webhook integration, XP cloud sync, and particle celebrations.
-          </p>
-          <div class="card-actions-bar">
-            <a href="/guide-tribute-jars.html" class="btn btn-gold btn-sm card-body-grow">Read Manual →</a>
-            <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">🛒 Marketplace</a>
-          </div>
-        </div>
-
-        <!-- Guide 5: XP Titlers -->
-        <div class="card card-flex-column">
-          <div class="card-product-media">
-            <img src="/images/products/xp-titler.png" alt="[C&C] Free XP Titlers">
-          </div>
-          <span class="section-tag manifesto-tag align-start mb-8">FREE STARTER</span>
-          <h3 class="card-title">[C&amp;C] Free XP Titlers</h3>
-          <p class="card-desc card-body-grow">
-            How to claim, attach, customize font colors, show/hide overhead rank, and display Prestige stars across Second Life.
-          </p>
-          <div class="card-actions-bar">
-            <a href="/guide-xp-titlers.html" class="btn btn-gold btn-sm card-body-grow">Read Manual →</a>
-            <a href="/xp-system.html" class="btn btn-secondary btn-sm">⚡ XP Levels</a>
-          </div>
-        </div>
-
-        <!-- Guide 6: Creator Template -->
-        <div class="card card-flex-column">
+      {% endraw %}
+<div class="grid-3" data-manual-list>
+{% for guide in guides %}{% include "partials/guide-card.njk" %}{% endfor %}
+{% for guide in guides %}{% if guide.id == "vow-collar" %}
+{% raw %}
+<div class="card card-flex-column">
           <div class="card-product-media">
             <img src="/images/products/vow-atm.jpg" alt="[C&C] Venue ATM Terminal">
           </div>
@@ -127,8 +49,11 @@
             <a href="/products.html" class="btn btn-secondary btn-sm">Store Page</a>
           </div>
         </div>
-
-      </div>
+{% endraw %}
+{% endif %}{% endfor %}
+{% if not guides.length %}<p class="text-muted">No manuals published yet.</p>{% endif %}
+</div>
+{% raw %}
     </div>
   </section>
 

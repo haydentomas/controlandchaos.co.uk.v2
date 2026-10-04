@@ -1,0 +1,18 @@
+<div class="card" data-blog-category="{{ post.category }}" data-blog-search="{{ post.title }} {{ post.summary }} {{ post.author }}">
+{% if post.featured_image %}
+  <a class="blog-a-presentation" href="{{ post.url }}">
+    <img class="tw:[width:100%] tw:[height:100%] tw:[object-fit:cover] tw:[transition:transform_0.3s_ease]" src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+  </a>
+{% endif %}
+  <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:10px]">
+    <span class="section-tag tw:[margin:0] tw:[font-size:9.5px] tw:[padding:2px_8px]">{{ post.category }}</span>
+    <span class="tw:[font-family:var(--font-mono)] tw:[font-size:11px] tw:[color:var(--gold-muted)]">{{ post.date }} &#8226; {{ post.author }}</span>
+  </div>
+  <h3 class="card-title tw:[font-size:20px] tw:[margin-bottom:10px] tw:[line-height:1.4]">
+    <a class="tw:[color:#fff] tw:[text-decoration:none]" href="{{ post.url }}">{{ post.title }}</a>
+  </h3>
+  <p class="tw:[font-size:14px] tw:[color:#b0b0c5] tw:[line-height:1.6] tw:[margin-bottom:18px] tw:[flex:1]">{{ post.summary }}</p>
+  <div class="tw:[border-top:1px_solid_rgba(255,255,255,0.06)] tw:[padding-top:14px] tw:[margin-top:auto]">
+    <a href="{{ post.url }}" class="btn btn-secondary btn-sm tw:[width:100%] tw:[justify-content:center]">Read Full Post &#8594;</a>
+  </div>
+</div>

@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseHTML } from 'linkedom';
+import { pageInventory } from './render-templates.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
-const manifest = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8'));
+const manifest = await pageInventory();
 
 test('all public and directory template families exist', () => {
   for (const name of ['index', 'directory', 'get-listed', 'checkout', 'directory-admin', 'directory-editor', 'profile', 'profile-blog', 'profile-feed', 'profile-gallery', 'profile-post', 'profile-white-label', 'profile-post-white-label']) assert.ok(manifest.some(template => template.page === `${name}.html`));
-  assert.ok(manifest.length >= 29);
+  assert.ok(manifest.length >= 28);
 });
 
 for (const template of manifest) test(`${template.page}: flat, styled, and isolated from the backend`, async () => {

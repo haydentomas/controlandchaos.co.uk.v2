@@ -1,0 +1,63 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+<header class="hero tw:[min-height:40vh] tw:[padding:130px_0_30px]">
+  <canvas height="" width="" id="hero-canvas"></canvas>
+  <div class="container">
+    <div class="tw:[font-family:var(--font-mono)] tw:[font-size:12px] tw:[color:var(--gold-muted)] tw:[margin-bottom:12px]">
+      <a class="tw:[color:var(--gold-muted)]" href="/index.html">Home</a> &#8226;
+      <a class="tw:[color:var(--gold-muted)]" href="/blog.html">News &amp; Blog</a> &#8226;
+      <span class="tw:[color:var(--text-primary)]">{{ post.title }}</span>
+    </div>
+    <div class="tw:[display:flex] tw:[gap:10px] tw:[align-items:center] tw:[margin-bottom:12px] tw:[flex-wrap:wrap]">
+      <span class="section-tag tw:[margin:0]">{{ post.category | upper }}</span>
+      <span class="tw:[font-family:var(--font-mono)] tw:[font-size:12px] tw:[color:var(--gold-bright)]">{{ post.date }}</span>
+      <span class="tw:[font-family:var(--font-mono)] tw:[font-size:12px] tw:[color:var(--text-muted)]">&#8226; By {{ post.author }}</span>
+      <span class="tw:[font-family:var(--font-mono)] tw:[font-size:12px] tw:[color:var(--text-muted)]">&#8226; {{ post.readMinutes }} min read</span>
+    </div>
+    <h1 class="hero-title tw:[font-size:clamp(28px,_4vw,_44px)] tw:[text-align:left] tw:[margin-bottom:16px]">{{ post.title }}</h1>
+    <p class="hero-desc tw:[text-align:left] tw:[max-width:800px] tw:[font-size:16px] tw:[margin:0] tw:[color:var(--text-muted)] tw:[font-style:italic]">{{ post.summary }}</p>
+  </div>
+</header>
+<main class="section tw:[padding:40px_0_80px]" data-cms-article>
+  <div class="container">
+    <div class="article-layout">
+      <article class="article-main">
+{% if post.featured_image %}
+        <div class="featured-image-wrapper"><img src="{{ post.featured_image }}" alt="{{ post.title }}"></div>
+{% endif %}
+        <div class="article-body">{{ post.bodyHtml | safe }}</div>
+        <div class="share-bar">
+          <span class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[align-self:center] tw:[font-family:var(--font-mono)]">Share Post:</span>
+          <button class="btn btn-secondary btn-sm" data-copy-post><span>&#128203;</span> Copy Link</button>
+          <a href="{{ post.shareUrl }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><span>&#128038;</span> Share on X</a>
+          <a href="/blog.html" class="btn btn-gold btn-sm tw:[margin-left:auto]"><span>&#8592;</span> Back to All Posts</a>
+        </div>
+      </article>
+      <aside class="article-sidebar">
+        <div class="sidebar-widget">
+          <div class="widget-title"><span>&#128081;</span> Control &amp; Chaos</div>
+          <p class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[line-height:1.6] tw:[margin-bottom:16px]">Second Life's premier luxury gamified sanctuary, competitive XP arenas, and certified escort directory.</p>
+          <a href="{{ site.navigation.inworldUrl }}" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center]"><span>&#128205;</span> {{ site.navigation.inworldLabel }}</a>
+        </div>
+        <div class="sidebar-widget">
+          <div class="widget-title"><span>&#128220;</span> Recent Posts</div>
+          <div>
+{% for recent in recentPosts %}
+            <a href="{{ recent.url }}" class="recent-post-item"><div class="recent-post-title">{{ recent.title }}</div><div class="recent-post-meta">{{ recent.date }} &#8226; {{ recent.category }}</div></a>
+{% endfor %}
+          </div>
+        </div>
+        <div class="sidebar-widget">
+          <div class="widget-title"><span>&#127991;</span> Topics</div>
+          <div class="tw:[display:flex] tw:[gap:8px] tw:[flex-wrap:wrap]">
+            <a href="/blog.html" class="btn btn-secondary btn-sm tw:[font-size:11px]">Product Launches</a>
+            <a href="/blog.html" class="btn btn-secondary btn-sm tw:[font-size:11px]">Sim Events</a>
+            <a href="/blog.html" class="btn btn-secondary btn-sm tw:[font-size:11px]">Economy Updates</a>
+            <a href="/blog.html" class="btn btn-secondary btn-sm tw:[font-size:11px]">Patch Notes</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -11,6 +11,8 @@ node_modules
 dist
 build
 public/reference
+.generated-blog-pages.json
+.generated-guide-pages.json
 test-results
 playwright-report
 dist-ssr

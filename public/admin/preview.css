@@ -1,0 +1,35 @@
+html, body { background: #12100e; color: #f1ece2; }
+body { margin: 0; overflow-x: hidden; font-family: "Plus Jakarta Sans", sans-serif; }
+.cms-preview { padding: 24px; min-height: 100vh; box-sizing: border-box; }
+.cms-preview *, .cms-preview *::before, .cms-preview *::after { animation: none !important; transition: none !important; }
+.cms-preview-heading { font-family: var(--font-heading); font-size: 18px; color: var(--gold-bright); margin: 0 0 16px; }
+.cms-preview-section { margin-bottom: 36px; }
+.cms-preview .navbar { position: static; }
+.cms-preview .navbar-container { gap: 16px; flex-wrap: wrap; padding: 16px; }
+.cms-preview .nav-links-wrapper { flex-basis: 100%; order: 3; }
+.cms-preview .nav-links { flex-wrap: wrap; justify-content: flex-start; gap: 12px; }
+.cms-preview .nav-actions { margin-left: auto; }
+@layer components {
+  .cms-preview .navbar, .cms-preview .navbar-container { height: auto !important; min-height: 0 !important; max-height: none !important; }
+  .cms-preview .nav-links-wrapper { display: block !important; }
+  .cms-preview .nav-links { display: flex !important; }
+  .cms-preview .nav-actions > .btn { display: inline-flex !important; }
+  .cms-preview .nav-toggle, .cms-preview .mobile-nav-drawer { display: none !important; }
+}
+.cms-preview .brand-logo-img { width: 104px; height: auto; max-width: 100%; }
+.cms-preview .footer { padding: 28px 0 0; }
+.cms-preview .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.cms-preview .footer-logo-img { width: 104px; height: auto; max-width: 100%; }
+.cms-preview .container { padding: 0 16px; }
+.cms-preview .card { max-width: 680px; margin: 0 auto; }
+.cms-preview a { pointer-events: none; overflow-wrap: anywhere; }
+.cms-preview .card-title, .cms-preview .card-desc, .cms-preview .footer-desc { overflow-wrap: anywhere; }
+.cms-blog-body { margin: 28px auto 0; max-width: 680px; overflow-wrap: anywhere; }
+.cms-blog-body img { max-width: 100%; height: auto; }
+.cms-guide-sections, .cms-guide-details { margin: 24px auto 0; max-width: 680px; overflow-wrap: anywhere; }
+.cms-guide-details { color: var(--text-muted); font-size: 13px; line-height: 1.7; }
+@media (max-width: 420px) {
+  .cms-preview { padding: 16px; }
+  .cms-preview .footer-grid { grid-template-columns: minmax(0, 1fr); }
+  .cms-preview .nav-actions { margin-left: 0; }
+}

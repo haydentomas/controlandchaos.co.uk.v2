@@ -4,7 +4,27 @@
 
 The user requested a separate `v2` folder containing a flat version of the current site's templates in the latest Tailwind, preserving the current appearance before building the production application properly.
 
-Updated 2026-10-04: the user rejected Astro and approved plain HTML/Tailwind/modular JavaScript with build-time Nunjucks. All 32 pages now use shared layouts/head/header/footer; all 10 creator states use shared hero/tabs. Decap and Supabase remain unconnected. This implementation is local, uncommitted and unpushed.
+Updated 2026-10-04: no Astro; use HTML/Tailwind/modular JavaScript with build-time Nunjucks. Shared templates were pushed as `c34fde0`. The user now approved the completed CMS milestone commit/push and requested step-by-step directory database setup. Tests/build pass; verify Netlify deployment after the push. Hosted CMS OAuth and Supabase remain unconfigured.
+
+Next user action: create a separate Free-plan Supabase development project per `SUPABASE_SETUP.md`. `.env.example` contains empty public-client placeholders only. No database client, migration or connection has been implemented yet. Never read/print user secrets or request them in chat.
+
+## Initial CMS Slice
+
+- `public/admin`: pinned Decap 3.16.3 and GitHub backend targeting the V2 repository only.
+- Collections: events, site Blog & News, Product Guides & Manuals and global branding/navigation/footer; no creator/private collections.
+- `content/events` and `templates/partials/event-card.njk`: original four event cards now generated from editable JSON.
+- `scripts/cms-content.mjs`: Ajv validation for shared settings/events, unsafe URL rejection, published-state filtering, ordering, duplicate IDs, filename/ID agreement and timezone-aware calendar links.
+- `src/modules/events.js`: real event filtering and selected/count states; loaded only on the events page.
+- `CMS_SETUP.md`: verified current Netlify/GitHub OAuth instructions and required authenticated publishing checks. The callback URL is `https://api.netlify.com/auth/done`. Never collect client secrets through chat.
+- Vite's `/admin/` homepage fallback was fixed with `adminRoutePlugin` and a real-server regression. Local Login now uses pinned `decap-server` 3.11.3 via `npm run cms:local`, bound to 127.0.0.1:8081 and rooted only in V2. Local collections open without GitHub credentials; an HTTPS non-local host still shows GitHub login and makes no proxy requests. Hosted OAuth/publishing remains untested and requires the user's Netlify setup.
+- The local proxy inherits a low-severity @hapi/joi advisory (two affected packages reported, no upstream fix). It is dev-only; do not expose it to LAN/public hosts. Details are in `CMS_SETUP.md`.
+- Dark admin styling and custom settings/events previews reuse precompiled header/footer/event-card partials and compiled site CSS. Source generation is in `scripts/cms-previews.mjs`; draft text is escaped and unsafe links blocked. Refresh CMS after changing registration scripts/styles.
+- Preview navigation wraps with explicit CSS layer overrides and auto-height header. Browser checks cover no footer overlap/overflow, live draft updates and bounded logo size.
+- Site posts live in `content/blog`. Shared feed/card/article templates and build inventory generate new published IDs automatically; Marked/sanitize-html replace the legacy renderer. Unpublished/deleted IDs are removed from generated source/build pages with restricted filename cleanup. Superseded per-post templates and metadata captures were removed.
+- Blog search/category/empty-state/Load More and styled Decap previews are wired. Four public posts were imported once from V1; dev/build/tests are independent of V1 thereafter.
+- Manuals live in `content/guides`; five originals were imported with existing directory images/text. Shared `product-manual.njk`, guide-card and guide-sections partials replace per-guide captures. New published guides generate automatically; unpublishing/deletion cleans only restricted generated guide filenames. `guide-template.html` remains a reserved design sample.
+- Guide section Markdown, features, commands and specifications are editable and validated. Unique anchors are generated when blank, with stable explicit anchors recommended. Guide editor/draft preview and desktop/mobile anchors/overflow are browser-verified. Preview styling checks must await the site stylesheet; transitions are disabled in the preview pane.
+- Product catalogue, XP/rules and selected page copy stay code-managed. XP/rules is recommended as a future fixed-page content collection, but the user is undecided and it has not been implemented. Prefer validated content fields over raw layout editing.
 
 - `main` has not been edited by this V2 capture/scaffold task. Its earlier uncommitted hardening work remains separate.
 - V2 uses Vite 8.3.2 and Tailwind 4.3.3.
@@ -33,7 +53,7 @@ Updated 2026-10-04: the user rejected Astro and approved plain HTML/Tailwind/mod
 
 ## Validation
 
-- 41 structural/page-shell tests pass, including shared-setting propagation, creator escaping, compact white-label output, hashed-class removal, early dark canvas and native fades.
+- Latest count: 53 passing tests, including guide inventory/metadata/anchors/cleanup, post publication/sanitization and shared layouts. Browser comparisons allow editable manual vertical flow and CMS article height changes while checking navigation/horizontal geometry. Native-transition detection and reference loading each failed once and passed unchanged on rerun; retain those timing/network caveats.
 - Production build passes.
 - 64 desktop/mobile browser comparisons pass: all 32 pages at 1440x1000 and 390x844.
 - Desktop key layout bounds, body font and background match the original-CSS reference. Mobile profile-tab wrapping is an intentional improvement: the audit checks every tab fits and allows only its corresponding height/flow changes. There are no runtime errors or new page overflow relative to the reference.
@@ -69,8 +89,8 @@ The initial Windows output cleanup failed for a generated `dist/images` director
 
 ## Next Work, After Visual Review
 
-1. Review the local shared-template changes and explicitly approve a commit/push when ready. Do not assume earlier baseline push authorization covers this new implementation.
-2. Define Decap staff schemas and extract editable content fields from page bodies. Keep layouts/classes in code and creator data out of Git-backed CMS collections.
+1. The CMS milestone push is approved. Verify its deployment, then guide the user through creating a separate Supabase development project per `SUPABASE_SETUP.md`. Hosted staff OAuth can be configured separately; authenticated CMS publishing remains unverified.
+2. Extend Decap staff schemas beyond global settings/events and extract editable content fields from remaining page bodies. Keep layouts/classes in code and creator data out of Git-backed CMS collections.
 3. Continue suitable page-specific component/semantic styling extraction without unrelated redesign. Markdown already uses Marked/DOMPurify in the editor-only module.
 4. Design Supabase ownership, verified Second Life identity linking, subscriptions, posts, domains, and media policies before wiring backend features.
 5. Add real sessions, transactional saves, pagination, protected media, backups/import/rollback, and negative authorization tests.

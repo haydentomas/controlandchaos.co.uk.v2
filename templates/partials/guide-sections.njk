@@ -1,0 +1,23 @@
+{% for section in guide.sections %}
+<section class="card tw:[margin-bottom:28px]" id="{{ section.section_id }}">
+  <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">{{ section.title }}</h2>
+  <div class="manual-rich-text">{{ section.bodyHtml | safe }}</div>
+{% if loop.first and guide.features.length %}
+  <div class="manual-features">
+    <strong class="manual-features-title">Key Features:</strong>
+    <ul>{% for feature in guide.features %}<li><strong>{{ feature.title }}:</strong> {{ feature.desc }}</li>{% endfor %}</ul>
+  </div>
+{% endif %}
+</section>
+{% endfor %}
+{% if guide.chat_commands.length %}
+<section class="card tw:[margin-bottom:28px]" id="guide-commands">
+  <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">&#128172; Chat &amp; Channel Commands</h2>
+  <div class="tw:[overflow-x:auto]">
+    <table class="table tw:[font-size:13px] tw:[width:100%]">
+      <thead><tr><th>Command</th><th>Permission</th><th>Action</th></tr></thead>
+      <tbody>{% for command in guide.chat_commands %}<tr><td><code class="tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)]">{{ command.command }}</code></td><td class="tw:[color:var(--gold-muted)]">{{ command.role }}</td><td>{{ command.desc }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endif %}

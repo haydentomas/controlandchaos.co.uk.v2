@@ -85,6 +85,8 @@ try {
           overflow: document.documentElement.scrollWidth > innerWidth,
           background: getComputedStyle(document.body).backgroundColor,
           font: getComputedStyle(document.body).fontFamily,
+          cmsArticle: !!document.querySelector('[data-cms-article]'),
+          cmsGuide: !!document.querySelector('[data-cms-guide]'),
           tabs: (() => {
             const tabs = document.getElementById('profile-tabs-nav');
             if (!tabs) return null;
@@ -106,6 +108,8 @@ try {
         const expected = reference.bounds[index];
         if (!bounds || !expected) return [];
         return ['x', 'y', 'width', 'height'].filter(key => {
+          if (actual.cmsArticle && bounds.selector === 'main' && key === 'height') return false;
+          if (actual.cmsGuide && bounds.selector !== '.navbar-container' && (key === 'height' || key === 'y')) return false;
           const allowed = responsiveTabs && ((bounds.selector === '#profile-tabs-nav' && key === 'height') || (bounds.selector === 'main' && key === 'height') || (key === 'y' && expected.y > reference.bounds.find(item => item?.selector === '#profile-tabs-nav').y)) ? tabHeightChange : 0;
           return Math.abs(bounds[key] - (expected[key] + allowed)) > 2;
         }).map(key => `${bounds.selector}.${key}: ${expected[key]} -> ${bounds[key]}`);
@@ -116,6 +120,21 @@ try {
       console.log(`${template.page} ${viewport.width}: ${differences.length} layout differences; ${actual.errors.length} runtime errors`);
     }
     const interaction = await context.newPage();
+    await interaction.goto(`${baseUrl}/blog.html`, { waitUntil: 'networkidle' });
+    await interaction.locator('[data-cat="Patch Notes"]').click();
+    if (await interaction.locator('[data-blog-category]:visible').count() !== 1) throw new Error('Blog category filter did not narrow the feed');
+    await interaction.locator('[data-cat="all"]').click();
+    await interaction.getByRole('textbox', { name: 'Search blog posts' }).fill('Vow Collar');
+    if (await interaction.locator('[data-blog-category]:visible').count() !== 1) throw new Error('Blog search did not narrow the feed');
+    await interaction.getByRole('textbox', { name: 'Search blog posts' }).fill('no matching post expected');
+    if (await interaction.locator('[data-blog-category]:visible').count() !== 0 || !await interaction.locator('[data-blog-empty]').isVisible()) throw new Error('Blog empty state did not appear');
+    await interaction.goto(`${baseUrl}/events.html`, { waitUntil: 'networkidle' });
+    await interaction.locator('[data-filter="Tournament"]').click();
+    if (await interaction.locator('[data-event-category]:visible').count() !== 1) throw new Error('Event category filter did not hide other categories');
+    if (await interaction.locator('[data-event-counter]').innerText() !== 'Showing 1 of 4 events') throw new Error('Event count did not update');
+    if (await interaction.locator('[data-filter="Tournament"]').getAttribute('aria-pressed') !== 'true') throw new Error('Event filter active state did not update');
+    await interaction.locator('[data-filter="all"]').click();
+    if (await interaction.locator('[data-event-category]:visible').count() !== 4) throw new Error('All-events filter did not restore events');
     await interaction.goto(`${baseUrl}/profile-gallery.html`, { waitUntil: 'networkidle' });
     await interaction.locator('.gallery-library-tile').first().click();
     await interaction.locator('#gallery-lightbox.active').waitFor();

@@ -16,7 +16,7 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
     Exclude dependencies, generated output, screenshots and credentials.
     Review .gitignore and add .env exclusions before configuring secrets.
 [x] Commit and push the current templates and tests as the baseline.
-    Baseline commit: 11bbab4. Current shared-template changes are not pushed.
+    Baseline commit: 11bbab4. Shared templates pushed as c34fde0.
 [x] Create a NEW Netlify site connected to this NEW repository.
     Staging: https://controlandchaosv2.netlify.app/
     Base directory: leave blank when the repository root is V2.
@@ -52,7 +52,8 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
 [ ] Reuse post cards, rich-text rendering and suitable gallery/editor pieces.
 [x] Preserve the approved desktop appearance and mobile tab wrapping.
 [x] Adapt existing tests as needed and pass build and browser checks.
-    41 tests and 64 desktop/mobile comparisons pass, including interactions.
+    53 tests and 64 desktop/mobile comparisons pass, including interactions.
+    CMS article heights/manual vertical flow change with editable content.
 [x] Make clean-clone development and validation independent of ../main.
     Build/dev/tests use Nunjucks sources and a portable visual reference fixture.
     Capture is legacy-only; do not run it over the new implementation.
@@ -68,10 +69,13 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
 [ ] Make upgrades deliberate changes with tests, not automatic major upgrades.
 
 5. CONNECT DECAP IN STAGING
-[ ] Define validated content schemas and shared settings files.
+[ ] Define validated content schemas and shared settings files for all staff content.
+    Global settings/events/site-blog/product-manual schemas are implemented.
+    Other page content remains code-managed until editable fields are agreed.
 [ ] Add the Products collection if catalogue editing is required.
 [ ] Configure supported staff authentication and Git publishing permissions.
     The new Netlify site alone does not configure Decap authentication.
+    See CMS_SETUP.md for the V2 GitHub OAuth provider instructions.
 [ ] Restrict CMS access to trusted staff; creators use their separate editor.
 [ ] Verify edit -> publish -> rebuild -> correct page and shared components.
 [ ] Keep Git-backed uploads public-only and validate/sanitize rich text.
@@ -104,10 +108,12 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
 
 CURRENT STATUS / YOUR NEXT ACTION
 V2 has a separate repository and Netlify staging site. Shared templates and
-modular preview scripts are implemented and tested locally, not yet pushed.
+modular preview scripts are committed/pushed as c34fde0.
+The completed events/blog/manuals/settings CMS milestone is approved for push.
 Preview: http://127.0.0.1:4182/
 
-Next review these changes, approve their commit/push, then define Decap's staff
-content schemas and extract editable page fields. No Supabase project is
-connected, and no domain transfer or paid service setup is needed yet.
+Next create a separate Supabase development project per SUPABASE_SETUP.md.
+Hosted GitHub OAuth and staff publishing checks can be completed separately.
+No Supabase project is connected, and no domain transfer or paid service setup
+is needed yet.
 Never share passwords or tokens in chat.

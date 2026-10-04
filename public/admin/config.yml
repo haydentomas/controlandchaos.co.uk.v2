@@ -1,0 +1,172 @@
+backend:
+  name: github
+  repo: haydentomas/controlandchaos.co.uk.v2
+  branch: main
+  site_domain: controlandchaosv2.netlify.app
+
+local_backend:
+  url: http://127.0.0.1:8081/api/v1
+  allowed_hosts: [localhost, 127.0.0.1]
+
+site_url: https://controlandchaosv2.netlify.app
+display_url: https://controlandchaosv2.netlify.app
+media_folder: public/assets/uploads
+public_folder: /assets/uploads
+
+collections:
+  - name: events
+    label: Sim Events & Calendar
+    folder: content/events
+    create: true
+    extension: json
+    format: json
+    slug: "{{fields.id}}"
+    identifier_field: id
+    summary: "{{title}} - {{date_display}}"
+    fields:
+      - { name: id, label: Event ID, widget: string, pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase words separated by hyphens.'], hint: 'Keep this ID unchanged after creation.' }
+      - { name: title, label: Title, widget: string }
+      - { name: category, label: Category, widget: select, options: [Tournament, Gala, Community, Workshop, Party, XP Boost] }
+      - { name: category_tag, label: Category Badge, widget: string }
+      - { name: date_display, label: Display Date, widget: string, hint: 'Include SLT and the relevant timezone/recurrence.' }
+      - { name: location, label: Location, widget: string }
+      - { name: description, label: Description, widget: text }
+      - { name: slurl, label: Teleport Link, widget: string }
+      - { name: order, label: Display Order, widget: number, value_type: int, min: 0, default: 0 }
+      - { name: published, label: Published, widget: boolean, default: true }
+      - { name: gcal_title, label: Calendar Title, widget: string, required: false, default: '' }
+      - { name: gcal_details, label: Calendar Details, widget: text, required: false, default: '' }
+      - { name: gcal_location, label: Calendar Location, widget: string, required: false, default: '' }
+      - { name: gcal_start, label: Calendar Start, widget: string, required: false, default: '', hint: 'Optional ISO 8601 date/time with timezone, e.g. 2026-10-09T18:00:00-07:00. Supply both start and end, or leave both blank for unscheduled/recurring events.' }
+      - { name: gcal_end, label: Calendar End, widget: string, required: false, default: '', hint: 'Must be after start, with an explicit timezone. These fields prefill Google Calendar; they do not create a recurring calendar subscription.' }
+
+  - name: blog
+    label: Blog & News
+    folder: content/blog
+    create: true
+    extension: json
+    format: json
+    slug: "{{fields.id}}"
+    identifier_field: id
+    summary: "{{title}} - {{date}}"
+    fields:
+      - { name: id, label: Post ID, widget: string, pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase words separated by hyphens.'], hint: 'Keep unchanged after publication to preserve the article URL.' }
+      - { name: title, label: Title, widget: string }
+      - { name: category, label: Category, widget: select, options: [Product Launch, Sim Event, Economy Update, Patch Notes, Community] }
+      - { name: date, label: Display Date, widget: string, hint: 'Example: October 2026.' }
+      - { name: published_at, label: Publication Date, widget: datetime, format: YYYY-MM-DD, date_format: YYYY-MM-DD, time_format: false }
+      - { name: author, label: Author, widget: string, default: Control & Chaos }
+      - { name: summary, label: Summary, widget: text, hint: 'Used for the feed excerpt and SEO/social description.' }
+      - { name: featured_image, label: Featured Image, widget: image, required: false, default: '' }
+      - { name: content, label: Article Content, widget: markdown }
+      - { name: published, label: Published, widget: boolean, default: false, hint: 'Off keeps this record out of the public feed and generated article pages.' }
+      - { name: order, label: Same-date Display Order, widget: number, value_type: int, min: 0, default: 0 }
+
+  - name: product_guides
+    label: Product Guides & Manuals
+    folder: content/guides
+    create: true
+    extension: json
+    format: json
+    slug: "{{fields.id}}"
+    identifier_field: id
+    summary: "{{title}} ({{price}})"
+    fields:
+      - { name: id, label: Guide ID, widget: string, pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase words separated by hyphens.'], hint: 'Keep unchanged after publication; template is reserved.' }
+      - { name: title, label: Product Title, widget: string }
+      - { name: badge, label: Product Badge, widget: string }
+      - { name: icon, label: Icon, widget: string }
+      - { name: price, label: Price, widget: string }
+      - { name: marketplace_url, label: Marketplace Link, widget: string }
+      - { name: pill_text, label: Hero Banner Text, widget: string }
+      - { name: description, label: Product Description, widget: text }
+      - { name: published, label: Published, widget: boolean, default: false }
+      - { name: order, label: Directory Order, widget: number, value_type: int, min: 0, default: 0 }
+      - name: listing
+        label: Directory Card
+        widget: object
+        fields:
+          - { name: title, label: Short Card Title, widget: string }
+          - { name: badge, label: Card Badge, widget: string }
+          - { name: description, label: Card Description, widget: text }
+          - { name: image, label: Product Image, widget: image }
+          - { name: featured, label: Highlight Card, widget: boolean, default: false }
+      - name: sections
+        label: Documentation Sections
+        widget: list
+        min: 1
+        fields:
+          - { name: title, label: Section Title, widget: string }
+          - { name: section_id, label: Section Anchor, widget: string, required: false, default: '', pattern: ['^([a-z0-9]+(?:-[a-z0-9]+)*)?$', 'Use lowercase words separated by hyphens.'], hint: 'Optional unique anchor; keep stable if linked externally. guide-commands and guide-specs are reserved.' }
+          - { name: content, label: Content, widget: markdown }
+      - name: features
+        label: Key Features
+        widget: list
+        required: false
+        default: []
+        fields:
+          - { name: title, label: Feature, widget: string }
+          - { name: desc, label: Description, widget: text }
+      - name: chat_commands
+        label: Chat Commands
+        widget: list
+        required: false
+        default: []
+        fields:
+          - { name: command, label: Command, widget: string }
+          - { name: role, label: Permission, widget: string }
+          - { name: desc, label: Description, widget: text }
+      - name: specs
+        label: Technical Specifications
+        widget: object
+        required: false
+        fields:
+          - { name: attachment, label: Attachment, widget: string, required: false, default: '' }
+          - { name: scripts, label: Script Engine, widget: string, required: false, default: '' }
+          - { name: permissions, label: Permissions, widget: string, required: false, default: '' }
+          - { name: compatibility, label: Compatibility, widget: string, required: false, default: '' }
+          - { name: contents, label: Package Contents, widget: string, required: false, default: '' }
+
+  - name: settings
+    label: Site Settings & Global Components
+    files:
+      - name: global
+        label: Branding, Navigation & Footer
+        file: content/site.json
+        fields:
+          - { name: brand, label: Brand Name, widget: string }
+          - { name: logo, label: Logo, widget: image }
+          - { name: home, widget: hidden, default: /index.html }
+          - { name: fontStylesheet, widget: hidden }
+          - name: navigation
+            label: Navigation
+            widget: object
+            fields:
+              - { name: inworldUrl, label: In-world Link, widget: string }
+              - { name: inworldLabel, label: In-world Button Label, widget: string }
+              - name: links
+                label: Menu Links
+                widget: list
+                fields:
+                  - { name: label, label: Label, widget: string }
+                  - { name: url, label: URL, widget: string }
+                  - { name: icon, label: Mobile Icon, widget: string }
+                  - { name: newTab, label: Open in New Tab, widget: boolean, default: false }
+          - name: footer
+            label: Footer
+            widget: object
+            fields:
+              - { name: description, label: Description, widget: text }
+              - { name: copyright, label: Copyright, widget: string }
+              - name: columns
+                label: Link Columns
+                widget: list
+                fields:
+                  - { name: title, label: Column Title, widget: string }
+                  - name: links
+                    label: Links
+                    widget: list
+                    fields:
+                      - { name: label, label: Label, widget: string }
+                      - { name: url, label: URL, widget: string }
+                      - { name: newTab, label: Open in New Tab, widget: boolean, default: false }
