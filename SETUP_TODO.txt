@@ -1,0 +1,108 @@
+CONTROL & CHAOS V2 - SETUP TODO
+Updated: 2026-10-04
+
+AGREED DIRECTION
+Plain HTML, Tailwind and modular JavaScript; no Astro.
+Nunjucks will provide shared layouts and partials at build time.
+Decap will manage staff-published content and global site settings.
+Supabase will manage creator data, authentication and private media.
+Netlify will host the site. Keep V1 unchanged throughout staging work.
+
+1. PROTECT THE BASELINE AND CREATE STAGING
+[ ] Create a separate GitHub repository, preferably private, for V2.
+    Suggested name: control-and-chaos-v2.
+    Its local root must be J:\FinalGame\v2, not the workspace root or main.
+[ ] Review the files before the first commit. Include package-lock.json.
+    Exclude dependencies, generated output, screenshots and credentials.
+    Review .gitignore and add .env exclusions before configuring secrets.
+[ ] Commit and push the current templates and tests as the baseline.
+[ ] Create a NEW Netlify site connected to this NEW repository.
+    Base directory: leave blank when the repository root is V2.
+    Build command: npm run build
+    Publish directory: build
+    Node version: 22, at least 22.12; use the same version locally and in CI.
+    Use the generated netlify.app address for staging initially.
+[ ] Check the deployed pages, assets, mobile navigation and profile tabs.
+    This deployment is a visual prototype, not a working publishing service.
+[ ] Keep staging out of search results and choose an access restriction
+    available for the hosting plan. Noindex is not access protection.
+    Do not upload real private data to an unrestricted preview.
+[ ] Do NOT transfer the live domain, change V1's repository or repoint its
+    Netlify site. Do NOT enable payments or creator publishing yet.
+
+2. CONFIRM CONTENT OWNERSHIP
+[ ] Decap: staff news, sim events, products, guides, XP rules, navigation,
+    footer, announcements, selected page copy and SEO fields.
+[ ] Supabase: creator profiles/posts, verified accounts, directory membership,
+    fan subscriptions, domain mappings, booking availability and shared likes.
+[ ] Private creator media: private storage, not Decap's public Git uploads.
+[ ] Each content type has one authoritative source, not competing copies.
+[ ] Remove directory listings from the new Decap editing menu at cutover;
+    preserve existing source data until import and rollback are verified.
+[ ] Keep layout structure in code; editable text does not mean editable HTML.
+
+3. BUILD SHARED TEMPLATES
+[ ] Add Nunjucks and one documented build/dev workflow.
+[ ] Extract the site layout, document head/SEO, header, mobile navigation,
+    footer, creator hero and profile tabs into shared templates.
+[ ] Use explicit normal and white-label layout variants, not copied pages.
+[ ] Render the header and footer into the HTML before serving the page.
+[ ] Reuse post cards, rich-text rendering and suitable gallery/editor pieces.
+[ ] Preserve the approved desktop appearance and mobile tab wrapping.
+[ ] Adapt existing tests as needed and pass build and browser checks.
+[ ] Make clean-clone development and validation independent of ../main.
+    The current capture script reads V1, and visual reference files are ignored.
+    Preserve a deliberate test-fixture strategy; do not run capture over new work.
+[ ] Ensure reference pages and test fixtures are excluded from public builds.
+
+4. ORGANIZE SCRIPTS AND DEPENDENCIES
+[ ] Separate shared navigation from gallery, editor and booking modules.
+[ ] Load page-specific modules only where required; no duplicated scripts.
+[ ] Centralize API access and error handling behind one maintained client.
+[ ] Keep authorization and privileged credentials on the server.
+[ ] Pin dependency versions, commit the lockfile and use npm ci in CI.
+[ ] Make upgrades deliberate changes with tests, not automatic major upgrades.
+
+5. CONNECT DECAP IN STAGING
+[ ] Define validated content schemas and shared settings files.
+[ ] Add the Products collection if catalogue editing is required.
+[ ] Configure supported staff authentication and Git publishing permissions.
+    The new Netlify site alone does not configure Decap authentication.
+[ ] Restrict CMS access to trusted staff; creators use their separate editor.
+[ ] Verify edit -> publish -> rebuild -> correct page and shared components.
+[ ] Keep Git-backed uploads public-only and validate/sanitize rich text.
+
+6. DESIGN AND IMPLEMENT SUPABASE
+[ ] Review the V1 backend hardening handoff and outstanding security blockers.
+    Reference: ../main/supabase/HANDOFF.md.
+[ ] Agree on account ownership and verified Second Life avatar linking.
+[ ] Model creator directory membership separately from fan subscriptions.
+[ ] Define schema, migrations and row-level security policies first.
+[ ] Create a separate staging Supabase project and configure secrets directly
+    in local/deployment settings, never in chat or committed files.
+[ ] Implement real sessions, authorized per-record saves and paginated reads.
+[ ] Configure private media and short-lived authorized access URLs.
+[ ] Implement payment verification, replay prevention and idempotency before
+    enabling paid access. Browser flags are not proof of subscription.
+[ ] Test cross-owner access, anonymous reads, expired access, simultaneous
+    saves and failed writes before connecting real customer data.
+
+7. MIGRATE, VERIFY AND RELEASE
+[ ] Back up existing Blobs data and relevant assets without changing V1.
+[ ] Dry-run imports; preserve identifiers, URLs, ownership and entitlements.
+[ ] Verify imported counts and representative records, not just HTTP success.
+[ ] Review previously public restricted media and migrate/revoke as needed.
+[ ] Prove backup restoration and document a tested rollback procedure.
+[ ] Test custom-domain mirrors, C&C canonicals and article metadata.
+[ ] Verify deployment secrets and matching in-world kiosk client changes.
+[ ] Plan a controlled write/payment pause for the final import and cutover.
+[ ] Approve production launch explicitly; only then change live routing.
+
+CURRENT STATUS / YOUR NEXT ACTION
+V2 is still a local visual prototype. No new Git repository, Netlify site or
+Supabase project has been created by this checklist.
+
+First create/connect the separate V2 GitHub repository and Netlify staging
+site using step 1. We can then begin the shared-template work locally.
+No Supabase credentials, domain transfer or paid service setup is needed yet.
+Share repository/site URLs when ready, but never share passwords or tokens.

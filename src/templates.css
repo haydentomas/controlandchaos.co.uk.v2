@@ -1,0 +1,80 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(tw);
+@import "./portal.css";
+@source "../*.html";
+
+@theme {
+  --color-champagne: #ebdca9;
+  --color-antique: #d8c290;
+  --color-obsidian: #12100e;
+  --color-velvet: #1a1714;
+  --font-heading: "Outfit", "Plus Jakarta Sans", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer utilities {
+  .preview-hidden { display: none !important; }
+  .preview-open { display: block !important; }
+  .preview-scroll-lock { overflow: hidden; }
+  @media (max-width: 1000px) {
+    html[data-template="directory-editor"] .editor-sidebar { position: static; }
+  }
+  @media (max-width: 700px) {
+    .profile-tabs-nav,
+    .article-profile-tabs {
+      @apply tw:flex-wrap tw:gap-2 tw:overflow-visible;
+    }
+    .profile-tabs-nav .profile-tab-btn,
+    .article-profile-tabs .profile-tab-btn {
+      @apply tw:max-w-full tw:min-h-11 tw:px-4 tw:py-2.5 tw:text-[13px] tw:whitespace-normal tw:justify-center tw:text-center;
+    }
+  }
+}
+
+@layer components {
+  .md-rendered-preview p { @apply tw:mb-4 tw:leading-7 tw:text-[#e2e8f0]; }
+  .md-rendered-preview h1,
+  .md-rendered-preview h2,
+  .md-rendered-preview h3 { @apply tw:mt-6 tw:mb-3 tw:font-heading tw:font-bold tw:text-champagne; }
+  .md-rendered-preview h1 { @apply tw:text-2xl; }
+  .md-rendered-preview h2 { @apply tw:text-xl; }
+  .md-rendered-preview h3 { @apply tw:text-lg; }
+  .md-rendered-preview ul,
+  .md-rendered-preview ol { @apply tw:my-4 tw:pl-6; }
+  .md-rendered-preview ul { @apply tw:list-disc; }
+  .md-rendered-preview ol { @apply tw:list-decimal; }
+  .md-rendered-preview a { @apply tw:text-champagne tw:underline; }
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: v2-page-exit 160ms ease-out both;
+}
+
+::view-transition-new(root) {
+  animation: v2-page-enter 200ms ease-out both;
+}
+
+@keyframes v2-page-exit {
+  to { opacity: 0; }
+}
+
+@keyframes v2-page-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@supports not (view-transition-name: root) {
+  body { animation: v2-page-enter 180ms ease-out both; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  body { animation: none !important; }
+}

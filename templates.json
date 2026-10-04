@@ -1,0 +1,162 @@
+[
+  {
+    "page": "index.html",
+    "source": "index.html",
+    "variant": "default"
+  },
+  {
+    "page": "products.html",
+    "source": "products/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "xp-system.html",
+    "source": "xp-system/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guides.html",
+    "source": "guides/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "blog.html",
+    "source": "blog/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "events.html",
+    "source": "events/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "contact.html",
+    "source": "contact/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "directory.html",
+    "source": "directory/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "get-listed.html",
+    "source": "directory/get-listed/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "checkout.html",
+    "source": "directory/checkout/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "directory-admin.html",
+    "source": "directory/admin/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "directory-editor.html",
+    "source": "directory/edit/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "profile.html",
+    "source": "directory/profile.html",
+    "variant": "ratecard"
+  },
+  {
+    "page": "profile-blog.html",
+    "source": "directory/profile.html",
+    "variant": "blog"
+  },
+  {
+    "page": "profile-feed.html",
+    "source": "directory/profile.html",
+    "variant": "feed"
+  },
+  {
+    "page": "profile-gallery.html",
+    "source": "directory/profile.html",
+    "variant": "gallery"
+  },
+  {
+    "page": "profile-post.html",
+    "source": "directory/profile.html",
+    "variant": "article"
+  },
+  {
+    "page": "profile-white-label.html",
+    "source": "directory/profile.html",
+    "variant": "white-label"
+  },
+  {
+    "page": "profile-post-white-label.html",
+    "source": "directory/profile.html",
+    "variant": "white-label-article"
+  },
+  {
+    "page": "profile-blog-white-label.html",
+    "source": "directory/profile.html",
+    "variant": "white-label-blog"
+  },
+  {
+    "page": "profile-feed-white-label.html",
+    "source": "directory/profile.html",
+    "variant": "white-label-feed"
+  },
+  {
+    "page": "profile-gallery-white-label.html",
+    "source": "directory/profile.html",
+    "variant": "white-label-gallery"
+  },
+  {
+    "page": "guide-vow-collar.html",
+    "source": "guides/vow-collar/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guide-pocket-pig.html",
+    "source": "guides/pocket-pig/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guide-footkiss.html",
+    "source": "guides/footkiss/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guide-tribute-jars.html",
+    "source": "guides/tribute-jars/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guide-xp-titlers.html",
+    "source": "guides/xp-titlers/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "guide-template.html",
+    "source": "guides/template/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "blog-vow-launch.html",
+    "source": "blog/vow-launch/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "blog-cage-break-xp.html",
+    "source": "blog/cage-break-xp/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "blog-profile-picks.html",
+    "source": "blog/profile-picks/index.html",
+    "variant": "default"
+  },
+  {
+    "page": "blog-patch-v2-1.html",
+    "source": "blog/patch-v2-1/index.html",
+    "variant": "default"
+  }
+]

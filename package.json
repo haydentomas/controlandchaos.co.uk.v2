@@ -1,0 +1,28 @@
+{
+  "name": "control-and-chaos-v2-templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node scripts/capture-templates.mjs",
+    "test": "node --test scripts/templates.test.mjs scripts/page-shell.test.mjs",
+    "test:visual": "node scripts/visual-audit.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "linkedom": "^0.18.13",
+    "postcss": "^8.5.28",
+    "postcss-selector-parser": "^7.1.6",
+    "postcss-value-parser": "^4.2.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.16",
+    "marked": "^18.0.14"
+  }
+}
