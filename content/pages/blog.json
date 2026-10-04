@@ -1,0 +1,58 @@
+{
+  "template": "blog",
+  "title": "News, Events & Patch Notes | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Latest announcements, tournament schedules, Cage Break events, and development patch notes from Control & Chaos."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "News, Events & Patch Notes | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "Official dispatches, sim tournament schedules, collar firmware updates, and community spotlights."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/blog/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "News, Events & Patch Notes | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Official dispatches, sim tournament schedules, collar firmware updates, and community spotlights."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/blog/"
+    }
+  ]
+}

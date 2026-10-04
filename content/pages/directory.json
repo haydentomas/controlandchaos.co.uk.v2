@@ -1,0 +1,58 @@
+{
+  "template": "directory",
+  "title": "FinDom & Escort Directory | Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Browse verified Second Life Financial Dominants, Luxury Escorts, Companions, and Devoted Submissives at Control & Chaos. View complete rate cards, services, and booking info."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "Service Providers & Escort Directory | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "Verified Second Life Dominants, luxury escorts, Lovense toy masters, and verified companions. Transparent rate cards & in-world booking."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/directory/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "Service Providers & Escort Directory | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Verified Second Life Dominants, luxury escorts, Lovense toy masters, and verified companions. Transparent rate cards & in-world booking."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/directory/"
+    }
+  ]
+}

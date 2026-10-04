@@ -1,0 +1,58 @@
+{
+  "template": "events",
+  "title": "Sim Events & Calendar | Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Official events schedule for Control & Chaos Second Life: Cage Break tournaments, black-tie FinDom galas, double XP days, and dominance masterclasses."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "Sim Events & Calendar | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "Stay updated on weekly Cage Break arena tournaments, high-society FinDom galas, workshop masterclasses, and Double XP weekends in Second Life."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/events/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "Sim Events & Calendar | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Stay updated on weekly Cage Break arena tournaments, high-society FinDom galas, workshop masterclasses, and Double XP weekends in Second Life."
+    },
+    {
+      "property": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/events/"
+    }
+  ]
+}

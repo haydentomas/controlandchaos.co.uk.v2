@@ -1,0 +1,58 @@
+{
+  "template": "blog-profile-picks",
+  "title": "New Weekly Loyalty Streak Rewards | Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Keep Control & Chaos in your public Second Life profile picks to earn compounding weekly streak bonuses at the Main Terminal."
+    },
+    {
+      "property": "og:type",
+      "content": "article"
+    },
+    {
+      "property": "og:title",
+      "content": "New Weekly Loyalty Streak Rewards"
+    },
+    {
+      "property": "og:description",
+      "content": "Keep Control & Chaos in your public Second Life profile picks to earn compounding weekly streak bonuses at the Main Terminal."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/blog/profile-picks/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "New Weekly Loyalty Streak Rewards"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Keep Control & Chaos in your public Second Life profile picks to earn compounding weekly streak bonuses at the Main Terminal."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/blog/profile-picks/"
+    }
+  ]
+}

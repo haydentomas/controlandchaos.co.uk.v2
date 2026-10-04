@@ -1,0 +1,13 @@
+{
+  "template": "directory-editor",
+  "title": "Self-Service Profile & Rate Card Editor | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Self-service rate card, live availability, and profile editor for Control & Chaos verified Dominants, Escorts, and Service Providers."
+    }
+  ],
+  "links": []
+}

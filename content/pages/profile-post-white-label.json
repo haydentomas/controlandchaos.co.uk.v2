@@ -1,0 +1,124 @@
+{
+  "template": "profile-post-white-label",
+  "title": "If i add a post here — Alek Zane's Blog | Control & Chaos",
+  "bodyClass": "is-whitelabel-custom-domain",
+  "whiteLabel": true,
+  "meta": [
+    {
+      "name": "description",
+      "content": "What would happen? Do i get spaces? it seems this editor is a bit weird"
+    },
+    {
+      "property": "og:type",
+      "content": "profile"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "property": "og:title",
+      "content": "If i add a post here — Alek Zane's Blog | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "What would happen? Do i get spaces? it seems this editor is a bit weird"
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.co.uk/profile/alek-zane/blog/if-i-add-a-post-here/"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "If i add a post here — Alek Zane's Blog | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "What would happen? Do i get spaces? it seems this editor is a bit weird"
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "content": "alek-zane",
+      "name": "cc-profile-id"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.co.uk/profile/alek-zane/blog/if-i-add-a-post-here/"
+    }
+  ],
+  "hero": {
+    "headerClass": "hero profile-hero-header hero-presentation",
+    "avatarFrameClass": "profile-post-white-label-div-presentation-5"
+  },
+  "tabs": {
+    "containerTag": "nav",
+    "className": "article-profile-tabs",
+    "article": true,
+    "itemTag": "a",
+    "items": [
+      {
+        "attributes": {
+          "href": "/profile-white-label.html#profile-tabs-nav",
+          "data-profile-tab": "ratecard",
+          "class": "profile-tab-btn"
+        },
+        "icon": "📋",
+        "label": "Rate Card & Bio",
+        "badge": null
+      },
+      {
+        "attributes": {
+          "href": "/profile-feed-white-label.html#profile-tabs-nav",
+          "data-profile-tab": "feed",
+          "class": "profile-tab-btn"
+        },
+        "icon": "🔒",
+        "label": "VIP Subscribers Feed",
+        "badge": {
+          "className": "tab-badge",
+          "count": "3"
+        }
+      },
+      {
+        "attributes": {
+          "href": "/profile-blog-white-label.html#profile-tabs-nav",
+          "data-profile-tab": "blog",
+          "class": "profile-tab-btn active",
+          "aria-current": "page"
+        },
+        "icon": "📰",
+        "label": "Public Blog",
+        "badge": {
+          "className": "tab-badge",
+          "count": "1"
+        }
+      },
+      {
+        "attributes": {
+          "href": "/profile-gallery-white-label.html#profile-tabs-nav",
+          "data-profile-tab": "gallery",
+          "class": "profile-tab-btn"
+        },
+        "icon": "📸",
+        "label": "Gallery",
+        "badge": {
+          "className": "tab-badge",
+          "count": "3"
+        }
+      }
+    ]
+  }
+}

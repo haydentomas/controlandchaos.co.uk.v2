@@ -1,0 +1,155 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+{% raw %}
+<!-- Product Guide Hero -->
+  <header class="hero tw:[min-height:50vh] tw:[padding:120px_0_40px] tw:[background:linear-gradient(180deg,_#1f1519_0%,_#12100e_100%)]">
+    <canvas height="" width="" id="hero-canvas"></canvas>
+    <div class="container">
+      <div class="hero-pill">
+        <span class="pill-dot"></span>
+        <span>INTERACTIVE COMPANION • SECOND LIFE 2026</span>
+      </div>
+      <h1 class="hero-title tw:[font-size:42px]">[C&amp;C] PocketPig Companion <span class="gold-gradient-text">USER MANUAL</span></h1>
+      <p class="hero-description">Learn how to configure the PocketPig companion HUD, trigger automated FinSub squeal penalties, manage tribute hunger levels, and pair with the Vow Collar.</p>
+      <div class="tw:[display:flex] tw:[gap:14px] tw:[margin-top:24px] tw:[flex-wrap:wrap]">
+        <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-gold"><span>🛒</span> Buy on SL Marketplace (L$899) →</a>
+        <a href="#quick-start" class="btn btn-secondary">
+          <span>⚡</span> Jump to Quick Start
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Documentation Content -->
+  <main class="section">
+    <div class="container profile-main-layout tw:[display:grid] tw:[grid-template-columns:1.5fr_0.9fr] tw:[gap:40px]">
+      
+      <!-- Left Column: Manual Content -->
+      <div><div class="card tw:[margin-bottom:28px]">
+            <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">1. Overview &amp; Concept</h2>
+            <div class="tw:[font-size:14.5px] tw:[color:var(--text-primary)] tw:[line-height:1.7]">
+              <p class="tw:[margin-bottom:12px] tw:[line-height:1.7] tw:[color:var(--text-primary)]">The <strong class="tw:[color:var(--gold-bright)]">[C&amp;C] PocketPig</strong> is an interactive gamified companion HUD and avatar accessory designed specifically for Financial Submissives (FinSubs) and Dominants. It tracks 'wallet hunger', forces auditory squealing when tributes are neglected, and broadcasts live coin tributes sim-wide.</p>
+            </div>
+          <div class="guide-template-div-presentation">
+              <strong class="tw:[color:var(--gold-bright)] tw:[font-size:14px] tw:[display:block] tw:[margin-bottom:8px]">Key Features:</strong>
+              <ul class="tw:[padding-left:18px] tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[line-height:1.65] tw:[margin:0]">
+                <li><strong>Hunger &amp; Drain Meter:</strong> Every minute without feeding Mistress increases hunger percentage. At 100%, the pig squeals and locks into crawl posture.</li><li><strong>Tip-to-Feed Integration:</strong> Direct integration with Mistress's Tribute Jar or direct L$ payment instantly resets hunger.</li><li><strong>Snout &amp; Trotters Auto-Rezzing:</strong> Optional Bento props auto-attach via Experience permissions.</li><li><strong>Vow Collar Link:</strong> Seamlessly syncs with the Vow Collar for compounded XP bonuses.</li>
+              </ul>
+            </div></div><div id="quick-start" class="card tw:[margin-bottom:28px]">
+            <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">2. Quick Start &amp; Pairing Mistress</h2>
+            <div class="tw:[font-size:14.5px] tw:[color:var(--text-primary)] tw:[line-height:1.7]">
+              <h4 class="tw:[font-size:16px] tw:[font-weight:700] tw:[color:var(--gold-bright)] tw:[margin:16px_0_6px]">Step 1: Wear the PocketPig HUD
+Add the HUD to any screen attachment point (Bottom Right recommended). Accept the Experience request for auto-animations.</h4><h4 class="tw:[font-size:16px] tw:[font-weight:700] tw:[color:var(--gold-bright)] tw:[margin:16px_0_6px]">Step 2: Assign Owner / Mistress
+Click the HUD &gt; <strong class="tw:[color:var(--gold-bright)]">Pair Mistress</strong> &gt; Click nearby Dominant avatar or enter their SL username. They receive an instant authorization request.</h4><h4 class="tw:[font-size:16px] tw:[font-weight:700] tw:[color:var(--gold-bright)] tw:[margin:16px_0_6px]">Step 3: Set Feed Interval &amp; Squeal Volume
+Mistress configures how frequently the submissive must tribute (e.g. L$100 every 15 minutes) and sets sound volume.</h4>
+            </div>
+          </div><div class="card tw:[margin-bottom:28px]">
+            <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">3. Frequently Asked Questions</h2>
+            <div class="tw:[font-size:14.5px] tw:[color:var(--text-primary)] tw:[line-height:1.7]">
+              <p class="tw:[margin-bottom:12px] tw:[line-height:1.7] tw:[color:var(--text-primary)]"><strong class="tw:[color:var(--gold-bright)]">Q: Does PocketPig award Control &amp; Chaos XP?</strong><br>Yes! Every feed session awards +10 XP per L$100 to the submissive and +15 XP to the receiving Dominant on the sim leaderboard.</p><p class="tw:[margin-bottom:12px] tw:[line-height:1.7] tw:[color:var(--text-primary)]"><strong class="tw:[color:var(--gold-bright)]">Q: Can it be worn without a Mistress?</strong><br>Yes, in 'Self-Discipline' mode where hunger feeds into the public Sim Tribute Pool at Control &amp; Chaos. Go get it!</p>
+            </div>
+          </div><div class="card tw:[margin-bottom:28px]">
+            <h2 class="card-title tw:[font-size:22px] tw:[margin-bottom:14px]">💬 Chat &amp; Channel Commands</h2>
+            <div class="tw:[overflow-x:auto]">
+              <table class="table tw:[font-size:13px] tw:[width:100%]">
+                <thead>
+                  <tr>
+                    <th>Command</th>
+                    <th>Permission</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                    <tr>
+                      <td><code class="tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)]">/33 pig menu</code></td>
+                      <td class="tw:[color:var(--gold-muted)]">Wearer / Domme</td>
+                      <td>Opens the interactive configuration dialog.</td>
+                    </tr>
+                  
+                    <tr>
+                      <td><code class="tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)]">/33 feed [amount]</code></td>
+                      <td class="tw:[color:var(--gold-muted)]">Wearer</td>
+                      <td>Direct tribute payment to Mistress. Resets hunger.</td>
+                    </tr>
+                  
+                    <tr>
+                      <td><code class="tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)]">/33 squeal</code></td>
+                      <td class="tw:[color:var(--gold-muted)]">Domme</td>
+                      <td>Forces immediate pig squeal sound &amp; snout wiggle.</td>
+                    </tr>
+                  
+                    <tr>
+                      <td><code class="tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)]">/33 lock</code></td>
+                      <td class="tw:[color:var(--gold-muted)]">Domme</td>
+                      <td>Locks HUD onto screen (cannot detach without passkey).</td>
+                    </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+          </div></div>
+
+      <!-- Right Column: Specs & Marketplace Card -->
+      <div>
+        
+        <!-- Marketplace Purchase Card -->
+        <div class="card tw:[border-color:var(--gold-bright)] tw:[background:linear-gradient(165deg,_#2a221b_0%,_#171411_100%)] tw:[margin-bottom:28px]">
+          <div class="card-icon">🐷</div>
+          <span class="section-tag tw:[background:var(--gold-bright)] tw:[color:var(--bg-dark)] tw:[margin-bottom:8px] tw:[align-self:flex-start]">COMPANION HUD</span>
+          <h3 class="card-title tw:[font-size:20px]">[C&amp;C] PocketPig Companion Complete</h3>
+          <div class="tw:[font-family:var(--font-heading)] tw:[font-size:26px] tw:[color:var(--gold-bright)] tw:[margin:8px_0_14px]">L$ [PRICE]</div>
+          <p class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[line-height:1.55] tw:[margin-bottom:18px]">
+            Instant direct delivery to your Second Life inventory. Includes lifetime free updates and 24/7 in-world support.
+          </p>
+          <a href="https://marketplace.secondlife.com" target="_blank" rel="noopener" class="btn btn-gold tw:[width:100%]"><span>🛒</span> Buy on SL Marketplace (L$899) →</a>
+        </div>
+
+        <!-- Hardware & Script Specs -->
+        <div class="card tw:[margin-bottom:28px]">
+          <h3 class="card-title tw:[font-size:18px] tw:[margin-bottom:14px]">⚙️ Technical Specifications</h3>
+          <ul class="tw:[list-style:none] tw:[padding:0] tw:[margin:0] tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px] tw:[font-size:13px]">
+          <li class="tw:[display:flex] tw:[justify-content:space-between] tw:[border-bottom:1px_solid_var(--gold-border-subtle)] tw:[padding-bottom:6px]">
+            <span class="tw:[color:var(--text-muted)]">Attachment:</span>
+            <span class="tw:[color:var(--gold-bright)]">Screen HUD + Bento Snout</span>
+          </li>
+          <li class="tw:[display:flex] tw:[justify-content:space-between] tw:[border-bottom:1px_solid_var(--gold-border-subtle)] tw:[padding-bottom:6px]">
+            <span class="tw:[color:var(--text-muted)]">Permissions:</span>
+            <span class="tw:[color:var(--gold-bright)] tw:[font-family:var(--font-mono)]">Copy / Mod / No-Transfer</span>
+          </li>
+          <li class="tw:[display:flex] tw:[justify-content:space-between] tw:[border-bottom:1px_solid_var(--gold-border-subtle)] tw:[padding-bottom:6px]">
+            <span class="tw:[color:var(--text-muted)]">Compatibility:</span>
+            <span class="tw:[color:var(--gold-bright)]">Automatic Cloud Sync &amp; Vow Collar</span>
+          </li>
+          <li class="tw:[display:flex] tw:[justify-content:space-between] tw:[padding-top:2px]">
+            <span class="tw:[color:var(--text-muted)]">Contents:</span>
+            <span class="tw:[color:var(--gold-bright)]">12 High-Definition Squeals + Props</span>
+          </li>
+        </ul>
+        </div>
+
+        <!-- Related Product Guides -->
+        <div class="card">
+          <h3 class="card-title tw:[font-size:18px] tw:[margin-bottom:14px]">📘 Other Product Manuals</h3>
+          <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+            <a href="/guide-vow-collar.html" class="btn btn-secondary btn-sm tw:[justify-content:flex-start]">
+              <span>⛓️</span> Vow Collar 2026 Manual
+            </a>
+            <a href="/guide-pocket-pig.html" class="btn btn-secondary btn-sm tw:[justify-content:flex-start]">
+              <span>🐷</span> PocketPig Companion Guide
+            </a>
+            <a href="/guide-footkiss.html" class="btn btn-secondary btn-sm tw:[justify-content:flex-start]">
+              <span>👠</span> FootKiss Worship System
+            </a>
+            <a href="/guide-tribute-jars.html" class="btn btn-secondary btn-sm tw:[justify-content:flex-start]">
+              <span>🏺</span> Smart Tribute Jars
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+{% endraw %}
+{% endblock %}

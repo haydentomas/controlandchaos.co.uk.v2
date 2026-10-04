@@ -1,0 +1,27 @@
+<site-footer>
+  <footer class="footer">
+    <div class="container">
+{% if not page.whiteLabel %}
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-wrap tw:[margin-bottom:14px]">
+            <a href="{{ site.home }}" class="nav-brand footer-nav-brand" aria-label="{{ site.brand }}">
+              <img src="{{ site.logo }}" alt="{{ site.brand }}" class="footer-logo-img">
+            </a>
+          </div>
+          <p class="footer-desc">{{ site.footer.description }}</p>
+        </div>
+{% for column in site.footer.columns %}
+        <div class="footer-links-col">
+          <div class="footer-col-title">{{ column.title }}</div>
+{% for link in column.links %}
+          <a href="{{ link.url }}" class="footer-link"{% if link.newTab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a>
+{% endfor %}
+        </div>
+{% endfor %}
+      </div>
+{% endif %}
+      <div class="footer-bottom">{{ site.footer.copyright }}</div>
+    </div>
+  </footer>
+</site-footer>

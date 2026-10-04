@@ -1,0 +1,119 @@
+{
+  "template": "profile-white-label",
+  "title": "Title test",
+  "bodyClass": "is-whitelabel-custom-domain",
+  "whiteLabel": true,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Alek Zane description test"
+    },
+    {
+      "property": "og:type",
+      "content": "profile"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "property": "og:title",
+      "content": "Title test"
+    },
+    {
+      "property": "og:description",
+      "content": "Alek Zane description test"
+    },
+    {
+      "property": "og:image",
+      "content": "https://controlandchaos.co.uk/assets/uploads/me.jpg"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.co.uk/profile/alek-zane/"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "Title test"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Alek Zane description test"
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://controlandchaos.co.uk/assets/uploads/me.jpg"
+    },
+    {
+      "content": "alek-zane",
+      "name": "cc-profile-id"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.co.uk/profile/alek-zane/"
+    }
+  ],
+  "hero": {
+    "headerClass": "hero profile-hero-header hero-presentation",
+    "avatarFrameClass": "profile-white-label-div-presentation-5"
+  },
+  "tabs": {
+    "containerTag": "div",
+    "className": "profile-tabs-nav",
+    "article": false,
+    "itemTag": "button",
+    "items": [
+      {
+        "attributes": {
+          "class": "profile-tab-btn active",
+          "id": "tab-btn-ratecard"
+        },
+        "icon": "📋",
+        "label": "Rate Card & Bio",
+        "badge": null
+      },
+      {
+        "attributes": {
+          "class": "profile-tab-btn tw:[display:inline-flex]",
+          "id": "tab-btn-feed"
+        },
+        "icon": "🔒",
+        "label": "VIP Subscribers Feed",
+        "badge": {
+          "className": "tab-badge",
+          "count": "3"
+        }
+      },
+      {
+        "attributes": {
+          "class": "profile-tab-btn tw:[display:inline-flex]",
+          "id": "tab-btn-blog"
+        },
+        "icon": "📰",
+        "label": "Public Blog",
+        "badge": {
+          "className": "tab-badge tw:[display:inline-block]",
+          "count": "1"
+        }
+      },
+      {
+        "attributes": {
+          "class": "profile-tab-btn tw:[display:inline-flex]",
+          "id": "tab-btn-gallery"
+        },
+        "icon": "📸",
+        "label": "Gallery",
+        "badge": {
+          "className": "tab-badge",
+          "count": "3"
+        }
+      }
+    ]
+  }
+}

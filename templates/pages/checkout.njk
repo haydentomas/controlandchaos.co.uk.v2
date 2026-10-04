@@ -1,0 +1,118 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+{% raw %}
+<main class="checkout-container">
+    <header class="checkout-header">
+      <div class="checkout-badge">👑 Verified Directory Membership</div>
+      <h1 class="checkout-title">Complete Your <span class="text-gold-gradient">Listing Tier</span></h1>
+      <p class="checkout-subtitle">Pay securely via PayPal, Debit, or Credit Card. Your directory profile, rate card builder, and live status sync are unlocked instantly upon payment.</p>
+    </header>
+
+    <div class="checkout-grid">
+      <!-- Left: Tier Selection & Benefits -->
+      <div class="panel-card">
+        <h3 class="tw:[margin:0_0_20px] tw:[font-size:1.15rem] tw:[color:#fff]">1. Choose Your Subscription Tier</h3>
+
+        <div class="tier-option">
+          <div class="tier-header">
+            <span class="tier-name">👑 VIP Monthly</span>
+            <span class="tier-price">$6.99 <span class="tw:[font-size:0.8rem] tw:[color:#94a3b8]">/ mo</span></span>
+          </div>
+          <div class="tier-desc">Full profile, gallery, booking form, payment and tribute links, wishlist, socials, reviews, and hardware badges.</div>
+        </div>
+
+        <div class="tier-option active">
+          <div class="tier-header">
+            <span class="tier-name">✨ Basic Monthly</span>
+            <span class="tier-price">$3.99 <span class="tw:[font-size:0.8rem] tw:[color:#94a3b8]">/ mo</span></span>
+          </div>
+          <div class="tier-desc">Public profile, bio, tags, availability, location, rate card, and photo gallery. No booking form, payment, or tribute features.</div>
+        </div>
+
+        <div class="tier-option">
+          <div class="tier-header">
+            <span class="tier-name">✨ Basic Lifetime</span>
+            <span class="tier-price">$29 <span class="tw:[font-size:0.8rem] tw:[color:#94a3b8]">one-time</span></span>
+          </div>
+          <div class="tier-desc">Basic profile and gallery with lifetime listing access.</div>
+        </div>
+
+        <div class="tier-option">
+          <div class="tier-header">
+            <span class="tier-name">👑 VIP Lifetime</span>
+            <span class="tier-price">$49 <span class="tw:[font-size:0.8rem] tw:[color:#94a3b8]">one-time</span></span>
+          </div>
+          <div class="tier-desc">All VIP profile features with lifetime listing access.</div>
+        </div>
+
+        <div class="tw:[font-size:0.82rem] tw:[color:#64748b] tw:[margin-top:14px]">
+          Prefer paying in Second Life Lindens? You can touch and pay the <strong>Directory Kiosk</strong> in-world anytime!
+        </div>
+      </div>
+
+      <!-- Right: Avatar Info & Checkout Portal -->
+      <div class="panel-card">
+        <h3 class="tw:[margin:0_0_20px] tw:[font-size:1.15rem] tw:[color:#fff]">2. Subscriber &amp; Payment Details</h3>
+
+        <div class="avatar-summary">
+          <div class="avatar-icon">👑</div>
+          <div class="avatar-info">
+            <h4>Loading Second Life Avatar...</h4>
+            <p>UUID: checking in-world session...</p>
+          </div>
+        </div>
+
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Selected Package:</span>
+            <strong class="tw:[color:#fff]">Tier 2 VIP Featured Listing</strong>
+          </div>
+          <div class="summary-row">
+            <span>Billing Cycle:</span>
+            <span>Monthly Recurring</span>
+          </div>
+          <div class="summary-row">
+            <span>Instant In-World Delivery:</span>
+            <span class="tw:[color:#4ade80]">Included (Rate Card HUD)</span>
+          </div>
+          <div class="summary-total">
+            <span>Total Due Today:</span>
+            <span class="text-gold-gradient">$9.99 USD</span>
+          </div>
+        </div>
+
+        <!-- PayPal Buttons Mount -->
+        <div class="paypal-box">
+          <label class="tw:[display:block] tw:[font-size:12px] tw:[color:#cbd5e1] tw:[margin-bottom:8px]" for="checkout-avatar-token">Avatar access token from the Directory Kiosk</label>
+          <input class="checkout-avatar-token-presentation" value="" id="checkout-avatar-token" type="password" autocomplete="off" placeholder="Paste the token from your kiosk editor link">
+          <div></div>
+          
+          <!-- Direct Link Fallback -->
+          <a href="https://www.paypal.me/ControlAndChaos/9.99USD" target="_blank" class="manual-paypal-btn tw:[display:none]">
+            <span>💳</span> Pay with PayPal.me ($9.99)
+          </a>
+        </div>
+
+        <div class="tw:[font-size:0.78rem] tw:[color:#64748b] tw:[text-align:center] tw:[margin-top:16px]">
+          🔒 256-Bit SSL Encrypted &amp; Securely Processed via PayPal.<br>
+          Your personal Rate Card Studio editor will open immediately upon completion.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Success Confirmation Modal -->
+  <div class="success-modal">
+    <div class="success-card">
+      <div class="success-icon">💎</div>
+      <h2 class="tw:[font-family:'Cinzel',_serif] tw:[color:var(--gold-light)] tw:[margin:0_0_12px] tw:[font-size:1.8rem]">Subscription Activated!</h2>
+      <p class="tw:[color:#94a3b8] tw:[font-size:0.95rem] tw:[line-height:1.5] tw:[margin-bottom:24px]">
+        Thank you! Your payment was verified and your <strong class="tw:[color:#fff]">Tier 2 VIP Featured</strong> directory profile is now active on Control &amp; Chaos.
+      </p>
+      <a href="/directory-editor.html" class="btn btn-gold tw:[width:100%] tw:[display:block] tw:[padding:14px] tw:[font-size:1rem]">
+        ✨ Open Your Profile &amp; Rate Card Studio
+      </a>
+    </div>
+  </div>
+{% endraw %}
+{% endblock %}

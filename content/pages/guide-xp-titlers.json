@@ -1,0 +1,58 @@
+{
+  "template": "guide-xp-titlers",
+  "title": "[C&C] Free XP Titlers User Guide | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Floating overhead titler synchronizing with your Experience Cloud level, active rank title (e.g. Initiate, Sovereign, Icon), Prestige star status, and weekly streak bonuses."
+    },
+    {
+      "property": "og:type",
+      "content": "article"
+    },
+    {
+      "property": "og:title",
+      "content": "[C&C] Free XP Titler User Guide"
+    },
+    {
+      "property": "og:description",
+      "content": "Attachment protocols, hover text color palette customization, role badges, and real-time XP leaderboard sync."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/guides/xp-titlers/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "[C&C] Free XP Titler User Guide"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Attachment protocols, hover text color palette customization, role badges, and real-time XP leaderboard sync."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/guides/xp-titlers/"
+    }
+  ]
+}

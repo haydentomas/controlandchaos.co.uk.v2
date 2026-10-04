@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html data-template="{{ page.template }}" lang="en">
+<head>
+{% include "partials/head.njk" %}
+</head>
+<body{% if page.bodyClass %} class="{{ page.bodyClass }}"{% endif %}>
+{% block header %}{% include "partials/header.njk" %}{% endblock %}
+{% block content %}{% endblock %}
+{% include "partials/footer.njk" %}
+<script src="/src/main.js" type="module"></script>
+</body>
+</html>

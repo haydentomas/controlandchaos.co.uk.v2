@@ -1,0 +1,804 @@
+{% extends "layouts/white-label.njk" %}
+{% block content %}
+{% raw %}
+<!-- Inactive / Pending Renewal Alert Banner -->
+  <div class="tw:[display:none] tw:[background:linear-gradient(90deg,_#3d1017_0%,_#5e1622_50%,_#3d1017_100%)] tw:[border-bottom:1px_solid_rgba(235,220,169,0.3)] tw:[padding:14px_20px] tw:[text-align:center] tw:[font-size:14px] tw:[color:#fff] tw:[z-index:100] tw:[position:relative] tw:[box-shadow:0_4px_20px_rgba(0,0,0,0.5)]">
+    <span>⏳ <strong>Listing Pending Subscription Renewal:</strong> This directory profile is currently inactive.</span>
+    <a href="/checkout.html" class="btn btn-gold btn-sm tw:[margin-left:14px] tw:[padding:4px_14px] tw:[font-size:11.5px] tw:[text-decoration:none]">
+      💳 Renew Subscription →
+    </a>
+  </div>
+
+  <!-- Interactive Tribute Selection Modal -->
+  <div class="lightbox-overlay tw:[display:none] tw:[z-index:9999] tw:[backdrop-filter:blur(8px)] tw:[background:rgba(10,8,7,0.85)] tw:[align-items:center] tw:[justify-content:center] tw:[position:fixed] tw:[inset:0]">
+    <div class="profile-white-label-div-presentation">
+      <button class="tw:[position:absolute] tw:[top:14px] tw:[right:16px] tw:[background:none] tw:[border:none] tw:[color:var(--text-muted)] tw:[font-size:24px] tw:[cursor:pointer] tw:[line-height:1]">×</button>
+      
+      <div class="tw:[text-align:center] tw:[margin-bottom:20px]">
+        <div class="tw:[font-size:34px] tw:[margin-bottom:4px]">💎</div>
+        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:22px] tw:[font-weight:900] tw:[color:var(--gold-bright)] tw:[margin:0]">Send Tribute to Alek Zane</h3>
+        <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Choose your preferred tribute method:</p>
+      </div>
+
+      <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:12px]">
+        
+        <!-- 1. Second Life In-World Lindens -->
+        <div class="profile-white-label-div-presentation-2">
+          <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:6px]">
+            <strong class="tw:[color:#fff] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">🪙 In-World Linden Dollars (L$)</strong>
+            <span class="tag-pill-badge tw:[font-size:9.5px] tw:[padding:1px_6px]">Zero Fee</span>
+          </div>
+          <p class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[margin:0_0_10px_0] tw:[line-height:1.45]">
+            Pay directly in Second Life from anywhere on the grid (no need to be on the same sim). Search the username in your viewer to send L$ or an IM.
+          </p>
+          <div class="profile-white-label-div-presentation-3">
+            <span class="tw:[font-family:var(--font-mono)] tw:[font-size:13px] tw:[font-weight:700] tw:[color:var(--gold-bright)]">@alek.zane</span>
+            <button class="profile-white-label-button-presentation">📋 Copy</button>
+          </div>
+          <div class="tw:[display:flex] tw:[gap:8px]">
+            <a href="https://my.secondlife.com/alek.zane" target="_blank" rel="noopener" class="btn btn-secondary btn-sm tw:[flex:1] tw:[justify-content:center] tw:[font-size:11px] tw:[padding:7px_10px]">
+              <span>🌐</span> SL Profile ↗
+            </a>
+            <button type="button" class="btn btn-gold btn-sm tw:[flex:1] tw:[justify-content:center] tw:[font-size:11px] tw:[padding:7px_10px] tw:[cursor:pointer]">
+              <span>✉️</span> Web Enquiry ↓
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Throne Cash Tribute & Wishlist (100% Private) -->
+        <div class="profile-white-label-div-presentation-4">
+          <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:6px]">
+            <strong class="tw:[color:var(--gold-bright)] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">👑 Throne Anonymous Tribute</strong>
+            <span class="tw:[font-size:9.5px] tw:[color:#4ade80] tw:[font-family:var(--font-mono)]">100% Private</span>
+          </div>
+          <p class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[margin:0_0_10px_0] tw:[line-height:1.4]">Send direct cash tributes or gifts securely without exchanging real names or billing info.</p>
+          <a href="https://throne.com/alekzane" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-size:11.5px] tw:[padding:8px_12px]">🎁 Open Throne Page ↗</a>
+        </div>
+        </div>
+      </div>
+  </div>
+
+  <!-- Profile Hero & Cover Header -->
+  {% endraw %}
+{% include "partials/creator-hero.njk" %}
+{% raw %}
+
+  <!-- Main Profile Body Content -->
+  <main class="section tw:[padding:60px_0]">
+    <div class="container">
+      
+      <!-- Segmented Profile View Tabs -->
+      {% endraw %}
+{% include "partials/profile-tabs.njk" %}
+{% raw %}
+
+      <!-- Tab Pane 1: Rate Card & Bio Layout -->
+      <div class="tw:[display:block]">
+        <!-- Two-Column Layout: Left (About, Rate Categories, Custom Blocks, Booking Calc) | Right (Gallery, Hardware, Limits, How to Book, Reviews, Socials) -->
+        <div class="profile-main-layout tw:[display:grid] tw:[grid-template-columns:1.4fr_0.9fr] tw:[gap:40px] tw:[align-items:start]">
+        
+        <!-- Left Column: Bio, Categorized Rate Cards & Custom Sections -->
+        <div>
+          
+          <!-- Bio Box -->
+          <div class="card tw:[margin-bottom:30px]">
+            <h3 class="card-title tw:[font-size:22px]">About  Alek Zane</h3>
+            <p class="tw:[font-size:15px] tw:[color:var(--text-primary)] tw:[line-height:1.75] tw:[margin-top:10px] tw:[white-space:pre-line]">Looking for an engaging, responsive submissive who actually knows how to keep things interesting? I offer dedicated, high-energy submission services exclusively to female dominants. Expect a discreet, attentive companion with an authentic British voice, a bubbly spark, and just enough playful brat in me to keep your sessions dynamic, fun, and completely engaging.
+
+I run high-quality male and female mesh avatars to cater directly to your specific tastes, visual aesthetics, or scenario needs.</p>
+          </div>
+
+          <!-- Voice Clip & Video Introduction Card (Conditionally Shown) -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:block]">
+            <h3 class="card-title tw:[font-size:20px] tw:[margin-bottom:16px] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]">
+              <span>🎙️</span> <span>Voice Sample &amp; Audio Intro</span>
+            </h3>
+
+            <!-- Voice Audio Clip Player -->
+            <div class="profile-white-label-div-presentation-6">
+              <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:12px] tw:[flex-wrap:wrap] tw:[gap:8px]">
+                <div>
+                  <div class="tw:[font-family:var(--font-heading)] tw:[font-size:15px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">
+                    <span>🎙️</span> <span>Authentic British Voice Sample</span>
+                  </div>
+                  <div class="tw:[font-size:11.5px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-top:2px]">British accent &amp; verbal submission preview</div>
+                </div>
+                <span class="tag-pill-badge tw:[font-size:10px] tw:[padding:3px_8px] tw:[color:#4ade80] tw:[border-color:rgba(74,222,128,0.3)]">● AUDIO VERIFIED</span>
+              </div>
+              
+              <!-- HTML5 Audio Element with custom styling -->
+              <div class="profile-white-label-div-presentation-7">
+                <audio class="tw:[width:100%] tw:[height:38px] tw:[filter:invert(0.9)_hue-rotate(180deg)_contrast(1.2)]" controls preload="metadata">
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            </div>
+
+            <!-- Video Introduction Player -->
+            <div class="profile-white-label-div-presentation-8">
+              <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:12px] tw:[flex-wrap:wrap] tw:[gap:8px]">
+                <div class="tw:[font-family:var(--font-heading)] tw:[font-size:15px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">
+                  <span>🎬</span> <span>Virtual Intro &amp; Avatar Motion</span>
+                </div>
+                <span class="tag-pill-badge tw:[font-size:10px] tw:[padding:3px_8px] tw:[color:#60a5fa] tw:[border-color:rgba(96,165,250,0.3)]">HD VIDEO</span>
+              </div>
+              <div class="profile-white-label-div-presentation-9">
+                <!-- Iframe or Video tag injected dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Rate Categories Container (Repeater) -->
+          <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:30px] tw:[margin-bottom:30px]"><div class="card tw:[padding:24px_22px]">
+            <div class="tw:[border-bottom:1px_solid_var(--gold-border)] tw:[padding-bottom:10px] tw:[margin-bottom:16px] tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:flex-end] tw:[flex-wrap:wrap] tw:[gap:8px]">
+              <div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[margin:0]">🎮 Toy Control &amp; Surrender</h3>
+                <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Live interactive toy access, take control. You know you want to...</p>
+              </div>
+              <span class="tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase]">Click to select</span>
+            </div>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+              
+                  <div class="service-select-card service-select-card-presentation" data-name="10-Minute Remote Surrender" data-price="10000" data-category="🎮 Toy Control & Surrender">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">10-Minute Remote Surrender</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Direct Lovense / toy control link with real-time feedback and compliance.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$10,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">10 mins</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="20-Minute Deep Control Session" data-price="18000" data-category="🎮 Toy Control & Surrender">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">20-Minute Deep Control Session</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Extended interactive access capped strictly at 20 minutes for high-intensity play.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$18,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">20 mins</div>
+                    </div>
+                  </div>
+                
+            </div>
+          </div><div class="card tw:[padding:24px_22px]">
+            <div class="tw:[border-bottom:1px_solid_var(--gold-border)] tw:[padding-bottom:10px] tw:[margin-bottom:16px] tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:flex-end] tw:[flex-wrap:wrap] tw:[gap:8px]">
+              <div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[margin:0]">🤵 Private Companionship</h3>
+                <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Dedicated attention, private conversation, and focused one-on-one deference.</p>
+              </div>
+              <span class="tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase]">Click to select</span>
+            </div>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+              
+                  <div class="service-select-card service-select-card-presentation" data-name="Text Attendance (Hourly)" data-price="9500" data-category="🤵 Private Companionship">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Text Attendance (Hourly)</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Direct IM attention, attentive conversation, and active kneeling presence.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$9500</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">1 hour</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Voice Submission (Hourly)" data-price="16000" data-category="🤵 Private Companionship">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Voice Submission (Hourly)</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Live vocal deference, active listening, and instant compliance over voice.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$16,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per hour</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Short-Form Text Check-In" data-price="5000" data-category="🤵 Private Companionship">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Short-Form Text Check-In</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">30 minutes of dedicated, prompt IM conversation and attentive focus.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$5,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">30 mins</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Short-Form Voice Check-In" data-price="8000" data-category="🤵 Private Companionship">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Short-Form Voice Check-In</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">30 minutes of audible obedience and vocal accompaniment.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$8,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">30 mins</div>
+                    </div>
+                  </div>
+                
+            </div>
+          </div><div class="card tw:[padding:24px_22px]">
+            <div class="tw:[border-bottom:1px_solid_var(--gold-border)] tw:[padding-bottom:10px] tw:[margin-bottom:16px] tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:flex-end] tw:[flex-wrap:wrap] tw:[gap:8px]">
+              <div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[margin:0]">Structured Protocol &amp; BDSM</h3>
+                <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Strict obedience, postural maintenance, inspections, and discipline drills.</p>
+              </div>
+              <span class="tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase]">Click to select</span>
+            </div>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+              
+                  <div class="service-select-card service-select-card-presentation" data-name="D/s Immersion & Drill Session" data-price="12000" data-category="Structured Protocol & BDSM">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">D/s Immersion &amp; Drill Session</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">60-minute structured protocol session covering posture maintenance, rules, and obedience.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$12,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per hour</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Vocal Protocol & Inspection" data-price="20000" data-category="Structured Protocol & BDSM">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Vocal Protocol &amp; Inspection</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Intensive voice-led discipline, audible line-repeating, and protocol drills.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$20,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per hour</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Subordinate / Cuckold Service" data-price="15000" data-category="Structured Protocol & BDSM">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Subordinate / Cuckold Service</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Meticulous reverence, cleaning tasks, or deferential third-wheel service for you and a partner.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$15,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per hour</div>
+                    </div>
+                  </div>
+                
+            </div>
+          </div><div class="card tw:[padding:24px_22px]">
+            <div class="tw:[border-bottom:1px_solid_var(--gold-border)] tw:[padding-bottom:10px] tw:[margin-bottom:16px] tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:flex-end] tw:[flex-wrap:wrap] tw:[gap:8px]">
+              <div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[margin:0]">Ongoing Contracts &amp; Dedication</h3>
+                <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Long-term arrangements, weekly companionship blocks, and priority bookings.</p>
+              </div>
+              <span class="tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase]">Click to select</span>
+            </div>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+              
+                  <div class="service-select-card service-select-card-presentation" data-name="Dedicated Weekly Companion (Non-Sexual)" data-price="28000" data-category="Ongoing Contracts & Dedication">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Dedicated Weekly Companion (Non-Sexual)</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">5 scheduled hours of focused attendance, parcel presence, and personal company.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$28,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per week</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Full Intimate & Kink Retainer" data-price="75000" data-category="Ongoing Contracts & Dedication">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Full Intimate &amp; Kink Retainer</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">5 scheduled hours across the week of unrestricted protocol, scene work, and dynamic play.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$75,000</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per week</div>
+                    </div>
+                  </div>
+                
+                  <div class="service-select-card service-select-card-presentation" data-name="Sim-Wide Devotion & Public Surrender" data-price="7500" data-category="Ongoing Contracts & Dedication">
+                    <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:14px]">
+                      <div class="service-check-box service-check-box-presentation">
+                        <span class="service-check-mark tw:[display:none] tw:[color:var(--gold-bright)] tw:[font-size:13px] tw:[font-weight:900]">✓</span>
+                      </div>
+                      <div>
+                        <div class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--text-primary)]">Sim-Wide Devotion &amp; Public Surrender</div>
+                        <div class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.5]">Description: Coordinated public kneeling, titler badge dedication, and profile tribute placement.</div>
+                      </div>
+                    </div>
+                    <div class="tw:[text-align:right] tw:[flex-shrink:0]">
+                      <div class="tw:[font-family:var(--font-mono)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">L$7,500+</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--gold-muted)]">per event</div>
+                    </div>
+                  </div>
+                
+            </div>
+          </div></div>
+
+          <!-- Custom Content Blocks Container (Repeater) -->
+          <div class="tw:[display:none] tw:[flex-direction:column] tw:[gap:30px] tw:[margin-bottom:30px]">
+            <!-- Dynamic Custom Info Blocks injected here -->
+          </div>
+
+          <!-- Interactive Booking & Tribute Calculator -->
+          <!-- Live Quote Summary Bar (Appears dynamically when services are selected) -->
+          <div class="profile-white-label-div-presentation-10">
+            <div>
+              <div class="tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase] tw:[letter-spacing:0.8px]">Selected Services Quote</div>
+              <div class="tw:[display:flex] tw:[align-items:baseline] tw:[gap:10px] tw:[margin-top:2px]">
+                <span class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[font-weight:900] tw:[color:var(--gold-bright)]">L$0</span>
+                <span class="tw:[font-size:13px] tw:[color:#cbd5e1] tw:[font-family:var(--font-mono)]">(0 selected)</span>
+              </div>
+            </div>
+            <a href="#booking-enquiry-section" class="btn btn-gold btn-sm tw:[font-weight:800] tw:[padding:10px_20px] tw:[font-size:13px] tw:[box-shadow:0_0_14px_rgba(212,175,55,0.35)]">
+              <span>💬</span> Book with Selected Services ↓
+            </a>
+          </div>
+
+          <!-- Direct Contact & Booking Enquiry Section (Inside Main Column) -->
+          <div id="booking-enquiry-section" class="card tw:[padding:28px_24px] tw:[background:linear-gradient(175deg,_#1a1715_0%,_#100f0d_100%)] tw:[border:1px_solid_var(--gold-border)]">
+            <div class="tw:[margin-bottom:20px]">
+              <span class="section-tag tag-gold tw:[margin-bottom:6px]">DIRECT ENQUIRY</span>
+              <h2 class="tw:[font-family:var(--font-heading)] tw:[font-size:22px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[margin:0]">Request a Session with Alek Zane</h2>
+              <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">
+                Fill in your session details and choose how you would like to send your enquiry.
+              </p>
+            </div>
+
+            <form class="tw:[display:grid] tw:[grid-template-columns:repeat(auto-fit,_minmax(220px,_1fr))] tw:[gap:16px]" name="escort-booking" data-netlify-honeypot="bot-field">
+              
+              <p class="tw:[display:none]"><label>Don’t fill this out if you're human: <input name="bot-field"></label></p>
+              
+              
+              
+              
+              
+
+              <div>
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:5px] tw:[text-transform:uppercase]">
+                  Your Name / SL Username *
+                </label>
+                <input class="profile-white-label-input-presentation" type="text" name="client_name" required placeholder="e.g. Master_Orion Resident">
+              </div>
+
+              <div>
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:5px] tw:[text-transform:uppercase]">
+                  Your Contact (Discord/Email/SL) *
+                </label>
+                <input class="profile-white-label-input-presentation" type="text" name="client_contact" required placeholder="e.g. username#1234 or email">
+              </div>
+
+              <!-- Available Schedule Info Badge -->
+              <div class="profile-white-label-div-presentation-11">
+                <span>🕒 Active Booking Hours: 12:00 PM – 10:00 PM SLT</span>
+                <span class="tw:[color:#cbd5e1] tw:[font-size:11.5px] tw:[font-family:var(--font-mono)]">Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun</span>
+              </div>
+
+              <div>
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:5px] tw:[text-transform:uppercase]">
+                  Preferred Date *
+                </label>
+                <input class="profile-white-label-input-presentation-2" type="date" name="preferred_date" required>
+              </div>
+
+              <div>
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:5px] tw:[text-transform:uppercase]">
+                  Available Time Slot *
+                </label>
+                <select class="profile-white-label-select-presentation" name="preferred_time_slot" required>
+                  <option value="">Select a date first...</option>
+                </select>
+                
+              </div>
+
+              <div class="tw:[grid-column:1_/_-1]">
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:5px] tw:[text-transform:uppercase]">
+                  Session Notes &amp; Details
+                </label>
+                <textarea class="profile-white-label-textarea-presentation" name="message" rows="6" placeholder="Describe your scenario, Lovense/RLV preferences, or event..."></textarea>
+              </div>
+
+              <!-- Option 2: Send Method Selector -->
+              <div class="tw:[grid-column:1_/_-1] tw:[margin-top:4px]">
+                <label class="tw:[display:block] tw:[font-size:11px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[margin-bottom:8px] tw:[text-transform:uppercase]">
+                  Choose How to Send Your Enquiry
+                </label>
+                <div class="send-method-grid tw:[display:grid] tw:[grid-template-columns:repeat(auto-fit,_minmax(180px,_1fr))] tw:[gap:10px]">
+                  <label class="send-method-card send-method-card-presentation">
+                    <input class="tw:[accent-color:var(--gold-bright)] tw:[cursor:pointer]" type="radio" name="send_method" value="web" checked>
+                    <div>
+                      <div class="tw:[font-size:13px] tw:[font-weight:700] tw:[color:#fff]">🌐 Direct Web Send</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--text-muted)]">Instant submission to provider</div>
+                    </div>
+                  </label>
+                  <label class="send-method-card send-method-card-presentation-2">
+                    <input class="tw:[accent-color:var(--gold-bright)] tw:[cursor:pointer]" type="radio" name="send_method" value="email">
+                    <div>
+                      <div class="tw:[font-size:13px] tw:[font-weight:700] tw:[color:#fff]">📧 My Email App</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--text-muted)]">Opens Gmail / Outlook / Mail</div>
+                    </div>
+                  </label>
+                  <label class="send-method-card send-method-card-presentation-2">
+                    <input class="tw:[accent-color:var(--gold-bright)] tw:[cursor:pointer]" type="radio" name="send_method" value="sl">
+                    <div>
+                      <div class="tw:[font-size:13px] tw:[font-weight:700] tw:[color:#fff]">💬 Second Life IM</div>
+                      <div class="tw:[font-size:11px] tw:[color:var(--text-muted)]">Opens SL IM &amp; copies notes</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="tw:[grid-column:1_/_-1] tw:[margin-top:8px]">
+                <div class="tw:[font-size:13.5px] tw:[margin-bottom:10px] tw:[text-align:center]"></div>
+                <button type="submit" class="btn btn-gold tw:[width:100%] tw:[padding:14px_20px] tw:[font-size:14.5px] tw:[font-weight:800] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[gap:8px] tw:[box-shadow:0_0_20px_rgba(212,175,55,0.25)] tw:[cursor:pointer]">
+                  <span>✉️</span> Submit Booking Enquiry
+                </button>
+                <div class="tw:[margin-top:12px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[gap:8px] tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[text-align:center]">
+                  <span>🛡️</span>
+                  <span><strong>No upfront payment required.</strong> Session fees in Lindens (L$) are arranged and settled directly in-world once your date and time are confirmed by the provider.</span>
+                </div>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Gallery, Hardware, Limits, How to Book & Reviews -->
+        <div>
+
+          <!-- Visual Lookbook / Photo Gallery -->
+          <div class="card tw:[margin-bottom:30px]">
+            <h3 class="card-title tw:[font-size:20px] tw:[margin-bottom:16px]"><span class="tw:[font-size:20px] tw:[margin-right:8px]">📸</span> Gallery</h3>
+            <div class="tw:[display:grid] tw:[grid-template-columns:repeat(2,_1fr)] tw:[gap:12px]"><button data-photo-description="" data-photo-category="VIP Escort" data-photo-title="Formal Gala & Black Tie Look" data-photo="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80" class="gallery-thumb-card" type="button">
+              <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80" alt="Formal Gala & Black Tie Look" class="gallery-thumb-img" loading="lazy" decoding="async">
+              <div class="gallery-thumb-overlay">
+                <div class="tw:[font-family:var(--font-heading)] tw:[font-size:12.5px] tw:[font-weight:800] tw:[color:#fff] tw:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Formal Gala &amp; Black Tie Look</div>
+                <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-top:2px]">
+                  <span class="tw:[font-size:9.5px] tw:[color:var(--gold-bright)] tw:[font-family:var(--font-mono)]">VIP Escort</span>
+                  <span class="tw:[font-size:11px]">🔍</span>
+                </div>
+              </div>
+            </button><button data-photo-description="" data-photo-category="Companion Roleplay" data-photo-title="Private Skybox Lounge" data-photo="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" class="gallery-thumb-card" type="button">
+              <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" alt="Private Skybox Lounge" class="gallery-thumb-img" loading="lazy" decoding="async">
+              <div class="gallery-thumb-overlay">
+                <div class="tw:[font-family:var(--font-heading)] tw:[font-size:12.5px] tw:[font-weight:800] tw:[color:#fff] tw:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Private Skybox Lounge</div>
+                <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-top:2px]">
+                  <span class="tw:[font-size:9.5px] tw:[color:var(--gold-bright)] tw:[font-family:var(--font-mono)]">Companion Roleplay</span>
+                  <span class="tw:[font-size:11px]">🔍</span>
+                </div>
+              </div>
+            </button><button data-photo-description="" data-photo-category="Venue Arm Candy" data-photo-title="Control & Chaos Grand Ballroom" data-photo="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80" class="gallery-thumb-card" type="button">
+              <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80" alt="Control & Chaos Grand Ballroom" class="gallery-thumb-img" loading="lazy" decoding="async">
+              <div class="gallery-thumb-overlay">
+                <div class="tw:[font-family:var(--font-heading)] tw:[font-size:12.5px] tw:[font-weight:800] tw:[color:#fff] tw:[text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">Control &amp; Chaos Grand Ballroom</div>
+                <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-top:2px]">
+                  <span class="tw:[font-size:9.5px] tw:[color:var(--gold-bright)] tw:[font-family:var(--font-mono)]">Venue Arm Candy</span>
+                  <span class="tw:[font-size:11px]">🔍</span>
+                </div>
+              </div>
+            </button></div>
+          </div>
+
+          <!-- Hardware & Tech Compatibility Card (Repeater & Dynamic Title) -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:block]">
+            <h3 class="card-title tw:[font-size:18px] tw:[margin:0_0_14px_0] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]"><span class="tw:[font-size:20px]">⚡</span> My Toys</h3>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+            <div class="profile-white-label-div-presentation-12">
+              <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:12px]">
+                <span class="tw:[font-size:20px] tw:[line-height:1.2] tw:[margin-top:1px] tw:[flex-shrink:0]">🌊</span>
+                <div>
+                  <div class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[font-weight:800] tw:[color:var(--text-primary)] tw:[letter-spacing:0.01em]">Gush</div>
+                  <div class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.4]">Control my Lovense Gush. Take control</div>
+                </div>
+              </div>
+              
+            </div>
+          
+            <div class="profile-white-label-div-presentation-12">
+              <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:12px]">
+                <span class="tw:[font-size:20px] tw:[line-height:1.2] tw:[margin-top:1px] tw:[flex-shrink:0]">💎</span>
+                <div>
+                  <div class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[font-weight:800] tw:[color:var(--text-primary)] tw:[letter-spacing:0.01em]">Diamo</div>
+                  <div class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.4]">Hands free discreet, can we worn anywhere.</div>
+                </div>
+              </div>
+              
+            </div>
+          
+            <div class="profile-white-label-div-presentation-12">
+              <div class="tw:[display:flex] tw:[align-items:flex-start] tw:[gap:12px]">
+                <span class="tw:[font-size:20px] tw:[line-height:1.2] tw:[margin-top:1px] tw:[flex-shrink:0]">🚀</span>
+                <div>
+                  <div class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[font-weight:800] tw:[color:var(--text-primary)] tw:[letter-spacing:0.01em]">Max 2</div>
+                  <div class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.4]">The ultimate pleasure toy. Add ice for extra fun!</div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          </div>
+
+          <!-- Hard Limits & Boundaries -->
+          <div class="card tw:[margin-bottom:30px] tw:[border-color:rgba(139,30,45,0.4)] tw:[background:rgba(30,15,18,0.4)] tw:[display:block]">
+            <h3 class="card-title tw:[font-size:18px] tw:[color:#ffb8c2] tw:[margin:0_0_12px_0] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]"><span class="tw:[font-size:20px]">🚫</span> Hard Limits &amp; Boundaries</h3>
+            <ul class="tw:[padding-left:18px] tw:[font-size:13.5px] tw:[color:var(--text-primary)] tw:[line-height:1.65]"><li class="tw:[margin-bottom:6px]">No non-consensual limits, zero OOC disrespect, strict safety words.</li></ul>
+          </div>
+
+          <!-- How to Book / Protocol -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:block]">
+            <h3 class="card-title tw:[font-size:18px] tw:[margin:0_0_12px_0] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]"><span class="tw:[font-size:20px]">📜</span> How to Book</h3>
+            <div class="tw:[font-size:13.5px] tw:[color:var(--text-primary)] tw:[line-height:1.7]">
+            <div class="tw:[margin-bottom:8px] tw:[display:flex] tw:[gap:8px]">
+              <span class="tw:[color:var(--gold-primary)]">◆</span>
+              <span>1. Send an in-world IM or notecard to alek.zane Resident with your desired package.</span>
+            </div>
+          
+            <div class="tw:[margin-bottom:8px] tw:[display:flex] tw:[gap:8px]">
+              <span class="tw:[color:var(--gold-primary)]">◆</span>
+              <span>2. State your Second Life timezone and preferred venue.</span>
+            </div>
+          
+            <div class="tw:[margin-bottom:8px] tw:[display:flex] tw:[gap:8px]">
+              <span class="tw:[color:var(--gold-primary)]">◆</span>
+              <span>3. Settle retainer via Tribute Jar at Control &amp; Chaos before session starts.</span>
+            </div>
+          </div>
+          </div>
+
+          <!-- Client Reviews -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:none]">
+            <h3 class="card-title tw:[font-size:18px] tw:[margin-bottom:14px]">⭐ Verified Client Reviews</h3>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:12px]">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+
+          <!-- Wishlist Box (Conditionally Rendered) -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:block]">
+            <h3 class="card-title tw:[font-size:18px] tw:[margin:0_0_14px_0] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]"><span class="tw:[font-size:20px]">🎁</span> Wishlist &amp; Tributes</h3>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+              <div class="profile-white-label-div-presentation-12">
+                <div class="tw:[flex:1]">
+                  <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">
+                    <span class="tw:[color:var(--gold-bright)] tw:[font-size:14px]">🛍️</span>
+                    <strong class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[color:var(--text-primary)]">Throne Tribute Wishlist</strong>
+                  </div>
+                  <div class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.4]">Formal menswear, collars, and sim furnishings</div>
+                </div>
+                
+                  <a href="https://throne.com/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:6px_12px] tw:[flex-shrink:0]">
+                    View ↗
+                  </a>
+                
+              </div>
+            
+              <div class="profile-white-label-div-presentation-12">
+                <div class="tw:[flex:1]">
+                  <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">
+                    <span class="tw:[color:var(--gold-bright)] tw:[font-size:14px]">🛍️</span>
+                    <strong class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[color:var(--text-primary)]">Second Life Marketplace Wishlist</strong>
+                  </div>
+                  <div class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin-top:3px] tw:[line-height:1.4]">Custom mesh head &amp; hair styles</div>
+                </div>
+                
+                  <a href="https://marketplace.secondlife.com/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:6px_12px] tw:[flex-shrink:0]">
+                    View ↗
+                  </a>
+                
+              </div>
+            </div>
+          </div>
+
+          <!-- Social Links Box (Conditionally Rendered) -->
+          <div class="card tw:[margin-bottom:30px] tw:[display:none]">
+            <h3 class="card-title tw:[font-size:18px] tw:[margin:0_0_14px_0] tw:[display:flex] tw:[align-items:center] tw:[gap:8px]"><span class="tw:[font-size:20px]">🌐</span> Socials &amp; Media</h3>
+            <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]"></div>
+          </div>
+
+        </div>
+
+      </div>
+      </div>
+      <!-- End Tab Pane 1: Rate Card -->
+
+      <!-- Tab Pane 2: Creator Feed Wall -->
+      <div class="tw:[display:none]">
+        <div class="feed-container">
+          
+          <!-- Fan Club Hero & Perks Banner -->
+          <div class="feed-fan-hero">
+            <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[flex-wrap:wrap] tw:[gap:16px]">
+              <div>
+                <div class="font-xs text-gold font-mono tw:[letter-spacing:0.1em] tw:[text-transform:uppercase]">👑 CREATOR INNER CIRCLE</div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[color:#fff] tw:[margin:4px_0_8px]">Exclusive Feed &amp; Lookbooks</h3>
+                <p class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[margin:0] tw:[max-width:500px]">
+                  Unlock private photoshoots, uncensored session previews, audio voice notes, and daily obedience tasks.
+                </p>
+              </div>
+              <div class="tw:[text-align:right] tw:[display:flex] tw:[flex-direction:column] tw:[align-items:flex-end] tw:[gap:8px]">
+                <div class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">
+                  L$1,500 <span class="tw:[font-size:12px] tw:[font-family:var(--font-mono)] tw:[color:var(--text-muted)] tw:[font-weight:400]">/ month</span>
+                </div>
+                <button class="btn btn-gold btn-sm">
+                  <span>🔒</span> Unlock Inner Circle
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feed Posts Stream Container -->
+          <div>
+            <!-- Rendered dynamically via JS -->
+          </div>
+
+        </div>
+      </div>
+      <!-- Tab Pane 3: Public Blog / Journal Stream -->
+      <div class="tw:[display:none]">
+        <div class="feed-container">
+          
+          <!-- Blog Header Banner -->
+          <div class="card mb-30 card-presentation">
+            <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[flex-wrap:wrap] tw:[gap:16px]">
+              <div>
+                <div class="font-xs text-gold font-mono tw:[letter-spacing:0.1em] tw:[text-transform:uppercase]">📰 COMPANION JOURNAL &amp; UPDATES</div>
+                <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[color:var(--gold-bright)] tw:[margin:4px_0_8px]">Public Blog</h3>
+                <p class="tw:[font-size:14px] tw:[color:var(--text-muted)] tw:[margin:0] tw:[max-width:600px]">
+                  Free public updates, session reflections, schedule announcements, and thoughts.
+                </p>
+              </div>
+              <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:10px]">
+                <span class="section-tag tag-emerald font-2xs m-0">🌍 100% UNLOCKED / FREE TO READ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Public Blog Stream -->
+          <div>
+            <!-- Rendered dynamically via JS -->
+          </div>
+
+        </div>
+      </div>
+      <!-- End Tab Pane 3 -->
+      <section class="tw:[display:none]" aria-labelledby="gallery-library-title">
+        <div class="gallery-library-header">
+          <h2 id="gallery-library-title" class="section-title">Gallery</h2>
+          <div id="gallery-library-filters" class="gallery-library-filters" aria-label="Gallery categories"></div>
+        </div>
+        <div id="gallery-library-grid" class="gallery-library-grid"></div>
+        <p class="text-muted" hidden>No photos in this gallery yet.</p>
+        <button type="button" class="btn btn-secondary gallery-library-more" hidden>Load More Photos</button>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Fan Club Subscribe & Teleport Modal -->
+  <div class="lightbox-overlay tw:[display:none] tw:[z-index:9999] tw:[backdrop-filter:blur(10px)] tw:[background:rgba(10,8,7,0.85)] tw:[align-items:center] tw:[justify-content:center] tw:[position:fixed] tw:[inset:0]">
+    <div class="profile-white-label-div-presentation-13">
+      <button class="tw:[position:absolute] tw:[top:16px] tw:[right:18px] tw:[background:none] tw:[border:none] tw:[color:var(--text-muted)] tw:[font-size:26px] tw:[cursor:pointer] tw:[line-height:1]">×</button>
+      
+      <div class="tw:[text-align:center] tw:[margin-bottom:24px]">
+        <div class="tw:[font-size:38px] tw:[margin-bottom:6px]">👑</div>
+        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[font-weight:900] tw:[color:var(--gold-bright)] tw:[margin:0]">Join The Inner Circle</h3>
+        <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:6px]">Get full uncensored access to private photo sets, voice notes &amp; tasks</p>
+      </div>
+
+      <!-- Perks Checklist -->
+      <div class="profile-white-label-div-presentation-14">
+        <div class="tw:[font-size:12px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)] tw:[font-weight:700] tw:[margin-bottom:8px]">💎 INCLUDED MEMBERSHIP PERKS:</div>
+        <ul class="tw:[margin:0] tw:[padding-left:20px] tw:[font-size:13px] tw:[color:#e7e5e4] tw:[line-height:1.7]">
+          <li>📸 Full uncensored photoshoots &amp; lookbooks</li>
+          <li>🎙️ Exclusive voice audio notes &amp; session previews</li>
+          <li>📜 Daily obedience tasks &amp; protocol rules</li>
+          <li>❤️ Interactive liking &amp; priority in-world booking</li>
+        </ul>
+      </div>
+
+      <!-- Option 1: In-World SLurl Teleport & Terminal -->
+      <div class="profile-white-label-div-presentation-15">
+        <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:8px]">
+          <strong class="tw:[color:var(--gold-bright)] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">📍 In-World SL Terminal (Instant Unlock)</strong>
+          <span class="tw:[font-size:10px] tw:[color:#4ade80] tw:[font-family:var(--font-mono)] tw:[font-weight:700]">L$1,500 / 30d</span>
+        </div>
+        <p class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin:0_0_12px] tw:[line-height:1.45]">
+          Teleport to the in-world terminal to pay L$ and unlock this web feed instantly.
+        </p>
+        <a href="#" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-size:12px] tw:[padding:9px_14px] tw:[margin-bottom:10px]">
+          <span>📍</span> Teleport to Subscriber Terminal ↗
+        </a>
+        <div class="profile-white-label-div-presentation-16">
+          <div>
+            <div class="tw:[font-size:10px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase] tw:[letter-spacing:0.5px]">Terminal Pay Code</div>
+            <div class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">ALEK-ZANE</div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:5px_10px] tw:[flex-shrink:0] tw:[cursor:pointer]">
+            <span>📋</span> Copy Code
+          </button>
+        </div>
+      </div>
+
+      <!-- Option 2: Direct SL Contact -->
+      <div class="profile-white-label-div-presentation-17">
+        <div>
+          <div class="tw:[font-size:13px] tw:[color:#fff] tw:[font-weight:700]">Direct Enquiry / IM</div>
+          <div class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[font-family:var(--font-mono)]">@username</div>
+        </div>
+        <a href="#" target="_blank" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:6px_12px]">
+          <span>💬</span> Message in SL
+        </a>
+      </div>
+
+      <p class="text-muted tw:[font-size:12px] tw:[text-align:center]">Subscriber access requires verified sign-in. Preview unlocking is unavailable.</p>
+
+    </div>
+  </div>
+
+  <!-- Image Lightbox Modal -->
+  <div class="lightbox-modal" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" tabindex="-1">
+    <div class="lightbox-content">
+      <button type="button" id="lightbox-close" class="gallery-lightbox-control gallery-lightbox-close" title="Close" aria-label="Close photo viewer">×</button>
+      <button type="button" id="lightbox-previous" class="gallery-lightbox-control gallery-lightbox-previous" title="Previous image" aria-label="Previous image" hidden>←</button>
+      <img src="" alt="Gallery Preview" class="lightbox-img" id="lightbox-image">
+      <button type="button" id="lightbox-next" class="gallery-lightbox-control gallery-lightbox-next" title="Next image" aria-label="Next image" hidden>→</button>
+      <div class="tw:[margin-top:12px] tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[color:var(--gold-bright)] tw:[text-align:center]" id="lightbox-caption"></div>
+      <p id="lightbox-description" class="gallery-lightbox-description"></p>
+      <span id="lightbox-counter" class="gallery-lightbox-counter" aria-live="polite"></span>
+    </div>
+  </div>
+{% endraw %}
+{% endblock %}

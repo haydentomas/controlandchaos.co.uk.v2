@@ -1,0 +1,459 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+{% raw %}
+<!-- Master Navigation Component -->
+  
+
+  <!-- Hero Header -->
+  <header class="hero hero-compact tw:[padding-top:140px] tw:[padding-bottom:60px]">
+    <canvas height="" width="" id="hero-canvas"></canvas>
+    <div class="container hero-content text-center">
+      <div class="hero-pill tw:[margin:0_auto_16px]">
+        <span class="pill-dot"></span>
+        <span>FOR DOMINANTS, COMPANIONS &amp; CREATORS</span>
+      </div>
+      <h1 class="hero-title">
+        GET YOUR PROFILE &amp; <br>
+        <span class="gold-gradient-text">RATE CARD LISTED</span>
+      </h1>
+      <p class="hero-description tw:[max-width:760px] tw:[margin:0_auto_32px]">
+        Promote your services directly to the Control &amp; Chaos community with a dedicated luxury profile card, custom vanity domain, in-world sim billboard integration, and 100% Linden (L$) revenue retention.
+      </p>
+      
+      <div class="tw:[display:flex] tw:[gap:14px] tw:[justify-content:center] tw:[flex-wrap:wrap]">
+        <a href="#pricing-matrix" class="btn btn-gold btn-lg">
+          <span>👑</span> View Listing Packages →
+        </a>
+        <button type="button" class="btn btn-secondary btn-lg">
+          <span>⚡</span> In-World Instant Activation
+        </button>
+      </div>
+
+      <!-- Quick Benefit Badges -->
+      <div class="tw:[display:flex] tw:[justify-content:center] tw:[gap:24px] tw:[flex-wrap:wrap] tw:[margin-top:40px] tw:[font-size:0.85rem] tw:[color:#cbd5e1]">
+        <div class="get-listed-div-presentation">
+          <span class="tw:[color:#34d399]">💎</span> <strong>100% In-World Revenue</strong> (0% Sim Cut)
+        </div>
+        <div class="get-listed-div-presentation">
+          <span class="tw:[color:#ffd700]">🌐</span> <strong>Custom Vanity Domains</strong>
+        </div>
+        <div class="get-listed-div-presentation">
+          <span class="tw:[color:#38bdf8]">🔒</span> <strong>Locked Fan Club Lookbooks</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Key Creator Benefits Grid -->
+  <section class="section tw:[padding-top:40px]">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why List With Us</span>
+        <h2 class="section-title">Everything Built For High-Earning Creators</h2>
+        <p class="section-subtitle">A status-driven ecosystem designed to turn directory views into verified client bookings and ongoing tributes.</p>
+      </div>
+
+      <div class="grid-4">
+        <div class="card tw:[background:rgba(18,_16,_24,_0.7)] tw:[border:1px_solid_rgba(212,_175,_55,_0.2)]">
+          <div class="card-icon tw:[font-size:28px] tw:[margin-bottom:12px]">👑</div>
+          <h3 class="card-title tw:[font-size:1.15rem] tw:[color:#fff] tw:[margin-bottom:8px]">Dedicated Rate Card &amp; Vanity URL</h3>
+          <p class="card-desc tw:[font-size:0.88rem] tw:[color:#94a3b8] tw:[line-height:1.6]">
+            Your own sleek web page with instant booking quote calculator, gallery lookbook, voice decrees, and transparent hard limits.
+          </p>
+        </div>
+
+        <div class="card tw:[background:rgba(18,_16,_24,_0.7)] tw:[border:1px_solid_rgba(212,_175,_55,_0.2)]">
+          <div class="card-icon tw:[font-size:28px] tw:[margin-bottom:12px]">🌐</div>
+          <h3 class="card-title tw:[font-size:1.15rem] tw:[color:#fff] tw:[margin-bottom:8px]">White-Label Custom Domains</h3>
+          <p class="card-desc tw:[font-size:0.88rem] tw:[color:#94a3b8] tw:[line-height:1.6]">
+            VIP listings can link their own root domain (e.g. <code>yourname.com</code>) with free SSL and unbranded standalone presentation.
+          </p>
+        </div>
+
+        <div class="card tw:[background:rgba(18,_16,_24,_0.7)] tw:[border:1px_solid_rgba(212,_175,_55,_0.2)]">
+          <div class="card-icon tw:[font-size:28px] tw:[margin-bottom:12px]">⚡</div>
+          <h3 class="card-title tw:[font-size:1.15rem] tw:[color:#fff] tw:[margin-bottom:8px]">Hardware &amp; RLV Badges</h3>
+          <p class="card-desc tw:[font-size:0.88rem] tw:[color:#94a3b8] tw:[line-height:1.6]">
+            Verified badges for Vow Collar lockouts, Firestorm RLV restrictions, and live Lovense interactive toy session support.
+          </p>
+        </div>
+
+        <div class="card tw:[background:rgba(18,_16,_24,_0.7)] tw:[border:1px_solid_rgba(212,_175,_55,_0.2)]">
+          <div class="card-icon tw:[font-size:28px] tw:[margin-bottom:12px]">💬</div>
+          <h3 class="card-title tw:[font-size:1.15rem] tw:[color:#fff] tw:[margin-bottom:8px]">Direct 1-Click Client Leads</h3>
+          <p class="card-desc tw:[font-size:0.88rem] tw:[color:#94a3b8] tw:[line-height:1.6]">
+            Clients can launch a direct Second Life IM to your avatar with 1 click, send an inquiry, or teleport directly to your parlor.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Unified Luxury Master Pricing & Comparison Matrix -->
+  <section class="section section-surface-dark tw:[padding-top:60px] tw:[padding-bottom:80px]" id="pricing-matrix">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Transparent Linden Pricing</span>
+        <h2 class="section-title">Choose Your Listing Package</h2>
+        <p class="section-subtitle">
+          Pay in-world using Lindens (L$). No recurring credit card bills, no hidden fees, and zero commissions taken.
+        </p>
+      </div>
+
+      <!-- Comparison Matrix Table Card -->
+      <div class="tw:[max-width:960px] tw:[margin:0_auto]">
+        <div class="get-listed-div-presentation-2">
+          <div class="tw:[overflow-x:auto]">
+            <table class="tw:[width:100%] tw:[border-collapse:collapse] tw:[text-align:left] tw:[font-size:0.88rem]">
+              <thead>
+                <!-- Top Main Tier Summary & Action Row -->
+                <tr class="tw:[background:rgba(22,_18,_28,_0.98)] tw:[border-bottom:2px_solid_rgba(212,_175,_55,_0.35)]">
+                  <!-- Left Title Column -->
+                  <th class="tw:[padding:24px_24px] tw:[color:#94a3b8] tw:[font-weight:700] tw:[width:44%] tw:[vertical-align:bottom]">
+                    <div class="tw:[font-size:1.25rem] tw:[font-family:var(--font-heading)] tw:[color:#fff] tw:[margin-bottom:4px]">Choose Your Listing</div>
+                    <div class="tw:[font-size:0.8rem] tw:[color:#94a3b8] tw:[font-weight:400] tw:[line-height:1.4]">Instant in-world activation via Lindens (L$). Cancel or upgrade anytime.</div>
+                  </th>
+                  
+                  <!-- Standard Column Header -->
+                  <th class="tw:[padding:24px_20px] tw:[text-align:center] tw:[color:#fff] tw:[width:28%] tw:[vertical-align:top] tw:[background:rgba(255,255,255,0.01)]">
+                    <div class="tw:[display:flex] tw:[flex-direction:column] tw:[height:100%]">
+                      <div class="tw:[min-height:24px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[margin-bottom:6px]">
+                        <span class="section-tag font-2xs m-0 tw:[background:rgba(255,255,255,0.06)] tw:[color:#cbd5e1] tw:[border:1px_solid_rgba(255,255,255,0.12)] tw:[padding:2px_8px] tw:[font-size:0.68rem] tw:[letter-spacing:0.05em] tw:[font-weight:700]">ESSENTIAL</span>
+                      </div>
+                      <div class="tw:[font-size:1.15rem] tw:[font-weight:800] tw:[font-family:var(--font-heading)] tw:[color:#fff] tw:[min-height:26px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center]">Standard</div>
+                      <div class="tw:[font-size:1.5rem] tw:[font-weight:900] tw:[color:#fff] tw:[margin:6px_0_2px] tw:[font-family:var(--font-mono)]">
+                        L$1,000 <span class="tw:[font-size:0.8rem] tw:[color:#94a3b8] tw:[font-weight:400]">/ mo</span>
+                      </div>
+                      <div class="tw:[font-size:0.76rem] tw:[color:#94a3b8] tw:[margin-bottom:16px] tw:[font-weight:400] tw:[min-height:38px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[line-height:1.35]">Searchable profile &amp; rate card menu</div>
+                      <div class="tw:[margin-top:auto]">
+                        <button type="button" class="btn btn-secondary btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-size:0.82rem] tw:[padding:10px_12px] tw:[height:38px]">Get Standard →</button>
+                      </div>
+                    </div>
+                  </th>
+
+                  <!-- VIP Featured Column Header (Highlight) -->
+                  <th class="tw:[padding:24px_20px] tw:[text-align:center] tw:[color:#ffd700] tw:[width:28%] tw:[vertical-align:top] tw:[background:linear-gradient(180deg,_rgba(212,_175,_55,_0.16)_0%,_rgba(26,_21,_14,_0.95)_100%)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.35)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.35)] tw:[position:relative]">
+                    <div class="tw:[display:flex] tw:[flex-direction:column] tw:[height:100%]">
+                      <div class="tw:[min-height:24px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[margin-bottom:6px]">
+                        <span class="section-tag tag-gold font-2xs m-0 tw:[background:linear-gradient(135deg,_#ffd700,_#b8860b)] tw:[color:#000] tw:[font-weight:900] tw:[border:none] tw:[padding:2px_8px] tw:[font-size:0.68rem] tw:[letter-spacing:0.05em]">👑 MOST POPULAR</span>
+                      </div>
+                      <div class="tw:[font-size:1.15rem] tw:[font-weight:800] tw:[font-family:var(--font-heading)] tw:[color:var(--gold-bright)] tw:[min-height:26px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center]">VIP Featured</div>
+                      <div class="tw:[font-size:1.5rem] tw:[font-weight:900] tw:[color:#ffd700] tw:[margin:6px_0_2px] tw:[font-family:var(--font-mono)]">
+                        L$2,500 <span class="tw:[font-size:0.8rem] tw:[color:var(--gold-muted)] tw:[font-weight:400]">/ mo</span>
+                      </div>
+                      <div class="tw:[font-size:0.76rem] tw:[color:#fef08a] tw:[margin-bottom:16px] tw:[font-weight:500] tw:[min-height:38px] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[line-height:1.35]">Custom domain, exclusive feed &amp; fan passes</div>
+                      <div class="tw:[margin-top:auto]">
+                        <button type="button" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-weight:800] tw:[font-size:0.82rem] tw:[padding:10px_12px] tw:[height:38px] tw:[box-shadow:0_0_15px_rgba(212,175,55,0.3)]">Get VIP Listing →</button>
+                      </div>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="tw:[line-height:1.5]">
+                <!-- Category: Visibility & Ranking -->
+                <tr class="tw:[background:rgba(255,255,255,0.02)] tw:[border-bottom:1px_solid_rgba(255,255,255,0.06)]">
+                  <td class="tw:[padding:10px_20px] tw:[font-size:0.75rem] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[text-transform:uppercase] tw:[letter-spacing:0.08em] tw:[font-family:var(--font-mono)]" colspan="3">
+                    👑 Visibility &amp; Promotion
+                  </td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Directory Ranking Placement</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Where you appear when clients search companions</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#94a3b8]">Standard alphabetical</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#ffd700] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">⭐ Top of Directory Priority</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Verified Rank Badge</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Identity badge shown on your card &amp; rate card</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#cbd5e1]">Silver Verified</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#ffd700] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">👑 Gold Crown VIP Badge</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Homepage Showcase Spotlight</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Featured rotation on controlandchaos.com main landing</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✓ Included</td>
+                </tr>
+
+                <!-- Category: Branding & White-Label -->
+                <tr class="tw:[background:rgba(255,255,255,0.02)] tw:[border-bottom:1px_solid_rgba(255,255,255,0.06)]">
+                  <td class="tw:[padding:10px_20px] tw:[font-size:0.75rem] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[text-transform:uppercase] tw:[letter-spacing:0.08em] tw:[font-family:var(--font-mono)]" colspan="3">
+                    🌐 Custom Branding &amp; Domains
+                  </td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>White-Label Custom Vanity Domain</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Connect your own domain (e.g. <code>yourname.com</code>) with free automated SSL</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#ffd700] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">🌐 Full Custom Domain Support</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Standalone Unbranded Mode</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Hides global platform nav &amp; footer on custom domain for a 100% private standalone site</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✨ 100% Standalone Look</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Social Media 4K Sharing Cards (Discord/X)</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Custom OpenGraph embeds when sharing your profile link</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#cbd5e1]">Standard link</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✨ Custom 4K Embeds</td>
+                </tr>
+
+                <!-- Category: Fan Monetization & Exclusives -->
+                <tr class="tw:[background:rgba(255,255,255,0.02)] tw:[border-bottom:1px_solid_rgba(255,255,255,0.06)]">
+                  <td class="tw:[padding:10px_20px] tw:[font-size:0.75rem] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[text-transform:uppercase] tw:[letter-spacing:0.08em] tw:[font-family:var(--font-mono)]" colspan="3">
+                    💎 Fan Club &amp; Creator Monetization
+                  </td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>🔒 Subscriber-Only Locked Feed &amp; Lookbooks</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Frosted glass locked photo sets unlocked by subscribers</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#ffd700] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">🔒 Full Feed Publisher</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>In-World Monthly Fan Pass Sales (Keep 100%)</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Charge fans recurring L$ monthly tribute to unlock your feed</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">💎 100% In-World Revenue</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>🎙️ Voice Decrees &amp; Audio Player</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Embed voice notes, instructions, and audio decrees</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">🎙️ Inline Player Included</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Anonymous Wishlists (Throne, Ko-fi, etc.)</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Direct 1-click gift and tribute links on your rate card</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">🎁 Full Wishlist Registry</td>
+                </tr>
+
+                <!-- Category: Rate Cards & Booking -->
+                <tr class="tw:[background:rgba(255,255,255,0.02)] tw:[border-bottom:1px_solid_rgba(255,255,255,0.06)]">
+                  <td class="tw:[padding:10px_20px] tw:[font-size:0.75rem] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[text-transform:uppercase] tw:[letter-spacing:0.08em] tw:[font-family:var(--font-mono)]" colspan="3">
+                    📋 Rate Cards &amp; Second Life Features
+                  </td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Service Categories &amp; Menus</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Organize session offerings and pricing tiers</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#cbd5e1]">1 Standard Category</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#ffd700] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✨ Unlimited Categories &amp; Rates</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Lovense, RLV &amp; Vow Collar Tech Badges</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Showcase toy syncing and restraint protocols</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#64748b]">—</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">⚡ Full Hardware Badges</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Live In-World Sim Status (🟢 / 🔴 / 🟡)</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Real-time availability status synced from in-world</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700]">✓ Included</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✓ Included</td>
+                </tr>
+                <tr class="tw:[border-bottom:1px_solid_rgba(255,255,255,0.04)]">
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Direct Second Life IM Shortcut &amp; Inquiry Form</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">1-click message in SL + private inquiry leads</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700]">✓ Included</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✓ Included</td>
+                </tr>
+                <tr>
+                  <td class="tw:[padding:14px_20px] tw:[color:#e2e8f0]">
+                    <strong>Dedicated Studio Profile Editor</strong>
+                    <div class="tw:[font-size:0.75rem] tw:[color:#94a3b8]">Self-service portal to update lookbooks, rates &amp; bio anytime</div>
+                  </td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700]">✓ Included</td>
+                  <td class="tw:[padding:14px_16px] tw:[text-align:center] tw:[color:#34d399] tw:[font-weight:700] tw:[background:rgba(212,_175,_55,_0.04)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.15)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.15)]">✓ Included</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="tw:[background:rgba(20,_16,_26,_0.95)] tw:[border-top:2px_solid_rgba(212,_175,_55,_0.3)]">
+                  <td class="tw:[padding:20px]"></td>
+                  <td class="tw:[padding:20px_16px] tw:[text-align:center]">
+                    <button type="button" class="btn btn-secondary btn-sm tw:[width:100%] tw:[justify-content:center]">Get Standard</button>
+                  </td>
+                  <td class="tw:[padding:20px_16px] tw:[text-align:center] tw:[background:rgba(212,_175,_55,_0.08)] tw:[border-left:1px_solid_rgba(212,_175,_55,_0.2)] tw:[border-right:1px_solid_rgba(212,_175,_55,_0.2)]">
+                    <button type="button" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-weight:800]">Get VIP Featured</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step-by-Step Instant Activation Guide -->
+  <section class="section">
+    <div class="container tw:[max-width:900px]">
+      <div class="section-header">
+        <span class="section-tag">Zero Friction Setup</span>
+        <h2 class="section-title">How Activation Works in 3 Steps</h2>
+        <p class="section-subtitle">No waiting for approvals. Your profile can be live in under 5 minutes.</p>
+      </div>
+
+      <div class="grid-3 tw:[gap:24px]">
+        <div class="card tw:[text-align:center] tw:[padding:30px_20px]">
+          <div class="get-listed-div-presentation-3">
+            1
+          </div>
+          <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:18px] tw:[color:#fff] tw:[margin-bottom:8px]">Teleport to Sim</h3>
+          <p class="tw:[font-size:13.5px] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            Visit the <strong>Directory Kiosk</strong> at Control &amp; Chaos in Second Life.
+          </p>
+        </div>
+
+        <div class="card tw:[text-align:center] tw:[padding:30px_20px] tw:[border-color:rgba(212,_175,_55,_0.4)] tw:[background:rgba(26,_21,_14,_0.5)]">
+          <div class="tw:[width:48px] tw:[height:48px] tw:[border-radius:50%] tw:[background:linear-gradient(135deg,_#ffd700,_#b8860b)] tw:[color:#000] tw:[font-family:var(--font-mono)] tw:[font-size:20px] tw:[font-weight:900] tw:[display:flex] tw:[align-items:center] tw:[justify-content:center] tw:[margin:0_auto_16px]">
+            2
+          </div>
+          <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:18px] tw:[color:var(--gold-bright)] tw:[margin-bottom:8px]">Pay Kiosk in Lindens</h3>
+          <p class="tw:[font-size:13.5px] tw:[color:#e2e8f0] tw:[line-height:1.6] tw:[margin:0]">
+            Right-click &amp; Pay L$1,000 (Standard) or L$2,500 (VIP).
+          </p>
+        </div>
+
+        <div class="card tw:[text-align:center] tw:[padding:30px_20px]">
+          <div class="get-listed-div-presentation-3">
+            3
+          </div>
+          <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:18px] tw:[color:#fff] tw:[margin-bottom:8px]">Edit &amp; Go Live</h3>
+          <p class="tw:[font-size:13.5px] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            The Kiosk delivers your private <strong>Studio Editor link</strong> and your profile is live immediately!
+          </p>
+        </div>
+      </div>
+
+      <div class="tw:[text-align:center] tw:[margin-top:36px]">
+        <a href="secondlife://Chaos%20Manor/128/128/23" class="btn btn-gold btn-md">
+          <span>⚡</span> Launch Second Life &amp; Teleport to Kiosk
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Creator FAQ Section -->
+  <section class="section section-surface-dark">
+    <div class="container tw:[max-width:850px]">
+      <div class="section-header">
+        <span class="section-tag">Frequently Asked Questions</span>
+        <h2 class="section-title">Common Creator Inquiries</h2>
+      </div>
+
+      <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:16px]">
+        <div class="card tw:[padding:22px_26px] tw:[background:rgba(18,_15,_24,_0.8)]">
+          <h4 class="tw:[font-family:var(--font-heading)] tw:[font-size:1.1rem] tw:[color:var(--gold-bright)] tw:[margin-bottom:6px]">
+            Do you take any percentage or commission from my client tributes?
+          </h4>
+          <p class="tw:[font-size:0.9rem] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            <strong>Never.</strong> You keep 100% of every tribute, session fee, and tip you earn. We only charge a flat monthly listing fee to maintain the high-traffic ecosystem and web infrastructure.
+          </p>
+        </div>
+
+        <div class="card tw:[padding:22px_26px] tw:[background:rgba(18,_15,_24,_0.8)]">
+          <h4 class="tw:[font-family:var(--font-heading)] tw:[font-size:1.1rem] tw:[color:var(--gold-bright)] tw:[margin-bottom:6px]">
+            How do I update my rates, photos, or hard limits?
+          </h4>
+          <p class="tw:[font-size:0.9rem] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            Upon activation, you receive a private Studio Editor link. You can update your bio, rates, lookbook galleries, Lovense badges, and availability status 24/7 without needing staff assistance.
+          </p>
+        </div>
+
+        <div class="card tw:[padding:22px_26px] tw:[background:rgba(18,_15,_24,_0.8)]">
+          <h4 class="tw:[font-family:var(--font-heading)] tw:[font-size:1.1rem] tw:[color:var(--gold-bright)] tw:[margin-bottom:6px]">
+            How does the Custom Vanity Domain work for VIP listings?
+          </h4>
+          <p class="tw:[font-size:0.9rem] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            With the VIP Featured tier, you can point your own domain (e.g. <code>mistressalexis.com</code>) to our high-speed edge network. Your site gets automatic SSL and will load without the Control &amp; Chaos platform header for a 100% private branded look.
+          </p>
+        </div>
+
+        <div class="card tw:[padding:22px_26px] tw:[background:rgba(18,_15,_24,_0.8)]">
+          <h4 class="tw:[font-family:var(--font-heading)] tw:[font-size:1.1rem] tw:[color:var(--gold-bright)] tw:[margin-bottom:6px]">
+            What happens when my 30-day listing expires?
+          </h4>
+          <p class="tw:[font-size:0.9rem] tw:[color:#94a3b8] tw:[line-height:1.6] tw:[margin:0]">
+            You can pay the in-world Kiosk anytime to add 30 days. If a subscription lapses, your profile is simply set to private until renewed; your rates and lookbook data are never lost.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bottom Directory Backlink -->
+      <div class="tw:[text-align:center] tw:[margin-top:48px]">
+        <a href="/directory.html" class="btn btn-secondary btn-sm">
+          <span>←</span> Back to Directory Listings
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- In-World Kiosk Activation Modal (100% Linden Only) -->
+  <div class="tw:[display:none] tw:[position:fixed] tw:[inset:0] tw:[z-index:9999] tw:[background:rgba(5,_4,_8,_0.88)] tw:[backdrop-filter:blur(8px)] tw:[align-items:center] tw:[justify-content:center] tw:[padding:20px]">
+    <div class="get-listed-div-presentation-4">
+      <button class="get-listed-button-presentation" type="button">✕</button>
+
+      <div class="tw:[text-align:center] tw:[margin-bottom:24px]">
+        <div class="tw:[font-size:40px] tw:[margin-bottom:8px]">👑</div>
+        <span class="section-tag tag-gold font-2xs">VIP FEATURED LISTING</span>
+        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[color:#fff] tw:[margin:10px_0_4px]">Get Listed In-World</h3>
+        <div class="tw:[font-size:20px] tw:[font-weight:800] tw:[color:#ffd700] tw:[font-family:var(--font-mono)]">L$2,500 / month</div>
+      </div>
+
+      <div class="get-listed-div-presentation-5">
+        <div class="tw:[font-size:13px] tw:[font-weight:700] tw:[color:var(--gold-bright)] tw:[margin-bottom:10px] tw:[text-transform:uppercase] tw:[letter-spacing:0.05em]">
+          ✨ How to Activate Instantly:
+        </div>
+        <ol class="tw:[margin:0] tw:[padding-left:20px] tw:[font-size:13px] tw:[color:#cbd5e1] tw:[line-height:1.7]">
+          <li>Teleport to the <strong>Directory Kiosk</strong> at Control &amp; Chaos in Second Life.</li>
+          <li>Right-click and <strong>Pay</strong> the terminal your chosen tier in Lindens (L$).</li>
+          <li>The Kiosk gives you your private <strong>Studio Editor link</strong> and your profile goes live immediately!</li>
+        </ol>
+      </div>
+
+      <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+        <a href="secondlife://Chaos%20Manor/128/128/23" class="btn btn-gold btn-md tw:[width:100%] tw:[justify-content:center] tw:[font-weight:800] tw:[font-size:15px] tw:[padding:12px]">
+          <span>⚡</span> Teleport to Kiosk in Second Life
+        </a>
+        <button type="button" class="btn btn-secondary btn-sm tw:[width:100%] tw:[justify-content:center]">
+          <span>📋</span> Copy Landmark / SLurl Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Footer Component -->
+{% endraw %}
+{% endblock %}

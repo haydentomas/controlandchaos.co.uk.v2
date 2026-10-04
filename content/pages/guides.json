@@ -1,0 +1,58 @@
+{
+  "template": "guides",
+  "title": "User Guides & Documentation | Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Official user manuals, product setup guides, RLV protocols, and troubleshooting documentation for all Control & Chaos Second Life devices."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "Hardware Documentation & User Guides | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "Step-by-step setup guides, permission protocols, channel commands, and RLV tuning for Vow Collar, PocketPig, FootKiss, and Tribute Jars."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/guides/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "Hardware Documentation & User Guides | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Step-by-step setup guides, permission protocols, channel commands, and RLV tuning for Vow Collar, PocketPig, FootKiss, and Tribute Jars."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/guides/"
+    }
+  ]
+}

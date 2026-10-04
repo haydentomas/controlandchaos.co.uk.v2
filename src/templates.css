@@ -3,6 +3,7 @@
 @import "tailwindcss/utilities.css" layer(utilities) prefix(tw);
 @import "./portal.css";
 @source "../*.html";
+@source "../templates";
 
 @theme {
   --color-champagne: #ebdca9;

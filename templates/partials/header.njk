@@ -1,0 +1,38 @@
+<site-navbar>
+  <nav class="navbar">
+    <div class="container navbar-container">
+      <a href="{{ site.home }}" class="nav-brand" aria-label="{{ site.brand }}">
+        <img src="{{ site.logo }}" alt="{{ site.brand }}" class="brand-logo-img">
+      </a>
+      <div class="nav-links-wrapper">
+        <ul class="nav-links">
+{% for link in site.navigation.links %}
+          <li><a href="{{ link.url }}" class="nav-link"{% if link.newTab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a></li>
+{% endfor %}
+        </ul>
+      </div>
+      <div class="nav-actions">
+        <a href="{{ site.navigation.inworldUrl }}" target="_blank" rel="noopener" class="btn btn-gold btn-sm">
+          <span>&#128205;</span> {{ site.navigation.inworldLabel }}
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+      <ul class="mobile-nav-links">
+{% for link in site.navigation.links %}
+        <li><a href="{{ link.url }}" class="mobile-nav-link"{% if link.newTab %} target="_blank" rel="noopener noreferrer"{% endif %}><span>{{ link.icon }}</span> {{ link.label }}</a></li>
+{% endfor %}
+      </ul>
+      <div class="mobile-nav-actions">
+        <a href="{{ site.navigation.inworldUrl }}" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%]">
+          <span>&#128205;</span> {{ site.navigation.inworldLabel }}
+        </a>
+      </div>
+    </div>
+  </nav>
+</site-navbar>

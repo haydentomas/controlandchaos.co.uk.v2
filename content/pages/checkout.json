@@ -1,0 +1,18 @@
+{
+  "template": "checkout",
+  "title": "Directory Subscription Checkout — Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Secure PayPal and Credit Card checkout for Control & Chaos Dominant & Creator Directory subscription packages."
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.co.uk/directory/checkout/"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "template": "directory-admin",
+  "title": "Directory Listing Manager & Subscriptions | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Control & Chaos Directory Management Console for Estate Owners & Staff. Manage provider subscriptions, expiration dates, and publishing states."
+    }
+  ],
+  "links": []
+}

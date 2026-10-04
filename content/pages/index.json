@@ -1,0 +1,58 @@
+{
+  "template": "index",
+  "title": "Control & Chaos | Second Life Gamified FinDom, Store, XP & Events Ecosystem",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Making FinDom fun again: Second Life's premier gamified FinDom sim, 50-level XP leveling economy, retail BDSM hardware store, verified Dominants directory, and live tournament events."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "Control & Chaos | Gamified FinDom, Store & XP Ecosystem"
+    },
+    {
+      "property": "og:description",
+      "content": "Making FinDom fun again: 50 progressive ranks, Gold Coin rewards, retail hardware store, registered Dominants, and weekly events in Second Life."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "Control & Chaos | Gamified FinDom, Store & XP Ecosystem"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Making FinDom fun again: 50 progressive ranks, Gold Coin rewards, retail hardware store, registered Dominants, and weekly events in Second Life."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/"
+    }
+  ]
+}

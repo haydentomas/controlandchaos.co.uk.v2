@@ -1,0 +1,58 @@
+{
+  "template": "xp-system",
+  "title": "XP System & Sim Game Rules | Control & Chaos Second Life",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Complete guide to the Control & Chaos Second Life gamified FinDom ecosystem: 50 rank levels, registered Dominants, Gold Coin rewards shop, interactive arcade games, venue gallery, FAQs, and sim rules."
+    },
+    {
+      "property": "og:type",
+      "content": "website"
+    },
+    {
+      "property": "og:title",
+      "content": "XP Economy, Registered Dommes & Sim Rules | Control & Chaos"
+    },
+    {
+      "property": "og:description",
+      "content": "Making FinDom fun again: 50 rank tiers, registered Dominants, Gold Coin reward exchange, daily quests, arcade games, tribute mechanics, and live leveling in Second Life."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/xp-system/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "XP Economy, Registered Dommes & Sim Rules | Control & Chaos"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Making FinDom fun again: 50 rank tiers, registered Dominants, Gold Coin reward exchange, daily quests, arcade games, tribute mechanics, and live leveling in Second Life."
+    },
+    {
+      "property": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/xp-system/"
+    }
+  ]
+}

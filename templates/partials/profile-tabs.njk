@@ -1,0 +1,5 @@
+<{{ page.tabs.containerTag }} id="profile-tabs-nav" class="{{ page.tabs.className }}"{% if page.tabs.article %} aria-label="Profile views"{% endif %}>
+{% for tab in page.tabs.items %}
+  <{{ page.tabs.itemTag }}{% for name, value in tab.attributes %} {{ name }}="{{ value }}"{% endfor %}><span>{{ tab.icon }}</span> {{ tab.label }}{% if tab.badge %} <span class="{{ tab.badge.className }}">{{ tab.badge.count }}</span>{% endif %}</{{ page.tabs.itemTag }}>
+{% endfor %}
+</{{ page.tabs.containerTag }}>

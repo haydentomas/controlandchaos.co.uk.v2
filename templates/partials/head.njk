@@ -1,0 +1,14 @@
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title }}</title>
+{% for meta in page.meta %}
+  <meta{% for name, value in meta %} {{ name }}="{{ value }}"{% endfor %}>
+{% endfor %}
+{% for link in page.links %}
+  <link{% for name, value in link %} {{ name }}="{{ value }}"{% endfor %}>
+{% endfor %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="{{ site.fontStylesheet }}" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="robots" content="noindex,nofollow">

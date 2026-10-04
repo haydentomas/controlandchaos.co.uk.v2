@@ -1,0 +1,262 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+{% raw %}
+<!-- Inactive / Pending Renewal Alert Banner -->
+  <div class="tw:[display:none] tw:[background:linear-gradient(90deg,_#3d1017_0%,_#5e1622_50%,_#3d1017_100%)] tw:[border-bottom:1px_solid_rgba(235,220,169,0.3)] tw:[padding:14px_20px] tw:[text-align:center] tw:[font-size:14px] tw:[color:#fff] tw:[z-index:100] tw:[position:relative] tw:[box-shadow:0_4px_20px_rgba(0,0,0,0.5)]">
+    <span>⏳ <strong>Listing Pending Subscription Renewal:</strong> This directory profile is currently inactive.</span>
+    <a href="/checkout.html" class="btn btn-gold btn-sm tw:[margin-left:14px] tw:[padding:4px_14px] tw:[font-size:11.5px] tw:[text-decoration:none]">
+      💳 Renew Subscription →
+    </a>
+  </div>
+
+  <!-- Interactive Tribute Selection Modal -->
+  <div class="lightbox-overlay tw:[display:none] tw:[z-index:9999] tw:[backdrop-filter:blur(8px)] tw:[background:rgba(10,8,7,0.85)] tw:[align-items:center] tw:[justify-content:center] tw:[position:fixed] tw:[inset:0]">
+    <div class="profile-post-div-presentation">
+      <button class="tw:[position:absolute] tw:[top:14px] tw:[right:16px] tw:[background:none] tw:[border:none] tw:[color:var(--text-muted)] tw:[font-size:24px] tw:[cursor:pointer] tw:[line-height:1]">×</button>
+      
+      <div class="tw:[text-align:center] tw:[margin-bottom:20px]">
+        <div class="tw:[font-size:34px] tw:[margin-bottom:4px]">💎</div>
+        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:22px] tw:[font-weight:900] tw:[color:var(--gold-bright)] tw:[margin:0]">Send Tribute</h3>
+        <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:4px]">Choose your preferred tribute method:</p>
+      </div>
+
+      <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:12px]">
+        
+        <!-- 1. Second Life In-World Lindens -->
+        <div class="profile-post-div-presentation-2">
+          <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:6px]">
+            <strong class="tw:[color:#fff] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">🪙 In-World Linden Dollars (L$)</strong>
+            <span class="tag-pill-badge tw:[font-size:9.5px] tw:[padding:1px_6px]">Zero Fee</span>
+          </div>
+          <p class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[margin:0_0_10px_0] tw:[line-height:1.45]">
+            Pay directly in Second Life from anywhere on the grid (no need to be on the same sim). Search the username in your viewer to send L$ or an IM.
+          </p>
+          <div class="profile-post-div-presentation-3">
+            <span class="tw:[font-family:var(--font-mono)] tw:[font-size:13px] tw:[font-weight:700] tw:[color:var(--gold-bright)]">@username</span>
+            <button class="profile-post-button-presentation">📋 Copy</button>
+          </div>
+          <div class="tw:[display:flex] tw:[gap:8px]">
+            <a href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm tw:[flex:1] tw:[justify-content:center] tw:[font-size:11px] tw:[padding:7px_10px]">
+              <span>🌐</span> SL Profile ↗
+            </a>
+            <button type="button" class="btn btn-gold btn-sm tw:[flex:1] tw:[justify-content:center] tw:[font-size:11px] tw:[padding:7px_10px] tw:[cursor:pointer]">
+              <span>✉️</span> Web Enquiry ↓
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Throne Cash Tribute & Wishlist (100% Private) -->
+        <div class="profile-post-div-presentation-4">
+          <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:6px]">
+            <strong class="tw:[color:var(--gold-bright)] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">👑 Throne Anonymous Tribute</strong>
+            <span class="tw:[font-size:9.5px] tw:[color:#4ade80] tw:[font-family:var(--font-mono)]">100% Private</span>
+          </div>
+          <p class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[margin:0_0_10px_0] tw:[line-height:1.4]">Send direct cash tributes or gifts securely without exchanging real names or billing info.</p>
+          <a href="#" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-size:11.5px] tw:[padding:8px_12px]">🎁 Open Throne Page ↗</a>
+        </div>
+        </div>
+      </div>
+  </div>
+
+  <!-- Profile Hero & Cover Header -->
+  {% endraw %}
+{% include "partials/creator-hero.njk" %}
+{% raw %}
+
+  <!-- Main Profile Body Content -->
+  <main class="section companion-article-page profile-article-page">
+        <div class="container">{% endraw %}
+{% include "partials/profile-tabs.njk" %}
+{% raw %}</div>
+        <div class="container companion-article-layout">
+          <!-- Left Column: Article Body -->
+          <div>
+            <article class="companion-article-body">
+              <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:14px] tw:[flex-wrap:wrap] tw:[gap:10px]">
+                <span class="role-badge tw:[background:rgba(212,175,55,0.12)] tw:[color:var(--gold-bright)] tw:[font-size:11px] tw:[padding:3px_10px]">
+                  💬 Update
+                </span>
+                <span class="tw:[font-family:var(--font-mono)] tw:[font-size:11.5px] tw:[color:var(--gold-muted)]">
+                  Oct 3, 2026 • 1 min read
+                </span>
+              </div>
+
+              <h1 class="companion-article-title">
+                If i add a post here
+              </h1>
+
+              <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:14px] tw:[padding:14px_0] tw:[border-top:1px_solid_rgba(255,255,255,0.06)] tw:[border-bottom:1px_solid_rgba(255,255,255,0.06)]">
+                <div class="profile-post-div-presentation-6">
+                  <img class="tw:[width:100%] tw:[height:100%] tw:[object-fit:cover]" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80" alt="Alek Zane">
+                </div>
+                <div>
+                  <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:8px]">
+                    <a class="tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[font-weight:800] tw:[color:var(--gold-bright)] tw:[text-decoration:none]" href="/profile.html">
+                      Alek Zane
+                    </a>
+                    <span class="role-badge">SUB</span>
+                  </div>
+                  <div class="tw:[font-family:var(--font-mono)] tw:[font-size:11.5px] tw:[color:var(--gold-muted)]">
+                    @alek.zane • Control &amp; Chaos
+                  </div>
+                </div>
+              </div>
+
+              
+                <img class="profile-post-img-presentation" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80" alt="If i add a post here">
+              
+
+              <div class="article-content tw:[font-size:16px] tw:[line-height:1.8] tw:[color:#e2e8f0] tw:[margin:24px_0_32px] tw:[word-break:break-word]">
+                <p>What would happen?</p>
+<p>Do i get spaces?<br>it seems this editor is a bit weird</p>
+              </div>
+
+              <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[padding-top:20px] tw:[border-top:1px_solid_rgba(255,255,255,0.08)] tw:[flex-wrap:wrap] tw:[gap:12px]">
+                <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:10px]">
+                  <button type="button" class="btn btn-secondary btn-sm">
+                    <span>🔗</span> Share Article
+                  </button>
+                </div>
+
+                <a href="/profile-blog.html" class="btn btn-secondary btn-sm">
+                  <span>←</span> All Alek Zane's Posts
+                </a>
+              </div>
+            </article>
+
+            
+          </div>
+
+          <!-- Right Column: Sticky Creator Profile & Booking Card -->
+          <div>
+            <aside class="card companion-article-creator">
+              <div class="tw:[text-align:center] tw:[margin-bottom:18px]">
+                <div class="profile-post-div-presentation-7">
+                  <img class="tw:[width:100%] tw:[height:100%] tw:[object-fit:cover]" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80" alt="Alek Zane">
+                </div>
+                <h2 class="tw:[font-family:var(--font-heading)] tw:[font-size:20px] tw:[font-weight:800] tw:[color:#fff] tw:[margin:0_0_4px_0]">
+                  Alek Zane
+                </h2>
+                <div class="tw:[font-size:12px] tw:[color:var(--gold-muted)] tw:[margin-bottom:8px]">
+                  Bratty, Pay to Play Submissive
+                </div>
+                <div class="profile-post-div-presentation-8">
+                  ⚡ Starting at L$3,000 / hr
+                </div>
+              </div>
+
+              
+                <p class="tw:[font-size:12.5px] tw:[color:#cbd5e1] tw:[line-height:1.55] tw:[text-align:center] tw:[margin-bottom:18px] tw:[font-style:italic]">
+                  "The versatile British sub you’ve been looking for. Ready to entertain female Dominants who desire a sharp, bubbly companion with just enough cheeky attitude to keep you on your toes—and complete devotion when put firmly in my place."
+                </p>
+              
+
+              
+                <div class="tw:[margin-bottom:18px] tw:[text-align:center] tw:[display:flex] tw:[flex-wrap:wrap] tw:[justify-content:center] tw:[gap:6px]">
+                  
+        <span class="profile-post-span-presentation">
+          <span>🌊</span> Gush
+        </span>
+      
+        <span class="profile-post-span-presentation">
+          <span>💎</span> Diamo
+        </span>
+      
+        <span class="profile-post-span-presentation">
+          <span>🚀</span> Max 2
+        </span>
+      
+                </div>
+              
+
+              <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:10px]">
+                <a href="/profile.html#profile-tabs-nav" class="btn btn-gold tw:[width:100%] tw:[box-sizing:border-box] tw:[justify-content:center]">
+                  <span>📋</span> View Full Rate Card &amp; Menus
+                </a>
+                <a href="/profile.html#booking-enquiry-section" data-profile-booking-link="" class="btn btn-secondary tw:[width:100%] tw:[box-sizing:border-box] tw:[justify-content:center]">
+                  <span>✉️</span> Submit Booking Enquiry
+                </a>
+                <a href="https://maps.secondlife.com/secondlife/Los%20Pengos/85/167/3000" target="_blank" rel="noopener" class="btn btn-secondary tw:[width:100%] tw:[box-sizing:border-box] tw:[justify-content:center]">
+                  <span>📍</span> Teleport In-World (SL) ↗
+                </a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+
+  <!-- Fan Club Subscribe & Teleport Modal -->
+  <div class="lightbox-overlay tw:[display:none] tw:[z-index:9999] tw:[backdrop-filter:blur(10px)] tw:[background:rgba(10,8,7,0.85)] tw:[align-items:center] tw:[justify-content:center] tw:[position:fixed] tw:[inset:0]">
+    <div class="profile-post-div-presentation-9">
+      <button class="tw:[position:absolute] tw:[top:16px] tw:[right:18px] tw:[background:none] tw:[border:none] tw:[color:var(--text-muted)] tw:[font-size:26px] tw:[cursor:pointer] tw:[line-height:1]">×</button>
+      
+      <div class="tw:[text-align:center] tw:[margin-bottom:24px]">
+        <div class="tw:[font-size:38px] tw:[margin-bottom:6px]">👑</div>
+        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:24px] tw:[font-weight:900] tw:[color:var(--gold-bright)] tw:[margin:0]">Join The Inner Circle</h3>
+        <p class="tw:[font-size:13px] tw:[color:var(--text-muted)] tw:[margin-top:6px]">Get full uncensored access to private photo sets, voice notes &amp; tasks</p>
+      </div>
+
+      <!-- Perks Checklist -->
+      <div class="profile-post-div-presentation-10">
+        <div class="tw:[font-size:12px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-bright)] tw:[font-weight:700] tw:[margin-bottom:8px]">💎 INCLUDED MEMBERSHIP PERKS:</div>
+        <ul class="tw:[margin:0] tw:[padding-left:20px] tw:[font-size:13px] tw:[color:#e7e5e4] tw:[line-height:1.7]">
+          <li>📸 Full uncensored photoshoots &amp; lookbooks</li>
+          <li>🎙️ Exclusive voice audio notes &amp; session previews</li>
+          <li>📜 Daily obedience tasks &amp; protocol rules</li>
+          <li>❤️ Interactive liking &amp; priority in-world booking</li>
+        </ul>
+      </div>
+
+      <!-- Option 1: In-World SLurl Teleport & Terminal -->
+      <div class="profile-post-div-presentation-11">
+        <div class="tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[margin-bottom:8px]">
+          <strong class="tw:[color:var(--gold-bright)] tw:[font-size:14px] tw:[display:flex] tw:[align-items:center] tw:[gap:6px]">📍 In-World SL Terminal (Instant Unlock)</strong>
+          <span class="tw:[font-size:10px] tw:[color:#4ade80] tw:[font-family:var(--font-mono)] tw:[font-weight:700]">L$1,500 / 30d</span>
+        </div>
+        <p class="tw:[font-size:12px] tw:[color:var(--text-muted)] tw:[margin:0_0_12px] tw:[line-height:1.45]">
+          Teleport to the in-world terminal to pay L$ and unlock this web feed instantly.
+        </p>
+        <a href="#" target="_blank" rel="noopener" class="btn btn-gold btn-sm tw:[width:100%] tw:[justify-content:center] tw:[font-size:12px] tw:[padding:9px_14px] tw:[margin-bottom:10px]">
+          <span>📍</span> Teleport to Subscriber Terminal ↗
+        </a>
+        <div class="profile-post-div-presentation-12">
+          <div>
+            <div class="tw:[font-size:10px] tw:[font-family:var(--font-mono)] tw:[color:var(--gold-muted)] tw:[text-transform:uppercase] tw:[letter-spacing:0.5px]">Terminal Pay Code</div>
+            <div class="tw:[font-family:var(--font-heading)] tw:[font-size:14px] tw:[font-weight:800] tw:[color:var(--gold-bright)]">ALEK-ZANE</div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:5px_10px] tw:[flex-shrink:0] tw:[cursor:pointer]">
+            <span>📋</span> Copy Code
+          </button>
+        </div>
+      </div>
+
+      <!-- Option 2: Direct SL Contact -->
+      <div class="profile-post-div-presentation-13">
+        <div>
+          <div class="tw:[font-size:13px] tw:[color:#fff] tw:[font-weight:700]">Direct Enquiry / IM</div>
+          <div class="tw:[font-size:11.5px] tw:[color:var(--text-muted)] tw:[font-family:var(--font-mono)]">@username</div>
+        </div>
+        <a href="#" target="_blank" class="btn btn-secondary btn-sm tw:[font-size:11px] tw:[padding:6px_12px]">
+          <span>💬</span> Message in SL
+        </a>
+      </div>
+
+      <p class="text-muted tw:[font-size:12px] tw:[text-align:center]">Subscriber access requires verified sign-in. Preview unlocking is unavailable.</p>
+
+    </div>
+  </div>
+
+  <!-- Image Lightbox Modal -->
+  <div class="lightbox-modal" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" tabindex="-1">
+    <div class="lightbox-content">
+      <button type="button" id="lightbox-close" class="gallery-lightbox-control gallery-lightbox-close" title="Close" aria-label="Close photo viewer">×</button>
+      <button type="button" id="lightbox-previous" class="gallery-lightbox-control gallery-lightbox-previous" title="Previous image" aria-label="Previous image" hidden>←</button>
+      <img src="" alt="Gallery Preview" class="lightbox-img" id="lightbox-image">
+      <button type="button" id="lightbox-next" class="gallery-lightbox-control gallery-lightbox-next" title="Next image" aria-label="Next image" hidden>→</button>
+      <div class="tw:[margin-top:12px] tw:[font-family:var(--font-heading)] tw:[font-size:16px] tw:[color:var(--gold-bright)] tw:[text-align:center]" id="lightbox-caption"></div>
+      <p id="lightbox-description" class="gallery-lightbox-description"></p>
+      <span id="lightbox-counter" class="gallery-lightbox-counter" aria-live="polite"></span>
+    </div>
+  </div>
+{% endraw %}
+{% endblock %}

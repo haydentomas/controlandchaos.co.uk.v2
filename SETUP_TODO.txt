@@ -9,14 +9,16 @@ Supabase will manage creator data, authentication and private media.
 Netlify will host the site. Keep V1 unchanged throughout staging work.
 
 1. PROTECT THE BASELINE AND CREATE STAGING
-[ ] Create a separate GitHub repository, preferably private, for V2.
+[x] Create a separate GitHub repository, preferably private, for V2.
     Suggested name: control-and-chaos-v2.
     Its local root must be J:\FinalGame\v2, not the workspace root or main.
-[ ] Review the files before the first commit. Include package-lock.json.
+[x] Review the files before the first commit. Include package-lock.json.
     Exclude dependencies, generated output, screenshots and credentials.
     Review .gitignore and add .env exclusions before configuring secrets.
-[ ] Commit and push the current templates and tests as the baseline.
-[ ] Create a NEW Netlify site connected to this NEW repository.
+[x] Commit and push the current templates and tests as the baseline.
+    Baseline commit: 11bbab4. Current shared-template changes are not pushed.
+[x] Create a NEW Netlify site connected to this NEW repository.
+    Staging: https://controlandchaosv2.netlify.app/
     Base directory: leave blank when the repository root is V2.
     Build command: npm run build
     Publish directory: build
@@ -42,22 +44,24 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
 [ ] Keep layout structure in code; editable text does not mean editable HTML.
 
 3. BUILD SHARED TEMPLATES
-[ ] Add Nunjucks and one documented build/dev workflow.
-[ ] Extract the site layout, document head/SEO, header, mobile navigation,
+[x] Add Nunjucks and one documented build/dev workflow.
+[x] Extract the site layout, document head/SEO, header, mobile navigation,
     footer, creator hero and profile tabs into shared templates.
-[ ] Use explicit normal and white-label layout variants, not copied pages.
-[ ] Render the header and footer into the HTML before serving the page.
+[x] Use explicit normal and white-label layout variants, not copied pages.
+[x] Render the header and footer into the HTML before serving the page.
 [ ] Reuse post cards, rich-text rendering and suitable gallery/editor pieces.
-[ ] Preserve the approved desktop appearance and mobile tab wrapping.
-[ ] Adapt existing tests as needed and pass build and browser checks.
-[ ] Make clean-clone development and validation independent of ../main.
-    The current capture script reads V1, and visual reference files are ignored.
-    Preserve a deliberate test-fixture strategy; do not run capture over new work.
-[ ] Ensure reference pages and test fixtures are excluded from public builds.
+[x] Preserve the approved desktop appearance and mobile tab wrapping.
+[x] Adapt existing tests as needed and pass build and browser checks.
+    41 tests and 64 desktop/mobile comparisons pass, including interactions.
+[x] Make clean-clone development and validation independent of ../main.
+    Build/dev/tests use Nunjucks sources and a portable visual reference fixture.
+    Capture is legacy-only; do not run it over the new implementation.
+[x] Ensure reference pages and test fixtures are excluded from public builds.
 
 4. ORGANIZE SCRIPTS AND DEPENDENCIES
-[ ] Separate shared navigation from gallery, editor and booking modules.
-[ ] Load page-specific modules only where required; no duplicated scripts.
+[x] Separate shared navigation from gallery and editor modules.
+    Booking interactions remain a separate future implementation.
+[x] Load page-specific modules only where required; no duplicated scripts.
 [ ] Centralize API access and error handling behind one maintained client.
 [ ] Keep authorization and privileged credentials on the server.
 [ ] Pin dependency versions, commit the lockfile and use npm ci in CI.
@@ -99,10 +103,11 @@ Netlify will host the site. Keep V1 unchanged throughout staging work.
 [ ] Approve production launch explicitly; only then change live routing.
 
 CURRENT STATUS / YOUR NEXT ACTION
-V2 is still a local visual prototype. No new Git repository, Netlify site or
-Supabase project has been created by this checklist.
+V2 has a separate repository and Netlify staging site. Shared templates and
+modular preview scripts are implemented and tested locally, not yet pushed.
+Preview: http://127.0.0.1:4182/
 
-First create/connect the separate V2 GitHub repository and Netlify staging
-site using step 1. We can then begin the shared-template work locally.
-No Supabase credentials, domain transfer or paid service setup is needed yet.
-Share repository/site URLs when ready, but never share passwords or tokens.
+Next review these changes, approve their commit/push, then define Decap's staff
+content schemas and extract editable page fields. No Supabase project is
+connected, and no domain transfer or paid service setup is needed yet.
+Never share passwords or tokens in chat.

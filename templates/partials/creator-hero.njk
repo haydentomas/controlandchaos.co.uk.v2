@@ -1,0 +1,21 @@
+<header class="{{ page.hero.headerClass }}">
+  <div class="tw:[position:absolute] tw:[inset:0] tw:[background:linear-gradient(180deg,_rgba(14,12,11,0.7)_0%,_rgba(18,16,14,0.85)_60%,_rgba(18,16,14,0.98)_100%)] tw:[pointer-events:none] tw:[z-index:1] tw:[display:block]"></div>
+  <canvas class="tw:[position:absolute] tw:[inset:0] tw:[width:100%] tw:[height:100%] tw:[pointer-events:none] tw:[z-index:2]" height="" width="" id="hero-canvas"></canvas>
+  <div class="container tw:[position:relative] tw:[z-index:3]">
+    <div class="tw:[display:flex] tw:[gap:28px] tw:[align-items:center] tw:[flex-wrap:wrap]">
+      <div class="{{ page.hero.avatarFrameClass }}">
+        <img class="tw:[width:100%] tw:[height:100%] tw:[object-fit:cover]" src="{{ creator.avatar }}" alt="{{ creator.name }}">
+      </div>
+      <div class="tw:[flex:1] tw:[min-width:280px] tw:[text-shadow:0_2px_8px_rgba(0,0,0,0.9),0_4px_20px_rgba(0,0,0,0.85)]">
+        <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:12px] tw:[flex-wrap:wrap]">
+          <h1 class="tw:[font-family:var(--font-heading)] tw:[font-size:38px] tw:[font-weight:900] tw:[color:var(--gold-bright)] tw:[margin:0] tw:[text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">{{ creator.name }}</h1>
+          <span class="role-badge tw:[background:rgba(184,154,88,0.35)] tw:[border:1px_solid_var(--gold-border)] tw:[color:var(--gold-bright)] tw:[font-size:11px] tw:[backdrop-filter:blur(4px)]">{{ creator.roleBadge }}</span>
+          <span class="traffic-status traffic-live"><span class="traffic-dot"></span> {{ creator.status }}</span>
+        </div>
+        <div class="tw:[font-size:16px] tw:[font-weight:700] tw:[color:var(--gold-bright)] tw:[margin-top:8px] tw:[letter-spacing:0.3px] tw:[text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">{{ creator.subtitle }}</div>
+        <div class="tw:[font-family:var(--font-mono)] tw:[font-size:13px] tw:[color:var(--gold-muted)] tw:[margin-top:6px] tw:[text-shadow:0_1px_4px_rgba(0,0,0,0.8)]">Second Life Username: <strong>{{ creator.username }}</strong> </div>
+        <p class="tw:[font-size:18px] tw:[color:var(--text-primary)] tw:[margin-top:10px] tw:[font-style:italic] tw:[max-width:750px] tw:[line-height:1.5] tw:[text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">{{ creator.tagline }}</p>
+      </div>
+    </div>
+  </div>
+</header>

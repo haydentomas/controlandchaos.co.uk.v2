@@ -2,9 +2,11 @@ import { chromium } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
+import { gunzipSync } from 'node:zlib';
 
 const root = path.resolve(import.meta.dirname, '..');
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8'));
+const references = JSON.parse(gunzipSync(await fs.readFile(new URL('./fixtures/visual-reference.json.gz', import.meta.url))).toString('utf8'));
 const output = path.join(root, 'test-results/visual');
 let server;
 let baseUrl = process.env.TEMPLATE_BASE_URL;
@@ -64,6 +66,11 @@ try {
   console.log('Navigation: dark first paint with delayed CSS, native page fade, Back, and reduced motion passed');
   for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+    await context.route('**/reference/*', route => {
+      const filename = new URL(route.request().url()).pathname.slice('/reference/'.length);
+      const body = references[filename];
+      return route.fulfill({ status: typeof body === 'string' ? 200 : 404, contentType: filename.endsWith('.css') ? 'text/css' : 'text/html', body: body ?? '' });
+    });
     for (const template of manifest) {
       const measurements = [];
       for (const reference of [true, false]) {

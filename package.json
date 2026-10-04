@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "capture": "node scripts/capture-templates.mjs",
-    "test": "node --test scripts/templates.test.mjs scripts/page-shell.test.mjs",
+    "render": "node scripts/render-templates.mjs",
+    "test": "npm run render && node --test scripts/templates.test.mjs scripts/page-shell.test.mjs",
     "test:visual": "node scripts/visual-audit.mjs",
     "dev": "vite",
     "build": "vite build",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "dompurify": "^3.4.16",
-    "marked": "^18.0.14"
+    "marked": "^18.0.14",
+    "nunjucks": "3.2.4"
   }
 }

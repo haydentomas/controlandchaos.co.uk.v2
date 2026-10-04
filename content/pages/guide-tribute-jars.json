@@ -1,0 +1,58 @@
+{
+  "template": "guide-tribute-jars",
+  "title": "[C&C] Smart Tribute Jars User Guide | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [
+    {
+      "name": "description",
+      "content": "Gamified smart tip jar rewarding submissives with +XP and Gold Coins on tribute, custom tip buttons, particle celebrations, Discord webhook alerts, and split revenue."
+    },
+    {
+      "property": "og:type",
+      "content": "article"
+    },
+    {
+      "property": "og:title",
+      "content": "[C&C] Smart Tribute Jar User Guide"
+    },
+    {
+      "property": "og:description",
+      "content": "Configure percentage splits, tribute goal multipliers, particle fireworks, and sim-wide leaderboard tipping sync."
+    },
+    {
+      "property": "og:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      "property": "og:url",
+      "content": "https://controlandchaos.com/guides/tribute-jars/"
+    },
+    {
+      "property": "og:site_name",
+      "content": "Control & Chaos"
+    },
+    {
+      "name": "twitter:card",
+      "content": "summary_large_image"
+    },
+    {
+      "name": "twitter:title",
+      "content": "[C&C] Smart Tribute Jar User Guide"
+    },
+    {
+      "name": "twitter:description",
+      "content": "Configure percentage splits, tribute goal multipliers, particle fireworks, and sim-wide leaderboard tipping sync."
+    },
+    {
+      "name": "twitter:image",
+      "content": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+    }
+  ],
+  "links": [
+    {
+      "rel": "canonical",
+      "href": "https://controlandchaos.com/guides/tribute-jars/"
+    }
+  ]
+}
