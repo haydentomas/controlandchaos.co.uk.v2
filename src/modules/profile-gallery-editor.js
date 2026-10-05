@@ -1,7 +1,9 @@
 import { validateGalleryPhotos, galleryImageUrl, GALLERY_PHOTO_LIMIT } from './profile-gallery.js';
+import { initRichTextEditor } from './rich-text-editor.js';
 
 export function initProfileGalleryEditor(container, addPhoto) {
   let photos = [];
+  let textEditors = [];
   const create = (tag, className = '') => { const node = document.createElement(tag); node.className = className; return node; };
   const button = (label, name, action, disabled = false) => {
     const control = create('button', 'btn btn-secondary btn-sm');
@@ -14,6 +16,8 @@ export function initProfileGalleryEditor(container, addPhoto) {
     return control;
   };
   const paint = () => {
+    for (const editor of textEditors) editor.destroy();
+    textEditors = [];
     container.replaceChildren();
     addPhoto.disabled = photos.length >= GALLERY_PHOTO_LIMIT;
     if (!photos.length) { const empty = create('p', 'text-muted'); empty.textContent = 'No gallery photos yet.'; container.append(empty); }
@@ -33,6 +37,7 @@ export function initProfileGalleryEditor(container, addPhoto) {
       };
       toolbar.append(heading, button('\u2191', 'Move photo up', () => move(-1), index === 0), button('\u2193', 'Move photo down', () => move(1), index === photos.length - 1), button('Remove photo', 'Remove photo', () => { photos.splice(index, 1); paint(); }));
       row.append(toolbar);
+      container.append(row);
       const image = create('img', 'creator-image-preview preview-hidden');
       image.alt = photo.title || 'Photo preview';
       image.loading = 'lazy';
@@ -47,6 +52,7 @@ export function initProfileGalleryEditor(container, addPhoto) {
       };
       image.addEventListener('error', () => { image.classList.add('preview-hidden'); imageStatus.textContent = 'Image could not be loaded.'; });
       const grid = create('div', 'form-grid-2');
+      row.append(grid);
       for (const [name, labelText, maximum] of [['title','Photo title',100],['category','Category tag',100],['image_url','Image URL',2048],['description','Photo description',2000]]) {
         const group = create('div');
         const label = create('label', 'form-label');
@@ -62,6 +68,7 @@ export function initProfileGalleryEditor(container, addPhoto) {
         input.addEventListener('input', () => { photo[name] = input.value; if (name === 'image_url') preview(); });
         group.append(label, input);
         grid.append(group);
+        if (name === 'description') textEditors.push(initRichTextEditor(input));
       }
       const publication = create('label', 'profile-feature-switch');
       const published = create('input');

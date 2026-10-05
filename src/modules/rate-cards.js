@@ -1,3 +1,5 @@
+import { renderRichText } from './profile-rich-text.js';
+
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export const RATE_CATEGORY_LIMIT = 20;
 export const RATE_ITEM_LIMIT = 30;
@@ -42,9 +44,9 @@ export function renderPublicRateCards(container, categories) {
     const title = document.createElement('h3');
     title.className = 'account-subheading';
     title.textContent = category.title;
-    const description = document.createElement('p');
+    const description = document.createElement('div');
     description.className = 'text-muted';
-    description.textContent = category.description;
+    renderRichText(description, category.description);
     section.append(title, description);
     for (const item of category.items) {
       const row = document.createElement('article');
@@ -54,8 +56,8 @@ export function renderPublicRateCards(container, categories) {
       const price = document.createElement('p');
       price.className = 'text-gold font-bold';
       price.textContent = [item.price || 'Contact for rates', item.unit].filter(Boolean).join(' / ');
-      const details = document.createElement('p');
-      details.textContent = item.description;
+      const details = document.createElement('div');
+      renderRichText(details, item.description);
       row.append(heading, price, details);
       section.append(row);
     }

@@ -191,7 +191,7 @@ test('profile protocol migration preserves paid ownership, atomic gallery saves 
     assert.deepEqual((await database.query('select has_column_privilege($1,$2,$3,$4) as allowed', ['authenticated', 'public.directory_profiles', 'boundaries', 'UPDATE'])).rows[0], { allowed: true });
     assert.equal((await database.query("select has_function_privilege('anon','public.save_directory_profile_media(uuid,jsonb,jsonb)','EXECUTE') as allowed")).rows[0].allowed, false);
     await actAs('authenticated', owner);
-    const protocol = { boundaries: 'Respect stated boundaries.\nUse agreed limits.', booking_instructions: 'Contact me in-world.\nConfirm a time before booking.' };
+    const protocol = { boundaries: '**Respect stated boundaries.**\n\n- Use agreed limits.\n- Confirm first.', booking_instructions: 'Contact me in-world.\n\n1. Send a message.\n2. Confirm a time before booking.' };
     const save = changes => database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify(changes), JSON.stringify(photos)]);
     await save(protocol);
     await save({ boundaries: '', booking_instructions: '' });

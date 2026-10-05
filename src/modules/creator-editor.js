@@ -5,6 +5,7 @@ import { initRateCardEditor } from './rate-card-editor.js';
 import { initBookingHoursEditor } from './booking-hours.js';
 import { initProfileGalleryEditor } from './profile-gallery-editor.js';
 import { fetchGalleryPhotos } from './profile-gallery.js';
+import { initRichTextEditor } from './rich-text-editor.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -13,6 +14,7 @@ export async function initCreatorEditor(clientOverride) {
   const picker = form.querySelector('[data-creator-profile]');
   const reload = document.querySelector('[data-creator-reload]');
   const signin = document.querySelector('[data-creator-signin]');
+  const textEditors = Object.fromEntries(['tagline', 'about', 'boundaries', 'booking_instructions'].map(name => [name, initRichTextEditor(form.elements[name])]));
   const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
   const bookingEditor = initBookingHoursEditor(form.querySelector('[data-booking-editor]'));
   const galleryEditor = initProfileGalleryEditor(form.querySelector('[data-gallery-editor]'), form.querySelector('[data-gallery-add-photo]'));
@@ -29,6 +31,7 @@ export async function initCreatorEditor(clientOverride) {
     subscriptions = [];
     fields.disabled = true;
     form.reset();
+    for (const editor of Object.values(textEditors)) editor.load('');
     rateEditor.clear();
     bookingEditor.load(null);
     galleryEditor.clear();
@@ -48,6 +51,7 @@ export async function initCreatorEditor(clientOverride) {
     bookingEditor.load(row.booking_hours);
     profile = row;
     for (const name of fieldNames) form.elements[name].value = row[name] || '';
+    for (const [name, editor] of Object.entries(textEditors)) editor.load(row[name]);
     form.elements.tags.value = (row.tags || []).join(', ');
     form.elements.is_published.checked = row.is_published === true;
     form.querySelector('[data-creator-username]').value = row.sl_username;

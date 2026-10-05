@@ -2,6 +2,7 @@ import { createPublicDirectoryClient, directoryConfig, fetchPublicProfile, publi
 import { renderPublicRateCards } from './rate-cards.js';
 import { renderBookingHours } from './booking-hours.js';
 import { fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from './profile-gallery.js';
+import { renderRichText } from './profile-rich-text.js';
 
 function initProfileTabs(hasGallery) {
   const nav = document.querySelector('[data-public-profile-tabs]');
@@ -52,16 +53,16 @@ export async function initDirectoryProfile(clientOverride) {
     fill('[data-public-profile-headline]', profile.headline);
     fill('[data-public-profile-role]', { domme: 'Dominant / Domme', sub: 'Submissive', switch: 'Switch' }[profile.role_type] || 'Creator');
     fill('[data-public-profile-username]', `@${profile.sl_username}`);
-    fill('[data-public-profile-tagline]', profile.tagline);
+    renderRichText(document.querySelector('[data-public-profile-tagline]'), profile.tagline);
     fill('[data-public-profile-rate]', profile.starting_rate || 'Contact for rates');
-    fill('[data-public-profile-about]', profile.about);
+    renderRichText(document.querySelector('[data-public-profile-about]'), profile.about);
     document.querySelector('.public-profile-about-panel').classList.toggle('preview-hidden', !String(profile.about || '').trim());
     fill('[data-public-profile-availability]', `Availability: ${{ available: 'Available', busy: 'Busy', away: 'Away', offline: 'Offline' }[profile.availability] || 'Contact for availability'}`);
     fill('[data-public-profile-availability-note]', profile.availability_note);
     for (const [field, selector] of [['boundaries', '[data-public-profile-boundaries]'], ['booking_instructions', '[data-public-profile-instructions]']]) {
       const text = String(profile[field] || '').trim();
       const section = document.querySelector(selector);
-      section.querySelector('[data-profile-protocol-text]').textContent = text;
+      renderRichText(section.querySelector('[data-profile-protocol-text]'), text);
       section.classList.toggle('preview-hidden', !text);
     }
     document.title = `${profile.display_name} | Control & Chaos`;

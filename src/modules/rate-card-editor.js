@@ -1,7 +1,9 @@
 import { validateRateCategories, RATE_CATEGORY_LIMIT, RATE_ITEM_LIMIT, RATE_TOTAL_ITEM_LIMIT } from './rate-cards.js';
+import { initRichTextEditor } from './rich-text-editor.js';
 
 export function initRateCardEditor(container, addCategory) {
   let categories = [];
+  let textEditors = [];
   const element = (tag, className = '') => {
     const node = document.createElement(tag);
     node.className = className;
@@ -22,6 +24,7 @@ export function initRateCardEditor(container, addCategory) {
     input.addEventListener('input', () => { model[name] = input.value; });
     group.append(label, input);
     parent.append(group);
+    if (name === 'description') textEditors.push(initRichTextEditor(input));
   };
   const button = (text, title, action, disabled = false) => {
     const control = element('button', 'btn btn-secondary btn-sm');
@@ -45,6 +48,8 @@ export function initRateCardEditor(container, addCategory) {
     document.getElementById(`rate-${moved.id}-${moved.items ? 'title' : 'name'}`)?.focus();
   };
   const paint = () => {
+    for (const editor of textEditors) editor.destroy();
+    textEditors = [];
     container.replaceChildren();
     const total = categories.reduce((count, category) => count + category.items.length, 0);
     addCategory.disabled = categories.length >= RATE_CATEGORY_LIMIT;
@@ -64,9 +69,11 @@ export function initRateCardEditor(container, addCategory) {
         button('\u2193', 'Move category down', () => move(categories, categoryIndex, 1), categoryIndex === categories.length - 1),
         button('Remove category', 'Remove category', () => { categories.splice(categoryIndex, 1); paint(); }));
       section.append(toolbar);
+      container.append(section);
       field(section, category, 'title', 'Category title', 100, true);
       field(section, category, 'description', 'Category description', 1000);
       const services = element('div', 'rate-editor-services');
+      section.append(services);
       category.items.forEach((item, itemIndex) => {
         const row = element('div', 'rate-editor-item');
         row.dataset.rateItem = item.id;
@@ -78,6 +85,7 @@ export function initRateCardEditor(container, addCategory) {
           button('\u2193', 'Move service down', () => move(category.items, itemIndex, 1), itemIndex === category.items.length - 1),
           button('Remove service', 'Remove service', () => { category.items.splice(itemIndex, 1); paint(); }));
         row.append(controls);
+        services.append(row);
         field(row, item, 'name', 'Service name', 100, true);
         const priceFields = element('div', 'form-grid-2');
         field(priceFields, item, 'price', 'Price', 100);

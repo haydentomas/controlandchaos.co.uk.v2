@@ -1,4 +1,5 @@
 import { createPublicDirectoryClient, directoryConfig, DIRECTORY_PAGE_SIZE, fetchDirectory, publicImageUrl } from './directory-api.js';
+import { richTextSummary } from './profile-rich-text.js';
 
 export function directoryCard(template, profile) {
   const card = template.content.firstElementChild.cloneNode(true);
@@ -7,7 +8,7 @@ export function directoryCard(template, profile) {
   fill('[data-directory-username]', `@${profile.sl_username || ''}`);
   fill('[data-directory-role]', { domme: 'Dominant / Domme', sub: 'Submissive', switch: 'Switch' }[profile.role_type] || 'Creator');
   fill('[data-directory-headline]', profile.headline);
-  fill('[data-directory-tagline]', profile.tagline);
+  fill('[data-directory-tagline]', richTextSummary(profile.tagline, card.ownerDocument));
   fill('[data-directory-rate]', profile.starting_rate || 'Contact for rates');
   fill('[data-directory-availability]', { available: 'Available', busy: 'Busy', away: 'Away', offline: 'Offline' }[profile.availability] || 'Unavailable');
   card.querySelector('[data-directory-availability]').classList.toggle('traffic-live', profile.availability === 'available');

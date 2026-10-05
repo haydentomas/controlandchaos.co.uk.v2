@@ -1,3 +1,5 @@
+import { renderRichText } from './profile-rich-text.js';
+
 export function initGallery() {
   let galleryPhotos = [];
   let photoIndex = 0;
@@ -21,7 +23,9 @@ export function initGallery() {
     image.src = photo.dataset.photo;
     image.alt = photo.dataset.photoTitle;
     document.getElementById('lightbox-caption').textContent = [photo.dataset.photoTitle, photo.dataset.photoCategory].filter(Boolean).join(' / ');
-    document.getElementById('lightbox-description').textContent = photo.dataset.photoDescription;
+    const description = document.getElementById('lightbox-description');
+    if (document.documentElement.dataset.template === 'directory-profile') renderRichText(description, photo.dataset.photoDescription);
+    else description.textContent = photo.dataset.photoDescription;
     document.getElementById('lightbox-counter').textContent = `${photoIndex + 1} / ${galleryPhotos.length}`;
     for (const id of ['lightbox-previous', 'lightbox-next']) document.getElementById(id).hidden = galleryPhotos.length < 2;
     lightbox.classList.add('active');
@@ -64,7 +68,7 @@ export function initGallery() {
     if (lightbox?.classList.contains('active') && event.key === 'ArrowLeft') { event.preventDefault(); stepPhoto(-1); }
     if (lightbox?.classList.contains('active') && event.key === 'ArrowRight') { event.preventDefault(); stepPhoto(1); }
     if (lightbox?.classList.contains('active') && event.key === 'Tab') {
-      const controls = [...lightbox.querySelectorAll('button')].filter(button => !button.hidden);
+      const controls = [...lightbox.querySelectorAll('button, a[href]')].filter(control => !control.hidden);
       const index = controls.indexOf(document.activeElement);
       event.preventDefault();
       controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length]?.focus();

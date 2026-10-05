@@ -126,7 +126,9 @@ Official references: https://supabase.com/docs/guides/auth/redirect-urls and htt
 
 The authoritative current status is [NEXT_STEPS.md](NEXT_STEPS.md); earlier setup steps below are historical. Migrations 1-9 are already applied in V2. Do not rerun them.
 
-Status on 2026-10-05: the user also applied migration 10, shared the correct column/default results and confirmed the expected privilege results. Frontend commit/push is approved. Steps 1-3 below are completed; do not rerun migration 10. Real post-deployment save/read verification remains pending.
+Status on 2026-10-05: the user also applied migration 10, shared the correct column/default results and confirmed the expected privilege results. The frontend was pushed/deployed as `70a154c`, and the user confirmed the feature works. Steps 1-3 below are completed; do not rerun migration 10.
+
+The subsequent local visual/Markdown editor stores Markdown in the same bounded text columns/JSON description fields. It needs no new migration or grants. Public formatting does not enable arbitrary HTML, bookings or payments.
 
 Before deploying the new protocol editor/public-reader code:
 

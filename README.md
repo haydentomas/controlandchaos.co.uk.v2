@@ -4,11 +4,13 @@ This is the isolated V2 frontend of the existing Control & Chaos site. Decap sup
 
 The Boundaries / How to Book slice requires migration 10 before frontend deployment; the user has applied and verified it in V2. These are optional plain-text fields, not booking requests or reservations. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for setup history; do not rerun already-applied migrations 1-10.
 
+Long-form editing supports **Visual**, **Markdown** and **Preview** modes with formatting toolbars. This covers tagline, About, Boundaries, How to Book, booking notes and rate/gallery descriptions. Short labels, names, prices and URLs remain plain text. Markdown is stored in existing fields with existing limits; no new SQL is required. Public readers render semantic paragraphs/lists and safe links. Raw HTML is displayed literally; embedded Markdown images are not enabled. Visual editing is loaded on demand, with unsupported source constructs retained in Markdown mode rather than discarded. See [NEXT_STEPS.md](NEXT_STEPS.md) for deployment and hosted verification status.
+
 ## Stack
 
 - Vite 8 and Tailwind CSS 4.3.3, installed from the current npm releases.
 - Pinned Nunjucks renders complete HTML at build time. Normal and white-label layouts share one head/footer, with explicit navigation/footer differences.
-- Shared navigation and hero modules, with gallery, editor, profile and preview-action modules loaded only where needed. Markdown dependencies are editor-only.
+- Shared navigation and hero modules, with gallery, editor, profile and preview-action modules loaded only where needed. Markdown parsing is shared by public text renderers; the Tiptap visual editor is loaded only on demand in Profile Studio.
 - Shared typography, colours, and spacing match the existing site. Tailwind utilities use the `tw:` prefix to avoid collisions with existing design-selector names.
 - No inline style attributes, inline event handlers or embedded private credentials are shipped. Creator sessions and authorized saves happen at runtime; privileged terminal operations use server-only Netlify functions.
 - The Vite page shell adds a tiny critical dark-canvas rule and an early stylesheet link to prevent white first-paint flashes. Supported browsers use native cross-document fades; reduced-motion preferences disable them. Navigation is not intercepted or artificially delayed.
@@ -47,10 +49,13 @@ For local staff editing, run `npm run cms:local` in a second terminal and open `
 
 ```powershell
 npm test
+npm run test:rich-text
 npm run build
 ```
 
 For screenshot/layout comparison, run `npm run build`, then `npm run test:visual`. Install Chromium once with `npx playwright install chromium`. The audit starts and closes its own temporary static server and serves the original reference from its compressed fixture. Reports and screenshots are written under ignored `test-results/visual`. An optional `TEMPLATE_BASE_URL` can point it at an existing preview server.
+
+`npm run test:rich-text` also uses the installed Playwright Chromium. It starts/closes an isolated Vite server and mocks creator/public clients; it does not authenticate or write live profile data.
 
 Output is written to `build`; reference pages and test fixtures are not published. Automatic full output cleanup remains disabled because the workspace drive reported a generated-directory lock. A failed earlier `dist` folder is ignored and is not source content. `netlify.toml` declares `npm run build`, publish directory `build`, Node 22 and staging noindex headers. Remove staging restrictions only as part of an approved production cutover.
 

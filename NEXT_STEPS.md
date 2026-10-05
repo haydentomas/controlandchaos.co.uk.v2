@@ -4,7 +4,7 @@ Updated: 2026-10-05. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Next action: deploy the approved Boundaries / How to Book slice, then verify a real owner save/reload and anonymous public read. The user applied migration 10 and confirmed its permissions on 2026-10-05, then approved commit/push. Sidebar-gallery milestone `9486134` is pushed to V2 `main`; its deployed preview markup is confirmed. Migrations 1-10 are already applied. Do not rerun them.**
+**Next action: deploy the visual/Markdown editor slice and let the user review it live. The user approved its commit/push on 2026-10-05 after 70 tests and the production build passed. Boundaries / How to Book is deployed as `70a154c`; the user confirmed it works. Migrations 1-10 are already applied. Do not rerun them. No additional migration is needed for Markdown.**
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -20,11 +20,25 @@ The user chose the richer V1-style listing/profile as the implementation directi
 
 Commit `9486134` adds a sidebar preview of up to four published gallery photos, a full-gallery button, and published-photo counts. It reuses the gallery tile renderer/lightbox rather than duplicating media logic. 61 focused directory/template/creator tests and the production build passed. Local mocked desktop/mobile browser checks covered populated and empty galleries, explicit load errors, draft exclusion, real image loading, sidebar lightbox navigation and focus return, full-gallery filtering and keyboard tabs. These mocks did not change live account data.
 
-The approved Boundaries / How to Book slice connects **Hard Limits & Boundaries** and **How to Book** end-to-end: studio navigation/textareas, owner reads/validation, atomic profile/gallery RPC saves, database constraints/permissions, and plain-text public sidebar cards. Each field allows up to 4,000 characters; empty/whitespace-only cards are hidden and line breaks are retained. This does not implement reservations, requests or payments.
+Commit `70a154c` connects **Hard Limits & Boundaries** and **How to Book** end-to-end: studio navigation/textareas, owner reads/validation, atomic profile/gallery RPC saves, database constraints/permissions, and public sidebar cards. Each field allows up to 4,000 characters; empty/whitespace-only cards are hidden and line breaks are retained. Deployed editor/public markup was confirmed, and the user subsequently confirmed the feature works. This does not implement reservations, requests or payments.
 
 The user applied [202610050010_directory_profile_protocol.sql](supabase/migrations/202610050010_directory_profile_protocol.sql) and confirmed [verify-directory-profile-protocol.sql](supabase/verify-directory-profile-protocol.sql). Their screenshot confirmed both non-null columns and empty defaults; they reported the expected privilege check verified (`false, true, true, false, true`). The migration preserves existing content and migration 9's gallery/save authorization and atomicity. Schema was applied before frontend deployment. The assistant did not run SQL remotely.
 
 65 focused directory/template/creator tests, production build and edited-module diagnostics passed. Tests cover exact field limits/types, clearing, owner and anonymous reads, stranger/expired denial, transactional rollback, preserved rates/hours/gallery and older-client saves that omit the new fields. Local mocked browser checks verified editor save/reload and public literal-text rendering on desktop/mobile without horizontal overflow. These mocks did not write live data. After migration and an approved push, verify a real owner save/reload and signed-out public read, including clearing each card. The V1 fixture's VIP feed, blog, toys, socials, booking requests and other unconnected controls remain references; do not fake them as live. Do not commit, push, or deploy further work without fresh approval.
+
+### Approved visual / Markdown editor slice
+
+The user likes the simpler design but wants real paragraphs/lists and an editor toolbar. They explicitly approved visual editing plus Markdown source for **all connected long-form text**: tagline, About, Boundaries, How to Book, booking notes, rate category/service descriptions and photo descriptions. Names, headlines, prices, tags, availability labels and URLs remain plain text.
+
+- [rich-text-editor.js](src/modules/rich-text-editor.js) supplies Visual, Markdown and Preview modes with bold, italic, headings, lists, quotes, links and undo/redo. Markdown is the initial mode to retain existing source exactly; Tiptap loads lazily when Visual is selected. Source edits and visual changes use the same existing text fields and atomic save flow.
+- [profile-rich-text.js](src/modules/profile-rich-text.js) builds public DOM from an allowlisted Markdown token tree, never from arbitrary HTML. Paragraphs, line breaks, lists, emphasis, quotes, code, headings, tables and safe links render semantically; raw HTML is literal text, and Markdown images are alt text only. Directory cards use plain-text tagline summaries. Gallery lightbox descriptions also use the shared renderer.
+- Existing plain text needs no data rewrite. Markdown syntax in existing text now deliberately gains formatting; source character limits still include syntax. Empty fields still hide the relevant cards.
+- Tables, task lists, images, raw HTML and headings deeper than level 3 stay source-only rather than silently losing content in Visual mode. Switching modes without editing preserves source. Reloading/saving resets visual history to avoid undoing across profile loads.
+- Dependency additions are pinned Tiptap core/starter-kit/Markdown packages; no schema, RLS, terminal or live data changes. Install reported two low-severity advisories in the dependency tree; no unrelated dependency upgrades were made.
+- `npm run test:rich-text` runs semantic-rendering tests and an isolated real-browser studio/public workflow using mocked clients only. It covers all long-form fields, source/visual/preview, undo/redo, exact limits, safe links, unsupported-source preservation, nested disabled booking fields, save/reload, public list/paragraph rendering, gallery lightbox and desktop/mobile overflow. No live writes.
+- Validation: 70 combined directory/profile/template/rich-text tests passed, including the real-browser workflow and visual edits to dynamic rate/gallery descriptions. Production build and edited-module diagnostics passed. Temporary local previews were stopped and the shared page returned to the live site; no live profile data was changed.
+
+Commit/push of this slice is approved. After deployment, let the user review the editor with their own content; hosted visual editing remains unverified until that review. Further feature work requires fresh push approval.
 
 ## Product Direction
 

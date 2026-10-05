@@ -112,7 +112,8 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
     if (mode !== 'empty') {
       assert.equal(boundaries.querySelector('[data-profile-protocol-text]').textContent, '<script>Respect limits</script>\nSecond line');
       assert.equal(boundaries.querySelector('script'), null);
-      assert.equal(instructions.querySelector('[data-profile-protocol-text]').textContent, 'Contact me in-world.\nConfirm a time.');
+      assert.equal(instructions.querySelector('[data-profile-protocol-text] p').textContent, 'Contact me in-world.Confirm a time.');
+      assert.equal(instructions.querySelectorAll('[data-profile-protocol-text] br').length, 1);
     }
     assert.equal(requests[1].searchParams.get('is_published'), 'eq.true');
     assert.equal(requests[1].searchParams.get('profile_id'), 'eq.33333333-3333-4333-8333-333333333333');
