@@ -3,17 +3,19 @@
 // Keep one script in the prim; keep it owned by you, not group-deeded.
 // Use the existing V2 payment prim to preserve receipts; both trusted-object settings must match its UUID.
 // Keep configured scripts private; never paste secrets into chat or commit them to the repository.
+// Create CC_V2_Terminal_Config in-world with one JSON line per secret; keep it private and out of deliveries.
+// Leave both secret variables below blank: replacements load the existing notecard automatically.
 // Prices come from Supabase; unpriced/disabled plans cannot be purchased. All sales are final.
 string PAYMENT_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/directory-payment";
 string VERIFY_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/verify-avatar";
 string LOGIN_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/terminal-login";
 string REMINDER_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/directory-reminders";
 string ACCOUNT_URL = "https://controlandchaosv2.netlify.app/auth.html";
-// IN-WORLD COPY ONLY: match CC_PAYMENT_KIOSK_SECRET in Netlify; use a separate 32+ character secret.
+string CONFIG_NOTECARD = "CC_V2_Terminal_Config";
+// Runtime only: populated from the private notecard, never from repository configuration.
 string KIOSK_SECRET = "";
-// IN-WORLD COPY ONLY: match CC_VERIFICATION_KIOSK_SECRET; keep it separate from the payment secret.
 string VERIFICATION_SECRET = "";
-string SCRIPT_VERSION = "directory-v4";
+string SCRIPT_VERSION = "directory-v4.1";
 
 list PLAN_CODES = ["basic_monthly", "basic_lifetime", "vip_monthly", "vip_lifetime"];
 list PLAN_LABELS = ["Basic Monthly", "Basic Lifetime", "VIP Monthly", "VIP Lifetime"];
@@ -47,6 +49,12 @@ string reminderToken = "";
 integer reminderDeadline = 0;
 integer nextReminderPoll = 0;
 integer remindersPaused = FALSE;
+key configRequest = NULL_KEY;
+integer configLine = 0;
+integer configDeadline = 0;
+integer configurationReady = FALSE;
+string configPaymentSecret = "";
+string configVerificationSecret = "";
 
 hidePay()
 {
@@ -255,6 +263,49 @@ handleReminderResponse(integer status, string body)
     sendReminderRequest("ack", ack);
 }
 
+integer validConfigSecret(string value)
+{
+    integer length = llStringLength(value);
+    if (length < 32 || length > 128) return FALSE;
+    integer index;
+    for (index = 0; index < length; index++)
+    {
+        integer character = llOrd(value, index);
+        if (character < 33 || character > 126) return FALSE;
+    }
+    return TRUE;
+}
+
+configurationFailed(string reason)
+{
+    configRequest = NULL_KEY;
+    configurationReady = FALSE;
+    KIOSK_SECRET = "";
+    VERIFICATION_SECRET = "";
+    configPaymentSecret = "";
+    configVerificationSecret = "";
+    hidePay();
+    llOwnerSay("Private configuration unavailable: " + reason + ". Authenticated services are disabled; stored receipts are retained.");
+}
+
+loadConfiguration()
+{
+    configurationReady = FALSE;
+    KIOSK_SECRET = "";
+    VERIFICATION_SECRET = "";
+    configPaymentSecret = "";
+    configVerificationSecret = "";
+    configLine = 0;
+    if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD)
+    {
+        configurationFailed("missing CC_V2_Terminal_Config notecard");
+        return;
+    }
+    configDeadline = llGetUnixTime() + 60;
+    configRequest = llGetNotecardLine(CONFIG_NOTECARD, configLine);
+    llOwnerSay("Loading private terminal configuration...");
+}
+
 default
 {
     state_entry()
@@ -265,16 +316,83 @@ default
         llSetText("Control & Chaos V2\nDirectory Terminal\nTouch for subscriptions or verification", <0.92, 0.86, 0.66>, 1.0);
         llOwnerSay("Directory terminal ready (" + SCRIPT_VERSION + "). Object UUID: " + (string)llGetKey());
         if (blocked) llOwnerSay("An unresolved payment is recorded. Sales are disabled until it is reconciled.");
-        if (llStringLength(KIOSK_SECRET) < 32) llOwnerSay("Payments disabled: configure the private payment kiosk secret in-world and in Netlify.");
-        else sendPending();
-        if (llStringLength(VERIFICATION_SECRET) < 32) llOwnerSay("Avatar verification disabled: configure the separate verification secret and trusted object UUID.");
+        loadConfiguration();
         nextReminderPoll = llGetUnixTime() + 60;
         llSetTimerEvent(5.0);
+    }
+
+    dataserver(key request, string data)
+    {
+        if (configRequest == NULL_KEY || request != configRequest) return;
+        if (data == EOF)
+        {
+            if (!validConfigSecret(configPaymentSecret) || !validConfigSecret(configVerificationSecret) || configPaymentSecret == configVerificationSecret)
+            {
+                configurationFailed("two distinct secrets of 32-128 printable non-space ASCII characters are required");
+                return;
+            }
+            KIOSK_SECRET = configPaymentSecret;
+            VERIFICATION_SECRET = configVerificationSecret;
+            configPaymentSecret = "";
+            configVerificationSecret = "";
+            configRequest = NULL_KEY;
+            configurationReady = TRUE;
+            llOwnerSay("Private configuration loaded. Terminal services are ready.");
+            sendPending();
+            return;
+        }
+        string line = llStringTrim(data, STRING_TRIM);
+        if (line != "" && llGetSubString(line, 0, 0) != "#")
+        {
+            if (llJsonValueType(line, []) != JSON_OBJECT)
+            {
+                configurationFailed("invalid JSON at line " + (string)(configLine + 1));
+                return;
+            }
+            list entries = llJson2List(line);
+            if (llGetListLength(entries) != 2)
+            {
+                configurationFailed("each JSON line must contain exactly one setting");
+                return;
+            }
+            string setting = llList2String(entries, 0);
+            if (llJsonValueType(line, [setting]) != JSON_STRING)
+            {
+                configurationFailed("secret values must be JSON strings");
+                return;
+            }
+            string value = llJsonGetValue(line, [setting]);
+            if (!validConfigSecret(value))
+            {
+                configurationFailed("invalid secret format at line " + (string)(configLine + 1));
+                return;
+            }
+            if (setting == "CC_PAYMENT_KIOSK_SECRET" && configPaymentSecret == "") configPaymentSecret = value;
+            else if (setting == "CC_VERIFICATION_KIOSK_SECRET" && configVerificationSecret == "") configVerificationSecret = value;
+            else
+            {
+                configurationFailed("unknown or duplicate setting at line " + (string)(configLine + 1));
+                return;
+            }
+        }
+        configLine++;
+        if (configLine > 20)
+        {
+            configurationFailed("notecard has too many lines");
+            return;
+        }
+        configDeadline = llGetUnixTime() + 60;
+        configRequest = llGetNotecardLine(CONFIG_NOTECARD, configLine);
     }
 
     touch_start(integer count)
     {
         key avatar = llDetectedKey(0);
+        if (!configurationReady)
+        {
+            llRegionSayTo(avatar, 0, "Terminal configuration is loading or unavailable. Please try again later.");
+            return;
+        }
         if (accountRequest != NULL_KEY)
         {
             llRegionSayTo(avatar, 0, "An account link is being prepared. Please try again shortly.");
@@ -472,6 +590,7 @@ default
     timer()
     {
         integer now = llGetUnixTime();
+        if (configRequest != NULL_KEY && now >= configDeadline) configurationFailed("notecard read timed out");
         if (accountRequest != NULL_KEY && now >= accountDeadline)
         {
             llRegionSayTo(accountAvatar, 0, "Account link request timed out. Wait a minute before trying again, or sign in at " + ACCOUNT_URL);
@@ -506,5 +625,6 @@ default
             hidePay();
             llSetScriptState(llGetScriptName(), FALSE);
         }
+        else if (change & CHANGED_INVENTORY) llResetScript();
     }
 }

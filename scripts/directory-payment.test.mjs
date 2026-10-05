@@ -80,3 +80,22 @@ test('combined terminal routes verification separately without enabling payment 
   assert.match(script, /llLoadURL\(accountAvatar,/);
   assert.doesNotMatch(script, /ll(?:OwnerSay|RegionSayTo|InstantMessage)\([^;]*terminal_token/s);
 });
+
+test('terminal reads a private notecard without embedded secrets and remains gated until complete', async () => {
+  const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  assert.match(script, /string CONFIG_NOTECARD = "CC_V2_Terminal_Config"/);
+  assert.match(script, /string KIOSK_SECRET = "";/);
+  assert.match(script, /string VERIFICATION_SECRET = "";/);
+  assert.match(script, /llGetNotecardLine\(CONFIG_NOTECARD, configLine\)/);
+  assert.match(script, /request != configRequest/);
+  assert.match(script, /if \(!configurationReady\)/);
+  assert.match(script, /llJsonValueType\(line, \[\]\) != JSON_OBJECT/);
+  assert.match(script, /llJsonValueType\(line, \[setting\]\) != JSON_STRING/);
+  assert.match(script, /configPaymentSecret == configVerificationSecret/);
+  assert.match(script, /length < 32 \|\| length > 128/);
+  assert.match(script, /change & CHANGED_INVENTORY\) llResetScript\(\)/);
+  assert.doesNotMatch(script, /ll(?:OwnerSay|RegionSayTo|InstantMessage)\([^;\r\n]*(?:,\s*|\+\s*)(?:data|line|value|configPaymentSecret|configVerificationSecret)\b/);
+  const startup = script.slice(script.indexOf('state_entry()'), script.indexOf('dataserver(key request'));
+  assert.match(startup, /loadConfiguration\(\)/);
+  assert.doesNotMatch(startup, /sendPending\(\)/);
+});
