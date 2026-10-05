@@ -36,7 +36,6 @@ export async function fetchGalleryPhotos(client, profileId, { publishedOnly = fa
 
 export function renderProfileGallery(container, filters, photos) {
   const visible = validateGalleryPhotos(photos).filter(photo => photo.is_published);
-  container.replaceChildren();
   filters.replaceChildren();
   for (const category of ['', ...new Set(visible.map(photo => photo.category).filter(Boolean))]) {
     const button = document.createElement('button');
@@ -47,7 +46,17 @@ export function renderProfileGallery(container, filters, photos) {
     button.setAttribute('aria-pressed', String(!category));
     filters.append(button);
   }
-  for (const photo of visible) {
+  renderGalleryTiles(container, visible);
+}
+
+export function renderGalleryPreview(container, photos) {
+  const visible = validateGalleryPhotos(photos).filter(photo => photo.is_published);
+  renderGalleryTiles(container, visible.slice(0, 4));
+}
+
+function renderGalleryTiles(container, photos) {
+  container.replaceChildren();
+  for (const photo of photos) {
     const tile = document.createElement('button');
     tile.type = 'button';
     tile.className = 'public-gallery-tile';

@@ -22,7 +22,7 @@
     <p class="text-muted" data-public-profile-status role="status" aria-live="polite">Loading profile...</p>
     <div class="preview-hidden" data-public-profile-content>
       <nav class="public-profile-tabs" data-public-profile-tabs aria-label="Profile views" hidden>
-        <div role="tablist">
+        <div role="tablist" aria-label="Profile views">
           <button type="button" id="profile-tab-details" class="public-profile-tab" role="tab" aria-controls="profile-panel-details" aria-selected="true" tabindex="0">Rate Card &amp; Bio</button>
           <button type="button" id="profile-tab-gallery" class="public-profile-tab" role="tab" aria-controls="profile-panel-gallery" aria-selected="false" tabindex="-1" hidden>Gallery</button>
         </div>
@@ -48,6 +48,12 @@
                   <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
                 </div>
               </div>
+            </section>
+            <section class="public-profile-panel preview-hidden" data-public-gallery-preview-section aria-labelledby="gallery-preview-title">
+              <h2 class="public-profile-section-title" id="gallery-preview-title">Gallery</h2>
+              <p class="text-muted" data-public-gallery-preview-status role="status"></p>
+              <div class="public-gallery-preview-grid" data-public-gallery-preview></div>
+              <button type="button" class="btn btn-secondary btn-sm public-gallery-view-all" data-public-gallery-view-all>View full gallery</button>
             </section>
             <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
               <h2 class="public-profile-section-title">Booking Hours</h2>

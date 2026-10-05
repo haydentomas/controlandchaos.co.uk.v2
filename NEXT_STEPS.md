@@ -4,7 +4,7 @@ Updated: 2026-10-05. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Next action: continue the V1-style Profile Studio work locally. Public profile layout commit `c14dcad` is pushed to V2 `main` and confirmed live. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
+**Next action: review the local sidebar-gallery slice, then continue the V1-style listing/profile feature work. Hero/tabs/studio milestone `b7b9d49` is pushed to V2 `main`; deployed hero and tab markup are confirmed. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -16,7 +16,9 @@ The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
 No terminal change, new secret, SQL rerun, or deployment is needed for the completed test. Gallery file uploads/storage buckets are not implemented.
 
-The user chose the richer V1-style listing/profile as the implementation direction and acknowledges it must be built iteratively. Commit `c14dcadc5f7fbf2e3e02da6637d7b70593df856a` is pushed; the deployed profile page contains the initial two-column layout. The current local, unpushed slice adds a V1-inspired profile hero, accessible Rate Card & Bio / Gallery tabs, and responsive section navigation/card styling in Profile Studio, all using existing fields and public published gallery data only. `npm test`, `npm run build`, and local desktop/mobile checks passed. The V1 fixture's VIP feed, blog, toys, boundaries, socials, booking requests and other unconnected controls remain visual references; do not fake these as live. Run tests/build after future changes, and do not commit, push, or deploy further work without fresh approval.
+The user chose the richer V1-style listing/profile as the implementation direction and acknowledges it must be built iteratively. Commit `b7b9d49b34c334d559efb187876560d77f56b8f2` is pushed and includes the V1-inspired hero, accessible Rate Card & Bio / Gallery tabs, and responsive section navigation/card styling in Profile Studio. Deployed hero and tab markup are confirmed.
+
+The current local, unpushed slice adds a sidebar preview of up to four published gallery photos, a full-gallery button, and published-photo counts. It reuses the gallery tile renderer/lightbox rather than duplicating media logic. 61 focused directory/template/creator tests and the production build passed. Local mocked desktop/mobile browser checks covered populated and empty galleries, explicit load errors, draft exclusion, real image loading, sidebar lightbox navigation and focus return, full-gallery filtering and keyboard tabs. These mocks did not change live account data. The V1 fixture's VIP feed, blog, toys, boundaries, socials, booking requests and other unconnected controls remain visual references; do not fake these as live. Run tests/build after future changes, and do not commit, push, or deploy further work without fresh approval.
 
 ## Product Direction
 
@@ -127,7 +129,7 @@ Do not run `npm run capture`: it extracts V1 fixtures and can overwrite authorit
 ## Guardrails And Next Work
 
 - V1's separate repository, live domain, payments, credentials, Blobs and existing hardening work must remain untouched.
-- Only the current gallery/handoff push is approved. Obtain fresh approval for later commits/pushes/deployments or remote changes.
+- The hero/tabs/studio milestone push was approved and completed as `b7b9d49`. Obtain fresh approval for later commits/pushes/deployments or remote changes.
 - Do not request/print secrets, scan private environment files, force avatar verification, bypass paid-access rules, or disable RLS.
 - Do not automatically run quota-limited remote security scans.
 - Continue the locally validated public-profile layout slice, then agree follow-on profile/editor fields before implementing new features. Uploads, voice/video and boundaries/socials remain candidates, not pre-approved implementation.

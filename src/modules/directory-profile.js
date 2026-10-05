@@ -1,7 +1,7 @@
 import { createPublicDirectoryClient, directoryConfig, fetchPublicProfile, publicImageUrl } from './directory-api.js';
 import { renderPublicRateCards } from './rate-cards.js';
 import { renderBookingHours } from './booking-hours.js';
-import { fetchGalleryPhotos, renderProfileGallery } from './profile-gallery.js';
+import { fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from './profile-gallery.js';
 
 function initProfileTabs(hasGallery) {
   const nav = document.querySelector('[data-public-profile-tabs]');
@@ -32,14 +32,19 @@ function initProfileTabs(hasGallery) {
       activate(tabs.indexOf(available[nextIndex]));
     });
   });
+  document.querySelector('[data-public-gallery-view-all]').addEventListener('click', () => {
+    activate(1);
+    galleryTab.focus();
+    nav.scrollIntoView({ block: 'start', behavior: 'auto' });
+  });
 }
 
-export async function initDirectoryProfile() {
+export async function initDirectoryProfile(clientOverride) {
   const status = document.querySelector('[data-public-profile-status]');
   const content = document.querySelector('[data-public-profile-content]');
   const slug = new URL(location.href).searchParams.get('slug');
   try {
-    const client = createPublicDirectoryClient(directoryConfig());
+    const client = clientOverride || createPublicDirectoryClient(directoryConfig());
     const profile = await fetchPublicProfile(client, slug);
     if (!profile) { status.textContent = 'Profile not found.'; return; }
     const fill = (selector, value) => { document.querySelector(selector).textContent = value || ''; };
@@ -84,13 +89,24 @@ export async function initDirectoryProfile() {
     document.querySelector('[data-public-profile-booking-section]').classList.toggle('preview-hidden', !hours.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
+    const previewSection = document.querySelector('[data-public-gallery-preview-section]');
+    let photos;
     try {
-      const photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
-      renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), photos);
-      initProfileTabs(photos.length > 0);
+      photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
     } catch {
       initProfileTabs(true);
       document.querySelector('[data-public-gallery-status]').textContent = 'Gallery is temporarily unavailable.';
+      document.querySelector('[data-public-gallery-preview-status]').textContent = 'Gallery is temporarily unavailable.';
+      document.querySelector('[data-public-gallery-view-all]').hidden = true;
+      previewSection.classList.remove('preview-hidden');
+      return;
     }
+    const published = photos.filter(photo => photo.is_published);
+    renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
+    renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), published);
+    previewSection.classList.toggle('preview-hidden', !published.length);
+    document.getElementById('profile-tab-gallery').textContent = `Gallery (${published.length})`;
+    document.querySelector('[data-public-gallery-view-all]').textContent = `View all ${published.length} ${published.length === 1 ? 'photo' : 'photos'}`;
+    initProfileTabs(published.length > 0);
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }
 }
