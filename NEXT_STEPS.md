@@ -4,14 +4,14 @@ Updated: 2026-10-05. Work paused at the user's request. No more implementation, 
 
 ## Resume Here
 
-**Real end-to-end avatar verification succeeded, and replay protection is confirmed. The next user action is the expiry test (part of Following Step 7).**
+**Real end-to-end avatar verification succeeded. Replay and expiry protections are both confirmed. The only remaining Following Step 7 sub-test is the cross-avatar/another-account conflict case (optional — requires a second account).**
 
 - Verifier object UUID: `18190500-5d59-7853-5c5a-7c86906d900b`
 - Owner avatar UUID: `b3d25fb5-a5d9-4734-8d86-5e1f70ba8bec`
 - Script is now `scripts/CC_V2_Avatar_Verifier.lsl` v3 (pushed as `eaa02e9`). The v1/v2 busy-lock logic had a real bug: `clearDialog()` never reset `requestId`, so a dropped/failed HTTP response could permanently wedge the object until a full script reset. v3 fixes this via a single `resetSession()` and adds touch/version diagnostics (`Verifier ready (v3)...`, `Touch #N from <name>`).
 - Real flow confirmed working: signed in at `/auth.html` as `hello@pixaful.com`, pressed Get Verification Code, touched the verifier, pasted the code, object replied "Avatar linked...", pressed Refresh verification, and the account page now shows **"Verified avatar: alek.zane"**.
 - Replay test confirmed: re-submitting the same already-consumed code correctly failed (server rejects reuse); submitting a fresh code first correctly succeeded.
-- Remaining Step 7 sub-tests: expiry (request a code, wait past its ~10-minute window, confirm it's rejected) and cross-avatar conflict (a different account's code cannot claim an avatar already linked elsewhere).
+- Expiry test confirmed: requested a code, waited past its ~10-minute window, submitted it, and got the expected `Verification failed (status 409)` rejection.
 
 Do not repeat Steps 1-6 (commit/push, Netlify site env, Netlify Functions env, in-world kiosk secret, deploy, real verification). Migration 2 is already applied; do not run it again.
 
@@ -56,9 +56,9 @@ Do not touch V1's separate Git repository, live domain, payments, kiosk credenti
 
 ## Following Steps
 
-Steps 1-6 are complete (commit/push, Netlify site env, Netlify Functions env, in-world kiosk secret, deployed function, real verification confirmed). Resume at Step 7:
+Steps 1-6 are complete (commit/push, Netlify site env, Netlify Functions env, in-world kiosk secret, deployed function, real verification confirmed). Step 7's replay and expiry sub-tests are confirmed; the cross-avatar/another-account conflict sub-test is optional and not yet run (requires a second account).
 
-7. Test replay/expiry/failure behavior in staging: try reusing the same already-consumed code (should be rejected), wait past the 10-minute challenge expiry and try an expired code, and try touching from a different/second avatar while one session is active. Stop on unexpected results; do not manually force verification or disable RLS.
+7. (Optional remaining sub-test) Touch the verifier with a code issued to a *different* account while trying to claim an avatar already linked elsewhere; confirm it is denied as `avatar_already_linked`. Stop on unexpected results; do not manually force verification or disable RLS.
 8. Only after replay/expiry/failure behave correctly, design profile provisioning/ownership assignment and connect the real creator editor. Keep approval/featured status and verified identity server-controlled.
 
 **Never enter a code supplied by another person.** The code links the avatar completing it to the account that requested it. Second Life headers alone are spoofable; the trusted private kiosk secret and protected script are part of the authentication boundary.
@@ -72,7 +72,7 @@ Steps 1-6 are complete (commit/push, Netlify site env, Netlify Functions env, in
 - Successful avatar linking currently does not assign `profile_owners`, approve a profile or activate payments/subscriptions.
 - Default Supabase mail delivery is restricted to project-team addresses and rate-limited. Configure production SMTP later; do not disable confirmation to bypass email problems.
 
-Latest validation: **78 tests passed; production build passed; relevant editor diagnostics clear.** Real Postgres policy tests use PGlite with Supabase roles/Auth helpers emulated. Endpoint tests use fake secrets/clients; no live privileged writes were made. The deployed endpoint, LSL compilation and real in-world avatar linking are now confirmed working; replay/expiry/multi-avatar failure modes are still unverified.
+Latest validation: **78 tests passed; production build passed; relevant editor diagnostics clear.** Real Postgres policy tests use PGlite with Supabase roles/Auth helpers emulated. Endpoint tests use fake secrets/clients; no live privileged writes were made. The deployed endpoint, LSL compilation, real in-world avatar linking, replay rejection and expiry rejection are now all confirmed working. Only the cross-avatar/another-account conflict case is still unverified.
 
 ## Restart Locally
 
