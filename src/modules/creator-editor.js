@@ -22,7 +22,7 @@ export async function initCreatorEditor(clientOverride) {
   let profile;
   let timer;
   let subscriptions = [];
-  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note'];
+  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note', 'boundaries', 'booking_instructions'];
   const lock = message => {
     generation++;
     profile = null;

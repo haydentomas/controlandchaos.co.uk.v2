@@ -146,6 +146,97 @@ test('creator profile updates allow content only, never ownership, approval or s
   assert.throws(() => profileChanges({ ...values, display_name: ' ' }), /display name/);
 });
 
+test('profile protocol validates exact text limits, trims values and preserves omitted fields', () => {
+  for (const field of ['boundaries', 'booking_instructions']) {
+    assert.equal(profileChanges(values)[field], undefined);
+    assert.equal(profileChanges({ ...values, [field]: '   ' })[field], '');
+    assert.equal(profileChanges({ ...values, [field]: '  Instructions\nSecond line  ' })[field], 'Instructions\nSecond line');
+    assert.equal(profileChanges({ ...values, [field]: 'x'.repeat(4000) })[field].length, 4000);
+    assert.throws(() => profileChanges({ ...values, [field]: 'x'.repeat(4001) }), /4000/);
+    for (const invalid of [null, false, 123, [], {}]) assert.throws(() => profileChanges({ ...values, [field]: invalid }), /4000/);
+  }
+});
+
+test('profile protocol migration preserves paid ownership, atomic gallery saves and public visibility', async () => {
+  const database = new PGlite();
+  const owner = '11111111-1111-4111-8111-111111111111';
+  const stranger = '22222222-2222-4222-8222-222222222222';
+  try {
+    await database.exec(`create role anon; create role authenticated; create role service_role bypassrls;
+      create schema auth; create table auth.users(id uuid primary key);
+      create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      grant usage on schema public,auth to anon,authenticated,service_role;`);
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql']) {
+      await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
+    }
+    await database.query('insert into auth.users(id) values ($1),($2)', [owner, stranger]);
+    await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [rates[0].id, owner, 'test.resident']);
+    await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'");
+    const profile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', [profileId, rates[0].id, 'basic_monthly', 100])).rows[0].id;
+    const actAs = async (role, user = '') => {
+      await database.exec('reset role');
+      await database.query("select set_config('request.jwt.claim.sub',$1,false)", [user]);
+      await database.exec(`set role ${role}`);
+    };
+    await actAs('authenticated', owner);
+    await database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify({ about: 'Existing biography', rate_categories: rates, booking_hours: hours }), JSON.stringify(photos)]);
+    await database.exec('reset role');
+    await database.exec(await fs.readFile(new URL('../supabase/migrations/202610050010_directory_profile_protocol.sql', import.meta.url), 'utf8'));
+    const verification = await database.query(await fs.readFile(new URL('../supabase/verify-directory-profile-protocol.sql', import.meta.url), 'utf8').then(sql => sql.split(';')[0]));
+    assert.deepEqual(verification.rows[0], {
+      anon_can_edit_boundaries: false, account_can_edit_boundaries: true, account_can_edit_instructions: true,
+      anon_can_save_media: false, account_can_save_media: true
+    });
+    assert.deepEqual((await database.query('select boundaries,booking_instructions,about from public.directory_profiles where id=$1', [profile])).rows[0], { boundaries: '', booking_instructions: '', about: 'Existing biography' });
+    assert.deepEqual((await database.query('select has_column_privilege($1,$2,$3,$4) as allowed', ['authenticated', 'public.directory_profiles', 'boundaries', 'UPDATE'])).rows[0], { allowed: true });
+    assert.equal((await database.query("select has_function_privilege('anon','public.save_directory_profile_media(uuid,jsonb,jsonb)','EXECUTE') as allowed")).rows[0].allowed, false);
+    await actAs('authenticated', owner);
+    const protocol = { boundaries: 'Respect stated boundaries.\nUse agreed limits.', booking_instructions: 'Contact me in-world.\nConfirm a time before booking.' };
+    const save = changes => database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify(changes), JSON.stringify(photos)]);
+    await save(protocol);
+    await save({ boundaries: '', booking_instructions: '' });
+    assert.deepEqual((await database.query('select boundaries,booking_instructions from public.directory_profiles where id=$1', [profile])).rows[0], { boundaries: '', booking_instructions: '' });
+    await save(protocol);
+    await save({ headline: 'Older client update' });
+    let row = (await database.query('select * from public.directory_profiles where id=$1', [profile])).rows[0];
+    assert.equal(row.boundaries, protocol.boundaries);
+    assert.equal(row.booking_instructions, protocol.booking_instructions);
+    assert.deepEqual(row.rate_categories, rates);
+    assert.deepEqual(row.booking_hours, hours);
+    assert.equal(row.about, 'Existing biography');
+    for (const field of ['boundaries', 'booking_instructions']) {
+      await save({ [field]: 'x'.repeat(4000) });
+      await assert.rejects(save({ [field]: 'x'.repeat(4001) }), error => error.code === '23514');
+      for (const invalid of [null, 123, false, {}, []]) await assert.rejects(save({ [field]: invalid }), /invalid_profile_fields/);
+      await assert.rejects(database.query(`update public.directory_profiles set ${field}=null where id=$1`, [profile]), error => error.code === '23502');
+      await assert.rejects(database.query(`update public.directory_profiles set ${field}=$1 where id=$2`, ['x'.repeat(4001), profile]), error => error.code === '23514');
+    }
+    await save(protocol);
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify({ boundaries: 'Must roll back' }), JSON.stringify([{ ...photos[0], image_url: 'javascript:alert(1)' }])]));
+    row = (await database.query('select * from public.directory_profiles where id=$1', [profile])).rows[0];
+    assert.equal(row.boundaries, protocol.boundaries);
+    assert.equal((await database.query('select id from public.directory_gallery_photos')).rows.length, 2);
+    await assert.rejects(save({ is_approved: true }), /invalid_profile_fields/);
+    await actAs('anon');
+    assert.equal((await database.query('select boundaries from public.directory_profiles')).rows.length, 0);
+    await assert.rejects(save(protocol), error => error.code === '42501');
+    await actAs('authenticated', stranger);
+    assert.equal((await database.query('update public.directory_profiles set boundaries=$1 where id=$2 returning id', ['Changed', profile])).rows.length, 0);
+    await assert.rejects(save(protocol), error => error.code === '42501');
+    await actAs('authenticated', owner);
+    await save({ ...protocol, is_published: true });
+    await actAs('anon');
+    assert.deepEqual((await database.query('select boundaries,booking_instructions from public.directory_profiles')).rows[0], protocol);
+    await actAs('service_role');
+    await database.query("update cc_private.directory_subscriptions set expires_at=now()-interval '1 second' where avatar_uuid=$1", [rates[0].id]);
+    await actAs('anon');
+    assert.equal((await database.query('select boundaries from public.directory_profiles')).rows.length, 0);
+    await actAs('authenticated', owner);
+    await assert.rejects(save(protocol), error => error.code === '42501');
+    assert.equal((await database.query('update public.directory_profiles set booking_instructions=$1 where id=$2 returning id', ['Changed', profile])).rows.length, 0);
+  } finally { await database.close(); }
+});
+
 test('profile reads and writes require an active owned subscription before querying the table', async () => {
   let tables = 0;
   for (const subscriptions of [[], [{ profile_id: profileId, is_active: false }], [{ profile_id: '44444444-4444-4444-8444-444444444444', is_active: true }]]) {
@@ -167,6 +258,37 @@ test('successful profile saves are ID-scoped and a zero-row update is not report
   assert.deepEqual(scoped, { name: 'id', value: profileId });
   row = null;
   await assert.rejects(saveCreatorProfile(client, profileId, values), /not saved/);
+});
+
+test('owner API selects protocol fields and saves them with existing gallery, rates and hours', async () => {
+  let selected;
+  let saved;
+  let failed = false;
+  const updated = { id: profileId, ...values, boundaries: 'Respect limits.', booking_instructions: 'Contact me.', rate_categories: rates, booking_hours: hours };
+  const client = {
+    from: () => {
+      const chain = { select: columns => { selected = columns; return chain; }, eq: () => chain, maybeSingle: async () => ({ data: updated }) };
+      return chain;
+    },
+    rpc: (name, args) => {
+      if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: profileId, is_active: true }] });
+      assert.equal(name, 'save_directory_profile_media');
+      saved = args;
+      return { maybeSingle: async () => failed ? { error: { message: 'private' } } : { data: updated } };
+    }
+  };
+  assert.equal((await loadCreatorProfile(client, profileId)).boundaries, updated.boundaries);
+  assert.match(selected, /boundaries,booking_instructions/);
+  const input = { ...values, boundaries: ' Respect limits. ', booking_instructions: ' Contact me. ', rate_categories: rates, booking_hours: hours };
+  assert.deepEqual(await saveCreatorProfile(client, profileId, input, photos), updated);
+  assert.equal(saved.target_profile, profileId);
+  assert.equal(saved.profile_changes.boundaries, updated.boundaries);
+  assert.equal(saved.profile_changes.booking_instructions, updated.booking_instructions);
+  assert.deepEqual(saved.profile_changes.rate_categories, rates);
+  assert.deepEqual(saved.profile_changes.booking_hours, hours);
+  assert.deepEqual(saved.photos, photos);
+  failed = true;
+  await assert.rejects(saveCreatorProfile(client, profileId, input, photos), /not saved/);
 });
 
 test('subscription display distinguishes active, inactive and lifetime access without leaking backend errors', async () => {

@@ -53,6 +53,7 @@ test('public profile lookup rejects invalid slugs and cannot read unapproved rec
   assert.equal(request.searchParams.get('is_approved'), 'eq.true');
   assert.equal(request.searchParams.get('is_published'), 'eq.true');
   assert.equal(request.searchParams.get('slug'), 'eq.sample-profile');
+  assert.match(request.searchParams.get('select'), /boundaries,booking_instructions/);
 });
 
 test('directory cards render untrusted text safely and link only to the public reader', async () => {
@@ -92,7 +93,9 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
     if (request.pathname.endsWith('/directory_profiles')) return new Response(JSON.stringify([{
       id: '33333333-3333-4333-8333-333333333333', slug: 'sample-profile',
       display_name: 'Sample Creator', sl_username: 'sample.resident', role_type: 'switch',
-      about: 'About this creator', availability: 'away', tags: [], rate_categories: [], booking_hours: null
+      about: 'About this creator', availability: 'away', tags: [], rate_categories: [], booking_hours: null,
+      boundaries: mode === 'empty' ? '  ' : '<script>Respect limits</script>\nSecond line',
+      booking_instructions: mode === 'empty' ? '' : 'Contact me in-world.\nConfirm a time.'
     }]), { headers: { 'content-type': 'application/json' } });
     return new Response(JSON.stringify(mode === 'failed' ? { message: 'Internal error' } : mode === 'empty' ? [] : mode === 'single' ? [photos[1]] : photos), {
       status: mode === 'failed' ? 403 : 200, headers: { 'content-type': 'application/json' }
@@ -102,6 +105,15 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
     await initDirectoryProfile(client);
     assert.equal(document.querySelector('[data-public-profile-status]').textContent, '');
     assert.equal(document.querySelector('[data-public-profile-name]').textContent, 'Sample Creator');
+    const boundaries = document.querySelector('[data-public-profile-boundaries]');
+    const instructions = document.querySelector('[data-public-profile-instructions]');
+    assert.equal(boundaries.classList.contains('preview-hidden'), mode === 'empty');
+    assert.equal(instructions.classList.contains('preview-hidden'), mode === 'empty');
+    if (mode !== 'empty') {
+      assert.equal(boundaries.querySelector('[data-profile-protocol-text]').textContent, '<script>Respect limits</script>\nSecond line');
+      assert.equal(boundaries.querySelector('script'), null);
+      assert.equal(instructions.querySelector('[data-profile-protocol-text]').textContent, 'Contact me in-world.\nConfirm a time.');
+    }
     assert.equal(requests[1].searchParams.get('is_published'), 'eq.true');
     assert.equal(requests[1].searchParams.get('profile_id'), 'eq.33333333-3333-4333-8333-333333333333');
     const nav = document.querySelector('[data-public-profile-tabs]');

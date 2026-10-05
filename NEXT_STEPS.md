@@ -4,7 +4,7 @@ Updated: 2026-10-05. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Next action: review the local sidebar-gallery slice, then continue the V1-style listing/profile feature work. Hero/tabs/studio milestone `b7b9d49` is pushed to V2 `main`; deployed hero and tab markup are confirmed. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
+**Next action: deploy the approved Boundaries / How to Book slice, then verify a real owner save/reload and anonymous public read. The user applied migration 10 and confirmed its permissions on 2026-10-05, then approved commit/push. Sidebar-gallery milestone `9486134` is pushed to V2 `main`; its deployed preview markup is confirmed. Migrations 1-10 are already applied. Do not rerun them.**
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -18,7 +18,13 @@ No terminal change, new secret, SQL rerun, or deployment is needed for the compl
 
 The user chose the richer V1-style listing/profile as the implementation direction and acknowledges it must be built iteratively. Commit `b7b9d49b34c334d559efb187876560d77f56b8f2` is pushed and includes the V1-inspired hero, accessible Rate Card & Bio / Gallery tabs, and responsive section navigation/card styling in Profile Studio. Deployed hero and tab markup are confirmed.
 
-The current local, unpushed slice adds a sidebar preview of up to four published gallery photos, a full-gallery button, and published-photo counts. It reuses the gallery tile renderer/lightbox rather than duplicating media logic. 61 focused directory/template/creator tests and the production build passed. Local mocked desktop/mobile browser checks covered populated and empty galleries, explicit load errors, draft exclusion, real image loading, sidebar lightbox navigation and focus return, full-gallery filtering and keyboard tabs. These mocks did not change live account data. The V1 fixture's VIP feed, blog, toys, boundaries, socials, booking requests and other unconnected controls remain visual references; do not fake these as live. Run tests/build after future changes, and do not commit, push, or deploy further work without fresh approval.
+Commit `9486134` adds a sidebar preview of up to four published gallery photos, a full-gallery button, and published-photo counts. It reuses the gallery tile renderer/lightbox rather than duplicating media logic. 61 focused directory/template/creator tests and the production build passed. Local mocked desktop/mobile browser checks covered populated and empty galleries, explicit load errors, draft exclusion, real image loading, sidebar lightbox navigation and focus return, full-gallery filtering and keyboard tabs. These mocks did not change live account data.
+
+The approved Boundaries / How to Book slice connects **Hard Limits & Boundaries** and **How to Book** end-to-end: studio navigation/textareas, owner reads/validation, atomic profile/gallery RPC saves, database constraints/permissions, and plain-text public sidebar cards. Each field allows up to 4,000 characters; empty/whitespace-only cards are hidden and line breaks are retained. This does not implement reservations, requests or payments.
+
+The user applied [202610050010_directory_profile_protocol.sql](supabase/migrations/202610050010_directory_profile_protocol.sql) and confirmed [verify-directory-profile-protocol.sql](supabase/verify-directory-profile-protocol.sql). Their screenshot confirmed both non-null columns and empty defaults; they reported the expected privilege check verified (`false, true, true, false, true`). The migration preserves existing content and migration 9's gallery/save authorization and atomicity. Schema was applied before frontend deployment. The assistant did not run SQL remotely.
+
+65 focused directory/template/creator tests, production build and edited-module diagnostics passed. Tests cover exact field limits/types, clearing, owner and anonymous reads, stranger/expired denial, transactional rollback, preserved rates/hours/gallery and older-client saves that omit the new fields. Local mocked browser checks verified editor save/reload and public literal-text rendering on desktop/mobile without horizontal overflow. These mocks did not write live data. After migration and an approved push, verify a real owner save/reload and signed-out public read, including clearing each card. The V1 fixture's VIP feed, blog, toys, socials, booking requests and other unconnected controls remain references; do not fake them as live. Do not commit, push, or deploy further work without fresh approval.
 
 ## Product Direction
 

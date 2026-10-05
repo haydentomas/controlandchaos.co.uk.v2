@@ -2,7 +2,7 @@
   .creator-editor { max-width: 1240px; }
   .creator-editor fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   .creator-editor [data-creator-fields] { display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr); gap: 20px 28px; align-items: start; }
-  .creator-editor-nav { position: sticky; top: 96px; grid-column: 1; grid-row: 1 / span 6; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(26,23,20,0.92); }
+  .creator-editor-nav { position: sticky; top: 96px; grid-column: 1; grid-row: 1 / span 7; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(26,23,20,0.92); }
   .creator-editor-nav a { display: block; padding: 10px 12px; border-radius: 5px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; }
   .creator-editor-nav a:hover, .creator-editor-nav a:focus-visible { color: var(--gold-bright); background: rgba(212,175,55,0.1); outline: none; }
   .creator-editor-section { grid-column: 2; min-width: 0; padding: 22px 24px 26px; border: 1px solid rgba(212,175,55,0.22); border-radius: 8px; background: rgba(26,23,20,0.55); scroll-margin-top: 110px; }
@@ -150,6 +150,9 @@
   html[data-template="directory-profile"] .public-gallery-preview-grid .public-gallery-tile span { padding: 8px; font-size: 12px; font-weight: 700; }
   html[data-template="directory-profile"] .public-gallery-view-all { margin-top: 16px; }
   html[data-template="directory-profile"] .public-gallery-view-all[hidden] { display: none !important; }
+  html[data-template="directory-profile"] .public-profile-protocol-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; font-size: 14px; }
+  html[data-template="directory-profile"] .public-profile-boundaries { border-color: rgba(139,30,45,0.4); background: rgba(30,15,18,0.4); }
+  html[data-template="directory-profile"] .public-profile-boundaries .public-profile-section-title { color: #ffb8c2; }
   [data-public-profile-name], [data-public-profile-headline] { overflow-wrap: anywhere; }
   @media (max-width: 800px) { html[data-template="directory-profile"] .public-profile-layout { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 600px) {

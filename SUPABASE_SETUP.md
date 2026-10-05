@@ -122,6 +122,21 @@ Official references: https://supabase.com/docs/guides/auth/redirect-urls and htt
 
 ## Work Split
 
+### Current gate: Boundaries and How to Book (migration 10)
+
+The authoritative current status is [NEXT_STEPS.md](NEXT_STEPS.md); earlier setup steps below are historical. Migrations 1-9 are already applied in V2. Do not rerun them.
+
+Status on 2026-10-05: the user also applied migration 10, shared the correct column/default results and confirmed the expected privilege results. Frontend commit/push is approved. Steps 1-3 below are completed; do not rerun migration 10. Real post-deployment save/read verification remains pending.
+
+Before deploying the new protocol editor/public-reader code:
+
+1. Run only [202610050010_directory_profile_protocol.sql](supabase/migrations/202610050010_directory_profile_protocol.sql) in the **V2 development** project's SQL Editor.
+2. Run [verify-directory-profile-protocol.sql](supabase/verify-directory-profile-protocol.sql). The privilege row must be `false, true, true, false, true`; both columns must show `is_nullable = NO` and empty-string defaults.
+3. Report success or error text only. Do not share credentials. Approve the frontend commit/push only after the database check passes.
+4. After deployment, test an authenticated owner save/reload and an anonymous public read of both fields, then clear them and verify their cards disappear. Check existing rates, booking hours and gallery remain intact.
+
+The two fields are optional plain text, at most 4,000 characters each, with no rich HTML. Existing profiles gain empty values. Paid-owner rules and anonymous publication/expiry rules remain unchanged; the atomic gallery RPC retains omitted fields for older clients. This is informational protocol only, not a booking/payment system. Migration 10 has local database coverage but has not been applied remotely by the assistant.
+
 User: create the development project, retain credentials privately, enter requested settings directly, and run reviewed migrations through the authenticated dashboard when instructed.
 
 Assistant: prepare versioned SQL migrations and permission tests, public-directory queries and pagination, safe frontend configuration, real creator sessions and verified avatar ownership. Give one dashboard/setup step at a time.

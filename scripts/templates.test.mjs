@@ -13,6 +13,25 @@ test('all public and directory template families exist', () => {
   assert.ok(manifest.length >= 28);
 });
 
+test('profile protocol controls are labelled and bounded, and public cards start hidden', async () => {
+  const { document: editor } = parseHTML(await fs.readFile(path.join(root, 'directory-editor.html'), 'utf8'));
+  for (const name of ['boundaries', 'booking_instructions']) {
+    const field = editor.querySelector(`textarea[name="${name}"]`);
+    assert.equal(field.getAttribute('maxlength'), '4000');
+    assert.ok(editor.querySelector(`label[for="${field.id}"]`));
+    assert.ok(field.closest('[data-creator-fields]'));
+  }
+  const anchor = editor.querySelector('.creator-editor-nav a[href="#creator-protocol"]');
+  assert.ok(editor.querySelector(anchor.getAttribute('href')));
+  const { document: profile } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  for (const selector of ['[data-public-profile-boundaries]', '[data-public-profile-instructions]']) {
+    const card = profile.querySelector(selector);
+    assert.ok(card.classList.contains('preview-hidden'));
+    assert.ok(card.querySelector('h2'));
+    assert.equal(card.querySelector('[data-profile-protocol-text]').textContent, '');
+  }
+});
+
 test('directory profile tabs expose only supported views with accessible panel relationships', async () => {
   const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
   const tabs = [...document.querySelectorAll('[data-public-profile-tabs] [role="tab"]')];

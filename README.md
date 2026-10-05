@@ -1,6 +1,8 @@
 # V2 Shared Site Templates
 
-This is the isolated V2 frontend of the existing Control & Chaos site. Decap supports staff settings/events/news/manuals. Public directory browsing and creator account signup/signin/recovery use Supabase locally. Avatar verification, authenticated profile editing and private/paid features remain unimplemented. Real email flows and deployment setup still need manual verification.
+This is the isolated V2 frontend of the existing Control & Chaos site. Decap supports staff settings/events/news/manuals. Supabase powers creator accounts, verified avatar ownership, paid directory access, authenticated Profile Studio editing and anonymous public listings. Rate cards, booking hours and published gallery photos are connected; the richer V1 experience is still being built incrementally. See [NEXT_STEPS.md](NEXT_STEPS.md) for authoritative live evidence and remaining gates.
+
+The Boundaries / How to Book slice requires migration 10 before frontend deployment; the user has applied and verified it in V2. These are optional plain-text fields, not booking requests or reservations. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for setup history; do not rerun already-applied migrations 1-10.
 
 ## Stack
 
@@ -8,7 +10,7 @@ This is the isolated V2 frontend of the existing Control & Chaos site. Decap sup
 - Pinned Nunjucks renders complete HTML at build time. Normal and white-label layouts share one head/footer, with explicit navigation/footer differences.
 - Shared navigation and hero modules, with gallery, editor, profile and preview-action modules loaded only where needed. Markdown dependencies are editor-only.
 - Shared typography, colours, and spacing match the existing site. Tailwind utilities use the `tw:` prefix to avoid collisions with existing design-selector names.
-- No inline style attributes, inline event handlers, authentication tokens, live publishing, payment processing, or Netlify API calls are shipped.
+- No inline style attributes, inline event handlers or embedded private credentials are shipped. Creator sessions and authorized saves happen at runtime; privileged terminal operations use server-only Netlify functions.
 - The Vite page shell adds a tiny critical dark-canvas rule and an early stylesheet link to prevent white first-paint flashes. Supported browsers use native cross-document fades; reduced-motion preferences disable them. Navigation is not intercepted or artificially delayed.
 
 The page bodies originate from the approved flat visual templates. Their appearance is preserved while header/footer/head markup and creator hero/tabs now have a single source. Page-specific content, cards and editor markup have not all been decomposed or connected to live data. Existing readable presentation classes remain; this is not a completed semantic CSS/BEM rewrite.
@@ -22,7 +24,8 @@ The page bodies originate from the approved flat visual templates. Their appeara
 - `content/events`: editable event records rendered into shared cards; published state, order and calendar dates are validated during builds.
 - `content/blog`: staff site news, separate from creator posts. One shared article template and build-derived metadata replace per-post captures.
 - `content/guides`: product manuals, features, commands, specifications and directory cards. One shared manual template generates new published IDs; stable section anchors support external links.
-- `src/modules/directory-api.js`: public Supabase read client; ignored `.env.local` uses names from `.env.example`. `directory.js` handles public list states/filters/pagination; `directory-profile.js` is the basic public detail reader, not the old fixture editor.
+- `src/modules/directory-api.js`: anonymous Supabase read client; ignored `.env.local` uses names from `.env.example`. `directory.js` handles public list states/filters/pagination; `directory-profile.js` renders the connected public listing, not the old fixture editor.
+- `src/modules/creator-editor.js` / `creator-profile-api.js`: authenticated Profile Studio with paid-owner authorization and atomic profile/gallery saves. Protocol text, rates, informational booking hours and gallery publish states are separate from unconnected V1 fixtures.
 - `src/modules/auth-api.js` / `auth.js`: separate persistent PKCE creator sessions and `/auth.html` forms. This does not assign avatar ownership or activate the old preview editor. See `SUPABASE_SETUP.md` for the real-account test and mailer limits.
 - `content/pages`: per-page metadata and internal creator/tab presentation configuration. Do not expose presentation attributes as CMS fields.
 - `content/creator-preview.json`: one public-safe creator hero fixture, not production creator persistence.
@@ -59,7 +62,7 @@ Output is written to `build`; reference pages and test fixtures are not publishe
 - Creator rate card, public blog, subscriber preview, gallery, and individual post.
 - White-label creator pages and post/tab states.
 
-Navigation, mobile drawer, gallery filters/lightbox and editor section switching are preview interactions only. Save/payment/admin controls do not publish or authenticate. Restricted-content fixtures are public-safe teasers, not imported private records.
+The connected directory profile and Profile Studio use real authorized reads/saves. Retained V1-style blog, feed, white-label and legacy editor fixtures are visual references only; their controls do not imply connected private-content or booking features. Restricted-content fixtures are public-safe teasers, not imported private records.
 
 ## Visual Baseline
 

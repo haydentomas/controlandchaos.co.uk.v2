@@ -2,10 +2,11 @@ import { validateRateCategories } from './rate-cards.js';
 import { validateBookingHours } from './booking-hours.js';
 import { validateGalleryPhotos } from './profile-gallery.js';
 
-export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours';
+export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours,boundaries,booking_instructions';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const limits = { display_name: 100, headline: 160, tagline: 1000, about: 20000, starting_rate: 100 };
-const editable = new Set([...Object.keys(limits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published', 'rate_categories', 'availability_note', 'booking_hours']);
+const optionalTextLimits = { availability_note: 500, boundaries: 4000, booking_instructions: 4000 };
+const editable = new Set([...Object.keys(limits), ...Object.keys(optionalTextLimits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published', 'rate_categories', 'booking_hours']);
 
 export async function myDirectorySubscriptions(client) {
   const { data, error } = await client.rpc('my_directory_subscriptions');
@@ -30,9 +31,10 @@ export function profileChanges(values) {
   if (!Array.isArray(values.tags) || values.tags.length > 20 || values.tags.some(tag => typeof tag !== 'string' || !tag.trim()) || new TextEncoder().encode(values.tags.join('|')).length > 2000) throw new Error('Use up to 20 non-empty tags.');
   if (values.rate_categories !== undefined) changes.rate_categories = validateRateCategories(values.rate_categories);
   if (values.booking_hours !== undefined) changes.booking_hours = validateBookingHours(values.booking_hours);
-  if (values.availability_note !== undefined) {
-    if (typeof values.availability_note !== 'string' || values.availability_note.length > 500) throw new Error('Availability note must be at most 500 characters.');
-    changes.availability_note = values.availability_note.trim();
+  for (const [name, maximum] of Object.entries(optionalTextLimits)) {
+    if (values[name] === undefined) continue;
+    if (typeof values[name] !== 'string' || values[name].length > maximum) throw new Error(`${name.replaceAll('_', ' ')} must be at most ${maximum} characters.`);
+    changes[name] = values[name].trim();
   }
   return { ...changes, role_type: values.role_type, availability: values.availability, is_published: values.is_published, tags: [...new Set(values.tags.map(tag => tag.trim()))] };
 }
