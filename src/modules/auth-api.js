@@ -31,6 +31,8 @@ export function callbackState(locationUrl) {
   return {
     code: url.searchParams.get('code'),
     flowId: url.searchParams.get('sb_flow_id'),
+    terminalToken: fragment.get('terminal_token'),
+    terminalSetup: fragment.get('terminal_setup') === '1',
     errorCode: url.searchParams.get('error_code') || fragment.get('error_code'),
     error: url.searchParams.has('error') || url.searchParams.has('error_code') || fragment.has('error') || fragment.has('error_code'),
     unsupportedToken: fragment.has('access_token') || fragment.has('refresh_token'),
@@ -65,4 +67,17 @@ export function accountRequestMessage(error) {
 
 export async function exchangeAuthCallback(client, callback) {
   return client.auth.exchangeCodeForSession(callback.code, callback.flowId ? { flowId: callback.flowId } : undefined);
+}
+
+export async function exchangeTerminalLogin(client, token, request = fetch) {
+  if (!/^[a-f0-9]{64}$/.test(token || '')) throw new Error('Invalid terminal link.');
+  const response = await request('/.netlify/functions/terminal-login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer',
+    body: JSON.stringify({ action: 'redeem', token })
+  });
+  if (!response.ok) throw new Error('Terminal link could not be completed.');
+  const result = await response.json();
+  if (typeof result.token_hash !== 'string' || !result.token_hash) throw new Error('Invalid terminal response.');
+  return client.auth.verifyOtp({ token_hash: result.token_hash, type: 'magiclink' });
 }

@@ -1,4 +1,4 @@
-import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback } from './auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin } from './auth-api.js';
 import { initAvatarVerification } from './avatar-verification.js';
 
 export async function initAuth() {
@@ -72,6 +72,10 @@ export async function initAuth() {
   window.addEventListener('pageshow', event => {
     if (event.persisted) refresh().catch(() => message('Unable to check your account. Please try again.'));
   });
+  window.addEventListener('hashchange', () => {
+    const next = callbackState(location.href);
+    if (next.terminalToken || next.terminalSetup) location.reload();
+  });
 
   for (const tab of tabs) {
     tab.addEventListener('click', () => { if (!busy) { showMode(tab.dataset.accountMode); message(''); } });
@@ -126,7 +130,16 @@ export async function initAuth() {
     finally { setBusy(false); }
   });
   try {
-    if (callback.error || callback.unsupportedToken) message(accountLinkMessage(callback));
+    if (callback.terminalToken) {
+      setBusy(true);
+      try {
+        const { error } = await exchangeTerminalLogin(client, callback.terminalToken);
+        message(error ? 'Terminal link could not be completed. Request a fresh link from My Account on the terminal.' : 'Signed in from Second Life.');
+      } catch { message('Terminal link expired or could not be completed. Request a fresh link from My Account on the terminal.'); }
+    } else if (callback.terminalSetup) {
+      showMode('signup');
+      message('Create your account, confirm your email, then link your avatar using the terminal. Existing accounts can sign in instead.');
+    } else if (callback.error || callback.unsupportedToken) message(accountLinkMessage(callback));
     else if (callback.code) {
       setBusy(true);
       const { error } = await exchangeAuthCallback(client, callback);

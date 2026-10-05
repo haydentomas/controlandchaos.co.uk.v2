@@ -63,3 +63,20 @@ test('payment failures expose no backend errors or credentials', async () => {
     assert.ok(!response.body.includes(environment.SUPABASE_SECRET_KEY));
   }
 });
+
+test('combined terminal routes verification separately without enabling payment for menu or verification sessions', async () => {
+  const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  assert.equal((script.match(/touch_start\(integer count\)/g) || []).length, 1);
+  assert.ok(script.indexOf('string firstPending()') < script.indexOf('loadPlans()'));
+  assert.match(script, /\["Subscribe", "Verify Avatar", "My Account", "Cancel"\]/);
+  assert.match(script, /"X-CC-Kiosk-Secret", VERIFICATION_SECRET/);
+  assert.match(script, /"X-CC-Payment-Secret", KIOSK_SECRET/);
+  assert.match(script, /key verificationRequest = NULL_KEY/);
+  assert.match(script, /key paymentRequest = NULL_KEY/);
+  assert.match(script, /menuMode != "pay"/);
+  assert.match(script, /verificationRequest != NULL_KEY && now >= verificationDeadline/);
+  assert.match(script, /"avatar_uuid", \(string\)avatar, "username", username/);
+  assert.match(script, /"action", "issue", "avatar_uuid", \(string\)accountAvatar/);
+  assert.match(script, /llLoadURL\(accountAvatar,/);
+  assert.doesNotMatch(script, /ll(?:OwnerSay|RegionSayTo|InstantMessage)\([^;]*terminal_token/s);
+});

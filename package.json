@@ -6,7 +6,8 @@
   "scripts": {
     "capture": "node scripts/capture-templates.mjs",
     "render": "node scripts/render-templates.mjs",
-    "test": "npm run render && node --test scripts/templates.test.mjs scripts/page-shell.test.mjs scripts/database.test.mjs scripts/directory.test.mjs scripts/auth.test.mjs scripts/avatar-verification.test.mjs scripts/directory-payment.test.mjs",
+    "test": "npm run render && node --test scripts/templates.test.mjs scripts/page-shell.test.mjs scripts/database.test.mjs scripts/directory.test.mjs scripts/auth.test.mjs scripts/avatar-verification.test.mjs scripts/directory-payment.test.mjs scripts/terminal-login.test.mjs",
+    "test:terminal-login": "node --test scripts/terminal-login.test.mjs scripts/auth.test.mjs",
     "test:payments": "node --test scripts/directory-payment.test.mjs scripts/database.test.mjs",
     "test:verification": "node --test scripts/avatar-verification.test.mjs",
     "test:auth": "node --test scripts/auth.test.mjs",

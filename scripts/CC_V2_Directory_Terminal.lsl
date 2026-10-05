@@ -1,14 +1,18 @@
 // Script: CC_V2_Directory_Terminal.lsl
-// V2 PAYMENT TERMINAL: put this in a NEW separate test prim, not the avatar verifier or V1 kiosk.
+// V2 COMBINED TERMINAL: subscriptions and avatar verification in one prim; never replace the V1 kiosk.
 // Keep one script in the prim; keep it owned by you, not group-deeded.
-// First compile with the secret blank; report the object UUID; do not pay until setup is complete.
+// Use the existing V2 payment prim to preserve receipts; both trusted-object settings must match its UUID.
 // Keep configured scripts private; never paste secrets into chat or commit them to the repository.
 // Prices come from Supabase; unpriced/disabled plans cannot be purchased. All sales are final.
 string PAYMENT_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/directory-payment";
+string VERIFY_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/verify-avatar";
+string LOGIN_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/terminal-login";
 string ACCOUNT_URL = "https://controlandchaosv2.netlify.app/auth.html";
 // IN-WORLD COPY ONLY: match CC_PAYMENT_KIOSK_SECRET in Netlify; use a separate 32+ character secret.
 string KIOSK_SECRET = "";
-string SCRIPT_VERSION = "payments-v1";
+// IN-WORLD COPY ONLY: match CC_VERIFICATION_KIOSK_SECRET; keep it separate from the payment secret.
+string VERIFICATION_SECRET = "";
+string SCRIPT_VERSION = "directory-v3";
 
 list PLAN_CODES = ["basic_monthly", "basic_lifetime", "vip_monthly", "vip_lifetime"];
 list PLAN_LABELS = ["Basic Monthly", "Basic Lifetime", "VIP Monthly", "VIP Lifetime"];
@@ -18,6 +22,10 @@ list menuLabels = [];
 key customer = NULL_KEY;
 key catalogueRequest = NULL_KEY;
 key paymentRequest = NULL_KEY;
+key verificationRequest = NULL_KEY;
+key verificationAvatar = NULL_KEY;
+key accountRequest = NULL_KEY;
+key accountAvatar = NULL_KEY;
 string pendingReceipt = "";
 string selectedPlan = "";
 integer selectedAmount = 0;
@@ -28,6 +36,9 @@ integer requestDeadline = 0;
 integer catalogueDeadline = 0;
 integer nextRetry = 0;
 integer blocked = FALSE;
+integer verificationDeadline = 0;
+integer accountDeadline = 0;
+string menuMode = "";
 
 hidePay()
 {
@@ -43,7 +54,19 @@ closeSession()
     selectedAmount = 0;
     sessionDeadline = 0;
     catalogueRequest = NULL_KEY;
+    menuMode = "";
     hidePay();
+}
+
+openMainMenu(key avatar)
+{
+    closeSession();
+    customer = avatar;
+    menuMode = "main";
+    sessionDeadline = llGetUnixTime() + 60;
+    menuChannel = -100000 - (integer)llFrand(1000000000.0);
+    listenHandle = llListen(menuChannel, "", customer, "");
+    llDialog(customer, "Control & Chaos V2 Directory", ["Subscribe", "Verify Avatar", "My Account", "Cancel"], menuChannel);
 }
 
 // Linkset data preserves receipts across resets; never clear it or delete a prim with unresolved payments.
@@ -52,6 +75,62 @@ string firstPending()
     list records = llLinksetDataFindKeys("^cc_v2_payment_", 0, 1);
     if (llGetListLength(records) == 0) return "";
     return llList2String(records, 0);
+}
+
+loadPlans()
+{
+    if (llStringLength(KIOSK_SECRET) < 32 || blocked || firstPending() != "")
+    {
+        llRegionSayTo(customer, 0, "Subscriptions are unavailable or a payment is awaiting confirmation. Do not pay again.");
+        closeSession();
+        return;
+    }
+    if (llLinksetDataAvailable() < 4096)
+    {
+        llRegionSayTo(customer, 0, "This terminal is temporarily unavailable.");
+        llOwnerSay("Payment storage is low. Sales are disabled.");
+        closeSession();
+        return;
+    }
+    if (listenHandle != 0) llListenRemove(listenHandle);
+    listenHandle = 0;
+    menuMode = "loading";
+    sessionDeadline = llGetUnixTime() + 60;
+    catalogueDeadline = llGetUnixTime() + 30;
+    catalogueRequest = llHTTPRequest(PAYMENT_URL,
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Payment-Secret", KIOSK_SECRET],
+        llList2Json(JSON_OBJECT, ["action", "plans", "avatar_uuid", (string)customer]));
+    llRegionSayTo(customer, 0, "Checking available subscription plans...");
+}
+
+openVerification()
+{
+    if (llStringLength(VERIFICATION_SECRET) < 32)
+    {
+        llRegionSayTo(customer, 0, "Avatar verification is not configured yet.");
+        closeSession();
+        return;
+    }
+    menuMode = "verify";
+    sessionDeadline = llGetUnixTime() + 60;
+    llTextBox(customer, "Paste the verification code from your own signed-in V2 account. Never enter a code supplied by another person.", menuChannel);
+}
+
+openAccount()
+{
+    if (llStringLength(VERIFICATION_SECRET) < 32)
+    {
+        llLoadURL(customer, "Open your V2 account; terminal sign-in is not configured yet", ACCOUNT_URL);
+        closeSession();
+        return;
+    }
+    accountAvatar = customer;
+    accountRequest = llHTTPRequest(LOGIN_URL,
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Kiosk-Secret", VERIFICATION_SECRET],
+        llList2Json(JSON_OBJECT, ["action", "issue", "avatar_uuid", (string)accountAvatar]));
+    accountDeadline = llGetUnixTime() + 30;
+    closeSession();
+    llRegionSayTo(accountAvatar, 0, "Preparing your private account link...");
 }
 
 // Retrying the original payment reference prevents granting subscription time twice.
@@ -87,25 +166,26 @@ default
         closeSession();
         blocked = llGetListLength(llLinksetDataFindKeys("^cc_v2_unapplied_", 0, 1)) != 0 || llLinksetDataRead("cc_v2_payment_hold") != "";
         llSetClickAction(CLICK_ACTION_TOUCH);
-        llSetText("Control & Chaos V2\nDirectory Subscriptions\nTouch for plans", <0.92, 0.86, 0.66>, 1.0);
+        llSetText("Control & Chaos V2\nDirectory Terminal\nTouch for subscriptions or verification", <0.92, 0.86, 0.66>, 1.0);
         llOwnerSay("Directory terminal ready (" + SCRIPT_VERSION + "). Object UUID: " + (string)llGetKey());
         if (blocked) llOwnerSay("An unresolved payment is recorded. Sales are disabled until it is reconciled.");
         if (llStringLength(KIOSK_SECRET) < 32) llOwnerSay("Payments disabled: configure the private payment kiosk secret in-world and in Netlify.");
         else sendPending();
+        if (llStringLength(VERIFICATION_SECRET) < 32) llOwnerSay("Avatar verification disabled: configure the separate verification secret and trusted object UUID.");
         llSetTimerEvent(5.0);
     }
 
     touch_start(integer count)
     {
         key avatar = llDetectedKey(0);
-        if (llStringLength(KIOSK_SECRET) < 32 || blocked)
+        if (accountRequest != NULL_KEY)
         {
-            llRegionSayTo(avatar, 0, "Subscriptions are not available at this terminal yet.");
+            llRegionSayTo(avatar, 0, "An account link is being prepared. Please try again shortly.");
             return;
         }
-        if (firstPending() != "")
+        if (verificationRequest != NULL_KEY)
         {
-            llRegionSayTo(avatar, 0, "A payment is awaiting confirmation. Please try again shortly.");
+            llRegionSayTo(avatar, 0, "Avatar verification is awaiting a response. Please try again shortly.");
             return;
         }
         if (customer != NULL_KEY && llGetUnixTime() < sessionDeadline)
@@ -113,25 +193,34 @@ default
             llRegionSayTo(avatar, 0, "A selection is already open. Please wait up to a minute.");
             return;
         }
-        if (llLinksetDataAvailable() < 4096)
-        {
-            llRegionSayTo(avatar, 0, "This terminal is temporarily unavailable.");
-            llOwnerSay("Payment storage is low. Sales are disabled.");
-            hidePay();
-            return;
-        }
-        closeSession();
-        customer = avatar;
-        sessionDeadline = llGetUnixTime() + 60;
-        catalogueDeadline = llGetUnixTime() + 30;
-        catalogueRequest = llHTTPRequest(PAYMENT_URL,
-            [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Payment-Secret", KIOSK_SECRET],
-            llList2Json(JSON_OBJECT, ["action", "plans", "avatar_uuid", (string)avatar]));
-        llRegionSayTo(avatar, 0, "Checking available subscription plans...");
+        openMainMenu(avatar);
     }
 
     http_response(key request, integer status, list metadata, string body)
     {
+        if (request == accountRequest && accountRequest != NULL_KEY)
+        {
+            accountRequest = NULL_KEY;
+            string url = llJsonGetValue(body, ["url"]);
+            string tokenPrefix = ACCOUNT_URL + "#terminal_token=";
+            integer validLogin = llSubStringIndex(url, tokenPrefix) == 0 && llStringLength(url) == llStringLength(tokenPrefix) + 64;
+            if (status == 200 && (validLogin || url == ACCOUNT_URL + "#terminal_setup=1"))
+                llLoadURL(accountAvatar, "Private sign-in link: open now, do not share. Login links expire in two minutes.", url);
+            else llRegionSayTo(accountAvatar, 0, "Account link unavailable. Wait a minute before trying again, or sign in at " + ACCOUNT_URL);
+            accountAvatar = NULL_KEY;
+            accountDeadline = 0;
+            return;
+        }
+        if (request == verificationRequest && verificationRequest != NULL_KEY)
+        {
+            if (status == 200) llRegionSayTo(verificationAvatar, 0, "Avatar linked. Return to your V2 account and press Refresh verification.");
+            else llRegionSayTo(verificationAvatar, 0, "Verification failed (status " + (string)status + "). The code may be expired/used or the avatar already linked.");
+            verificationRequest = NULL_KEY;
+            verificationAvatar = NULL_KEY;
+            verificationDeadline = 0;
+            closeSession();
+            return;
+        }
         if (request == catalogueRequest && catalogueRequest != NULL_KEY)
         {
             catalogueRequest = NULL_KEY;
@@ -168,6 +257,7 @@ default
             }
             menuChannel = -100000 - (integer)llFrand(1000000000.0);
             listenHandle = llListen(menuChannel, "", customer, "");
+            menuMode = "plans";
             llDialog(customer, summary, menuLabels + ["Cancel"], menuChannel);
             return;
         }
@@ -202,20 +292,53 @@ default
     listen(integer channel, string name, key avatar, string message)
     {
         if (avatar != customer || channel != menuChannel) return;
-        if (message == "Cancel" || llGetUnixTime() >= sessionDeadline) { closeSession(); return; }
+        if (llGetUnixTime() >= sessionDeadline) { closeSession(); return; }
+        if (menuMode == "verify")
+        {
+            string code = llStringTrim(message, STRING_TRIM);
+            string username = llGetUsername(avatar);
+            if (llStringLength(code) != 36 || (key)code == NULL_KEY || username == "")
+            {
+                llRegionSayTo(avatar, 0, "Invalid verification code or username unavailable. Request a code from your own V2 account.");
+                closeSession();
+                return;
+            }
+            if (listenHandle != 0) llListenRemove(listenHandle);
+            listenHandle = 0;
+            verificationAvatar = avatar;
+            verificationRequest = llHTTPRequest(VERIFY_URL,
+                [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Kiosk-Secret", VERIFICATION_SECRET],
+                llList2Json(JSON_OBJECT, ["code", code, "avatar_uuid", (string)avatar, "username", username]));
+            verificationDeadline = llGetUnixTime() + 60;
+            menuMode = "verifying";
+            return;
+        }
+        if (message == "Cancel") { closeSession(); return; }
+        if (menuMode == "main")
+        {
+            if (message == "Subscribe") loadPlans();
+            else if (message == "Verify Avatar") openVerification();
+            else if (message == "My Account")
+            {
+                openAccount();
+            }
+            return;
+        }
+        if (menuMode != "plans") return;
         integer index = llListFindList(menuLabels, [message]);
         if (index < 0) return;
         selectedPlan = llList2String(menuCodes, index);
         selectedAmount = llList2Integer(menuPrices, index);
         if (listenHandle != 0) llListenRemove(listenHandle);
         listenHandle = 0;
+        menuMode = "pay";
         llSetPayPrice(PAY_HIDE, [selectedAmount, PAY_HIDE, PAY_HIDE, PAY_HIDE]);
         llRegionSayTo(avatar, 0, "Right-click this terminal and Pay L$" + (string)selectedAmount + " for " + message + " before the selection expires. Monthly access lasts 30 days. All sales are final; no refunds.");
     }
 
     money(key payer, integer amount)
     {
-        if (llStringLength(KIOSK_SECRET) < 32 || blocked || payer != customer || selectedPlan == "" || amount != selectedAmount || llGetUnixTime() >= sessionDeadline || firstPending() != "")
+        if (llStringLength(KIOSK_SECRET) < 32 || blocked || menuMode != "pay" || payer != customer || selectedPlan == "" || amount != selectedAmount || llGetUnixTime() >= sessionDeadline || firstPending() != "")
         {
             retainUnexpectedPayment(payer, amount);
             closeSession();
@@ -238,6 +361,21 @@ default
     timer()
     {
         integer now = llGetUnixTime();
+        if (accountRequest != NULL_KEY && now >= accountDeadline)
+        {
+            llRegionSayTo(accountAvatar, 0, "Account link request timed out. Wait a minute before trying again, or sign in at " + ACCOUNT_URL);
+            accountRequest = NULL_KEY;
+            accountAvatar = NULL_KEY;
+            accountDeadline = 0;
+        }
+        if (verificationRequest != NULL_KEY && now >= verificationDeadline)
+        {
+            llRegionSayTo(verificationAvatar, 0, "Verification response timed out. Refresh your V2 account before requesting another code.");
+            verificationRequest = NULL_KEY;
+            verificationAvatar = NULL_KEY;
+            verificationDeadline = 0;
+            closeSession();
+        }
         if (customer != NULL_KEY && now >= sessionDeadline) closeSession();
         if (catalogueRequest != NULL_KEY && now >= catalogueDeadline)
         {

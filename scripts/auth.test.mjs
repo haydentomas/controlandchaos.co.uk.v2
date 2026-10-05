@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { parseHTML } from 'linkedom';
 import { renderPage } from './render-templates.mjs';
-import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback } from '../src/modules/auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin } from '../src/modules/auth-api.js';
 import { createPublicDirectoryClient } from '../src/modules/directory-api.js';
 
 test('creator sessions use PKCE and separate storage while public directory remains anonymous', async () => {
@@ -104,4 +104,22 @@ test('official SDK exchanges the correct namespaced signup verifier after URL cl
     assert.equal((await exchangeAuthCallback(client, callback)).error, null);
     assert.equal(exchangedVerifier, verifier);
   } finally { await client.auth.stopAutoRefresh(); }
+});
+
+test('terminal links are stripped before redemption and use official single-use OTP verification', async () => {
+  const token = 'a'.repeat(64);
+  const callback = callbackState(`https://controlandchaosv2.netlify.app/auth.html#terminal_token=${token}`);
+  assert.equal(callback.terminalToken, token);
+  assert.equal(callback.cleanUrl, 'https://controlandchaosv2.netlify.app/auth.html');
+  let verified;
+  const client = { auth: { verifyOtp: async payload => { verified = payload; return { error: null }; } } };
+  await exchangeTerminalLogin(client, token, async (url, options) => {
+    assert.equal(url, '/.netlify/functions/terminal-login');
+    assert.equal(options.referrerPolicy, 'no-referrer');
+    assert.deepEqual(JSON.parse(options.body), { action: 'redeem', token });
+    return new Response(JSON.stringify({ token_hash: 'fake-otp-hash' }));
+  });
+  assert.deepEqual(verified, { token_hash: 'fake-otp-hash', type: 'magiclink' });
+  await assert.rejects(exchangeTerminalLogin(client, 'bad-token'), /Invalid/);
+  assert.equal(callbackState('https://controlandchaosv2.netlify.app/auth.html#terminal_setup=1').terminalSetup, true);
 });
