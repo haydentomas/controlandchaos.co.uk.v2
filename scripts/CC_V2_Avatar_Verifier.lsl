@@ -1,4 +1,11 @@
+// Script: CC_V2_Avatar_Verifier.lsl
+// V2 AVATAR VERIFIER: links an avatar to a website account; it does NOT take subscription payments.
+// Keep this in its existing separate prim; do not replace it with the payment terminal script.
+// Keep the prim owned by you, not group-deeded; keep configured scripts private.
+// Never paste secrets into chat or commit them to the repository; keep the repository copy blank.
+// Re-rezzing may change the object UUID; update CC_VERIFICATION_KIOSK_OBJECT in Netlify if it changes.
 string VERIFY_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/verify-avatar";
+// IN-WORLD COPY ONLY: match CC_VERIFICATION_KIOSK_SECRET in Netlify, not CC_PAYMENT_KIOSK_SECRET.
 string KIOSK_SECRET = "";
 string SCRIPT_VERSION = "v3";
 
