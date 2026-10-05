@@ -1,6 +1,19 @@
 # V2 Shared Template Handoff
 
-Latest pause point (2026-10-04): read [NEXT_STEPS.md](NEXT_STEPS.md) first. The user confirmed real sign-in and migration 2 verification, then paused before creating the test verifier prim. That file supersedes historical "not applied"/"signup unverified" statements below. Database/Auth/verifier code remains local and unpushed; 78 tests/build pass. No further work tonight.
+Latest pause point (2026-10-05): read [NEXT_STEPS.md](NEXT_STEPS.md) first. The user is stopping after the approved gallery/handoff push. Migrations 1-9 are already applied and permission checks passed. Payments, expiry/renewal, terminal auto-login, profile persistence, rate cards, booking hours and cross-region reminder delivery were confirmed live; gallery code is committed as `726b05d`, with its deployment/live test next. Latest validation: 118 tests and build pass. The resume file supersedes every older setup/pause claim below.
+
+## October 5 Outcome
+
+- The operating model is automated subscription access, not staff-assigned provisioning: Basic/VIP, monthly/lifetime, immediate access after paid ownership linking, expiry hides listings/locks paid editing, renewal preserves content. Final prices and detailed tier capabilities are undecided; Basic Monthly remains a private L$1 development test plan.
+- One combined [directory terminal](scripts/CC_V2_Directory_Terminal.lsl), `directory-v4.1`, handles subscription, verification, account login and reminders. Secrets load from the private in-world `CC_V2_Terminal_Config` notecard; repository variables remain blank. Replacing script code no longer requires typing keys again.
+- Real auto-login, editing/publishing, expiry/renewal and cross-region warning IM tests succeeded. Testpress's temporary expiry was restored to `2026-11-04 11:55:29.334415+00`. Offline IM receipt and the expired-notice IM remain unverified.
+- The account and editor now read live Supabase data with paid-owner gates. Rate cards and recurring booking hours are implemented and were reported working live. Actual booking requests are not implemented.
+- Gallery milestone `726b05d` adds draft-private photo rows, atomic profile/media saving, URL previews, metadata/publication/order controls, public filtering, banner rendering and accessible keyboard lightbox/error handling. Migration 9 is already applied; real hosted gallery testing is the next action after Netlify publishes code containing that commit. Uploads/Storage and private signed media are not implemented.
+- The complete V1 studio/profile and its richer design remain the intended destination. Smaller working sections are incremental foundation work, not a replacement product specification. Do not confuse old fixture pages with connected live features.
+
+## Historical Architecture Notes
+
+The sections below preserve earlier architecture/setup history. Their present-tense deployment, migration and test-count statements are historical; use [NEXT_STEPS.md](NEXT_STEPS.md) for current facts and resume instructions.
 
 ## Current Stage
 
