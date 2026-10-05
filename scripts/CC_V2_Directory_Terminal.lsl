@@ -7,12 +7,13 @@
 string PAYMENT_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/directory-payment";
 string VERIFY_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/verify-avatar";
 string LOGIN_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/terminal-login";
+string REMINDER_URL = "https://controlandchaosv2.netlify.app/.netlify/functions/directory-reminders";
 string ACCOUNT_URL = "https://controlandchaosv2.netlify.app/auth.html";
 // IN-WORLD COPY ONLY: match CC_PAYMENT_KIOSK_SECRET in Netlify; use a separate 32+ character secret.
 string KIOSK_SECRET = "";
 // IN-WORLD COPY ONLY: match CC_VERIFICATION_KIOSK_SECRET; keep it separate from the payment secret.
 string VERIFICATION_SECRET = "";
-string SCRIPT_VERSION = "directory-v3.1";
+string SCRIPT_VERSION = "directory-v4";
 
 list PLAN_CODES = ["basic_monthly", "basic_lifetime", "vip_monthly", "vip_lifetime"];
 list PLAN_LABELS = ["Basic Monthly", "Basic Lifetime", "VIP Monthly", "VIP Lifetime"];
@@ -39,6 +40,13 @@ integer blocked = FALSE;
 integer verificationDeadline = 0;
 integer accountDeadline = 0;
 string menuMode = "";
+key reminderRequest = NULL_KEY;
+string reminderStage = "";
+string reminderId = "";
+string reminderToken = "";
+integer reminderDeadline = 0;
+integer nextReminderPoll = 0;
+integer remindersPaused = FALSE;
 
 hidePay()
 {
@@ -159,6 +167,94 @@ retainUnexpectedPayment(key payer, integer amount)
     llRegionSayTo(payer, 0, "Payment received but not applied to a subscription. All sales are final; no refund has been issued. Receipt: " + reference + ". The owner has been notified; do not pay again.");
 }
 
+sendReminderRequest(string stage, string payload)
+{
+    reminderStage = stage;
+    reminderRequest = llHTTPRequest(REMINDER_URL,
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Payment-Secret", KIOSK_SECRET], payload);
+    reminderDeadline = llGetUnixTime() + 30;
+    nextReminderPoll = llGetUnixTime() + 300;
+}
+
+// A submitted IM is not a recipient delivery receipt; retries acknowledge without sending it again.
+pumpReminders()
+{
+    if (remindersPaused || reminderRequest != NULL_KEY || llStringLength(KIOSK_SECRET) < 32 || llGetUnixTime() < nextReminderPoll) return;
+    string journal = llLinksetDataRead("cc_v2_reminder_journal");
+    if (journal != "")
+    {
+        if (llJsonGetValue(journal, ["state"]) != "submitted")
+        {
+            remindersPaused = TRUE;
+            llOwnerSay("Reminder submission was interrupted. Journal retained; not resending automatically. Payments remain available.");
+            return;
+        }
+        sendReminderRequest("ack", llJsonGetValue(journal, ["ack"]));
+        return;
+    }
+    if (customer != NULL_KEY || paymentRequest != NULL_KEY || verificationRequest != NULL_KEY || accountRequest != NULL_KEY || firstPending() != "") return;
+    if (llLinksetDataAvailable() < 6144) return;
+    sendReminderRequest("claim", llList2Json(JSON_OBJECT, ["action", "claim"]));
+}
+
+handleReminderResponse(integer status, string body)
+{
+    reminderRequest = NULL_KEY;
+    if (status != 200)
+    {
+        if (reminderStage == "ack" && status == 409)
+        {
+            remindersPaused = TRUE;
+            llOwnerSay("Reminder acknowledgement rejected. Journal retained for reconciliation; IM will not be resent automatically.");
+        }
+        else if (status == 403 || status == 404)
+            llOwnerSay("Reminder service unavailable (HTTP " + (string)status + "). Retrying in five minutes.");
+        return;
+    }
+    if (reminderStage == "ack")
+    {
+        if (llJsonGetValue(body, ["acknowledged"]) == JSON_TRUE)
+        {
+            if (llLinksetDataDelete("cc_v2_reminder_journal") != LINKSETDATA_OK)
+            {
+                remindersPaused = TRUE;
+                llOwnerSay("Reminder journal could not be cleared; not sending further IMs.");
+            }
+            else nextReminderPoll = llGetUnixTime() + 15;
+        }
+        return;
+    }
+    if (llJsonGetValue(body, ["reminder"]) == JSON_NULL) return;
+    if (reminderStage == "claim")
+    {
+        reminderId = llJsonGetValue(body, ["reminder", "id"]);
+        reminderToken = llJsonGetValue(body, ["reminder", "claim_token"]);
+        if (llStringLength(reminderId) != 36 || llStringLength(reminderToken) != 36) return;
+        sendReminderRequest("authorize", llList2Json(JSON_OBJECT, ["action", "authorize", "id", reminderId, "claim_token", reminderToken]));
+        return;
+    }
+    if (reminderStage != "authorize") return;
+    string recipient = llJsonGetValue(body, ["reminder", "avatar_uuid"]);
+    string message = llJsonGetValue(body, ["reminder", "message"]);
+    if (llStringLength(recipient) != 36 || (key)recipient == NULL_KEY || message == JSON_INVALID || llStringLength(message) == 0 || llStringLength(message) > 1023) return;
+    string ack = llList2Json(JSON_OBJECT, ["action", "ack", "id", reminderId, "claim_token", reminderToken]);
+    string journal = llList2Json(JSON_OBJECT, ["state", "sending", "ack", ack]);
+    if (llLinksetDataWrite("cc_v2_reminder_journal", journal) != LINKSETDATA_OK)
+    {
+        remindersPaused = TRUE;
+        llOwnerSay("Reminder journal could not be stored; no IM sent. Payments remain available.");
+        return;
+    }
+    llInstantMessage((key)recipient, message);
+    journal = llList2Json(JSON_OBJECT, ["state", "submitted", "ack", ack]);
+    if (llLinksetDataWrite("cc_v2_reminder_journal", journal) != LINKSETDATA_OK)
+    {
+        remindersPaused = TRUE;
+        llOwnerSay("Reminder IM submitted but journal update failed. Do not clear linkset data or resend manually without checking.");
+    }
+    sendReminderRequest("ack", ack);
+}
+
 default
 {
     state_entry()
@@ -172,6 +268,7 @@ default
         if (llStringLength(KIOSK_SECRET) < 32) llOwnerSay("Payments disabled: configure the private payment kiosk secret in-world and in Netlify.");
         else sendPending();
         if (llStringLength(VERIFICATION_SECRET) < 32) llOwnerSay("Avatar verification disabled: configure the separate verification secret and trusted object UUID.");
+        nextReminderPoll = llGetUnixTime() + 60;
         llSetTimerEvent(5.0);
     }
 
@@ -198,6 +295,11 @@ default
 
     http_response(key request, integer status, list metadata, string body)
     {
+        if (request == reminderRequest && reminderRequest != NULL_KEY)
+        {
+            handleReminderResponse(status, body);
+            return;
+        }
         if (request == accountRequest && accountRequest != NULL_KEY)
         {
             accountRequest = NULL_KEY;
@@ -393,6 +495,8 @@ default
         }
         if (paymentRequest != NULL_KEY && now >= requestDeadline) paymentRequest = NULL_KEY;
         if (now >= nextRetry) sendPending();
+        if (reminderRequest != NULL_KEY && now >= reminderDeadline) reminderRequest = NULL_KEY;
+        pumpReminders();
     }
 
     changed(integer change)
