@@ -6,6 +6,8 @@ import { PGlite } from '@electric-sql/pglite';
 import { validateRateCategories, renderPublicRateCards } from '../src/modules/rate-cards.js';
 import { initRateCardEditor } from '../src/modules/rate-card-editor.js';
 import { validateBookingHours, bookingLocalTime, renderBookingHours, initBookingHoursEditor } from '../src/modules/booking-hours.js';
+import { validateGalleryPhotos, galleryImageUrl, renderProfileGallery } from '../src/modules/profile-gallery.js';
+import { initProfileGalleryEditor } from '../src/modules/profile-gallery-editor.js';
 import { initAccountDirectory } from '../src/modules/account-directory.js';
 import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
 
@@ -13,6 +15,14 @@ const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
 const rates = [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Consultations', description: 'Private appointments', items: [{ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Introduction', price: 'L$1,000', unit: '30 minutes', description: 'A first appointment' }] }];
 const hours = { timezone: 'America/Los_Angeles', days: ['sat', 'sun'], start_time: '20:00', end_time: '23:00', slot_minutes: 60, notes: 'Advance booking recommended.' };
+const photos = [{ id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', title: 'Portrait', category: 'Portraits', description: 'Profile portrait', image_url: 'https://images.example.test/portrait.jpg', is_published: true }, { id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', title: 'Draft photo', category: '', description: '', image_url: 'https://images.example.test/private.jpg', is_published: false }];
+
+test('gallery validation accepts metadata and safe image locations but rejects forged ownership and unsafe URLs', () => {
+  assert.deepEqual(validateGalleryPhotos(photos), photos);
+  for (const image_url of ['javascript:alert(1)', '//unsafe.test/image.jpg', 'http://unsafe.test/image.jpg', 'https://user:password@unsafe.test/image.jpg', '/\\unsafe.test/image.jpg']) assert.equal(galleryImageUrl(image_url), '');
+  assert.throws(() => validateGalleryPhotos([{ ...photos[0], profile_id: profileId }]));
+  assert.throws(() => validateGalleryPhotos([photos[0], photos[0]]));
+});
 
 test('booking hours validate timezones, days and intervals, including explicit overnight windows', () => {
   assert.deepEqual(validateBookingHours(hours), hours);
@@ -74,7 +84,7 @@ test('rate-card database schema enforces paid ownership, structure and public pu
       create schema auth; create table auth.users(id uuid primary key);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     await database.query('insert into auth.users(id) values ($1),($2)', [owner, stranger]);
@@ -92,18 +102,28 @@ test('rate-card database schema enforces paid ownership, structure and public pu
       await assert.rejects(database.query('update public.directory_profiles set booking_hours=$1::jsonb where id=$2', [JSON.stringify(invalid), profile]), error => error.code === '23514');
     }
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning rate_categories', [JSON.stringify(rates), profile])).rows.length, 1);
+    await database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify({ headline: 'Atomic media save' }), JSON.stringify(photos)]);
+    const invalidPhotos = [{ ...photos[0], image_url: 'javascript:alert(1)' }];
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify({ headline: 'Must roll back' }), JSON.stringify(invalidPhotos)]));
+    assert.equal((await database.query('select headline from public.directory_profiles where id=$1', [profile])).rows[0].headline, 'Atomic media save');
+    assert.equal((await database.query('select id from public.directory_gallery_photos')).rows.length, 2);
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, JSON.stringify({ is_approved: true }), JSON.stringify(photos)]), /invalid_profile_fields/);
     for (const invalid of [{}, [{ ...rates[0], extra: true }], [{ ...rates[0], items: [{ ...rates[0].items[0], price: 100 }] }], [rates[0], rates[0]]]) {
       await assert.rejects(database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2', [JSON.stringify(invalid), profile]), error => error.code === '23514');
     }
     await actAs('anon');
+    assert.equal((await database.query('select * from public.directory_gallery_photos')).rows.length, 0);
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, '{}', '[]']), error => error.code === '42501');
     assert.equal((await database.query('select rate_categories from public.directory_profiles')).rows.length, 0);
     await actAs('authenticated', stranger);
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, '{}', '[]']), error => error.code === '42501');
     assert.equal((await database.query('update public.directory_profiles set booking_hours=null where id=$1 returning id', [profile])).rows.length, 0);
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning id', ['[]', profile])).rows.length, 0);
     await actAs('authenticated', owner);
     await database.query('update public.directory_profiles set is_published=true where id=$1', [profile]);
     await actAs('anon');
     assert.deepEqual((await database.query('select rate_categories from public.directory_profiles')).rows[0].rate_categories, rates);
+    assert.deepEqual((await database.query('select id,image_url from public.directory_gallery_photos')).rows, [{ id: photos[0].id, image_url: photos[0].image_url }]);
     assert.deepEqual((await database.query('select booking_hours from public.directory_profiles')).rows[0].booking_hours, hours);
     await actAs('service_role');
     await database.query("update cc_private.directory_subscriptions set expires_at=now()-interval '1 second' where avatar_uuid=$1", [rates[0].id]);
@@ -111,6 +131,7 @@ test('rate-card database schema enforces paid ownership, structure and public pu
     assert.equal((await database.query('select rate_categories from public.directory_profiles')).rows.length, 0);
     await actAs('authenticated', owner);
     assert.equal((await database.query('update public.directory_profiles set booking_hours=null where id=$1 returning id', [profile])).rows.length, 0);
+    await assert.rejects(database.query('select * from public.save_directory_profile_media($1,$2::jsonb,$3::jsonb)', [profile, '{}', '[]']), error => error.code === '42501');
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning id', ['[]', profile])).rows.length, 0);
   } finally { await database.close(); }
 });
@@ -217,4 +238,36 @@ test('booking editor distinguishes unset schedules and no available days without
     editor.load({ ...hours, days: [] });
     assert.deepEqual(editor.value().days, []);
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('gallery editor reorders and removes photos while public rendering excludes unpublished URLs', () => {
+  const { document } = parseHTML('<button id="add"></button><fieldset><div id="editor"></div></fieldset><div id="filters"></div><div id="grid"></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    const editor = initProfileGalleryEditor(document.getElementById('editor'), document.getElementById('add'));
+    editor.load(photos);
+    document.querySelector('[aria-label="Move photo down"]').click();
+    assert.equal(editor.value()[1].id, photos[0].id);
+    document.querySelector('[aria-label="Remove photo"]').click();
+    assert.equal(editor.value().length, 1);
+    renderProfileGallery(document.getElementById('grid'), document.getElementById('filters'), [{ ...photos[0], title: '<script>unsafe()</script>' }, photos[1]]);
+    assert.equal(document.querySelectorAll('[data-photo]').length, 1);
+    assert.equal(document.querySelectorAll('script').length, 0);
+    assert.ok(!document.getElementById('grid').innerHTML.includes(photos[1].image_url));
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('profile and gallery save through one atomic RPC and failed responses never report success', async () => {
+  let request;
+  let failed = false;
+  const client = { rpc: (name, args) => {
+    if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: profileId, is_active: true }] });
+    request = { name, args };
+    return { maybeSingle: async () => failed ? { error: { message: 'private error' } } : { data: { id: profileId, ...values } } };
+  } };
+  assert.equal((await saveCreatorProfile(client, profileId, values, photos)).id, profileId);
+  assert.deepEqual(request, { name: 'save_directory_profile_media', args: { target_profile: profileId, profile_changes: values, photos } });
+  failed = true;
+  await assert.rejects(saveCreatorProfile(client, profileId, values, photos), error => /not saved/.test(error.message) && !error.message.includes('private error'));
 });

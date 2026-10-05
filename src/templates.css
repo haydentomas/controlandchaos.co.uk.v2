@@ -20,6 +20,19 @@
   .booking-day-list label { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; }
   .booking-day-list input { width: 18px; height: 18px; accent-color: #d4af37; }
   .public-booking-hours p { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .profile-gallery-editor-item { border-top: 1px solid rgba(212,175,55,0.2); padding: 16px 0 24px; }
+  .profile-gallery-editor-item h3 { margin: 0 auto 0 0; }
+  .public-profile-banner { display: block; width: 100%; max-height: 320px; object-fit: contain; margin-top: 24px; }
+  .public-gallery-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
+  .public-gallery-tile { background: transparent; border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; padding: 0; color: inherit; cursor: pointer; text-align: left; min-width: 0; }
+  .public-gallery-tile img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #09080c; }
+  .public-gallery-tile span { display: block; padding: 12px; overflow-wrap: anywhere; }
+  .public-lightbox-caption { margin-top: 12px; text-align: center; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .lightbox-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
+  html[data-template="directory-profile"] .lightbox-modal.active { display: flex; }
+  html[data-template="directory-profile"] .lightbox-content { display: flex; flex-direction: column; align-items: center; position: relative; }
+  html[data-template="directory-profile"] .lightbox-img { border-radius: 8px; border: 2px solid rgba(212,175,55,0.3); }
+  @media (max-width: 700px) { .public-gallery-grid { grid-template-columns: minmax(0,1fr); } }
   .public-rate-category { margin-bottom: 32px; }
   .public-rate-item { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,auto); gap: 8px 16px; padding: 18px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
   .public-rate-item h4, .public-rate-item p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }

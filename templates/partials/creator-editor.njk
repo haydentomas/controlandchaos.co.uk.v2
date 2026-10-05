@@ -47,11 +47,15 @@
           <label class="form-label" for="creator-tags">Tags (comma-separated)</label><input class="form-input" id="creator-tags" name="tags" maxlength="2000">
         </section>
         <section class="creator-editor-section" aria-labelledby="creator-images-title">
-          <h2 id="creator-images-title" class="account-subheading">Images</h2>
+          <h2 id="creator-images-title" class="account-subheading">Photos &amp; Visuals</h2>
           <div class="form-grid-2">
             <div><label class="form-label" for="creator-avatar">Avatar image URL</label><input class="form-input" id="creator-avatar" name="avatar_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-avatar-preview alt="Avatar preview" loading="lazy"></div>
             <div><label class="form-label" for="creator-banner">Banner image URL</label><input class="form-input" id="creator-banner" name="banner_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-banner-preview alt="Banner preview" loading="lazy"></div>
           </div>
+        </section>
+        <section class="creator-editor-section" aria-labelledby="creator-gallery-title">
+          <div class="creator-editor-toolbar"><h2 id="creator-gallery-title" class="account-subheading">Gallery Library</h2><button class="btn btn-secondary" type="button" data-gallery-add-photo>Add photo</button></div>
+          <div data-gallery-editor></div>
         </section>
         <section class="creator-editor-section" aria-labelledby="creator-rates-title">
           <div class="creator-editor-toolbar"><h2 id="creator-rates-title" class="account-subheading">Rate Cards &amp; Menus</h2><button class="btn btn-secondary" type="button" data-rate-add-category>Add rate category</button></div>

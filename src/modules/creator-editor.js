@@ -3,6 +3,8 @@ import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, subsc
 import { publicImageUrl } from './directory-api.js';
 import { initRateCardEditor } from './rate-card-editor.js';
 import { initBookingHoursEditor } from './booking-hours.js';
+import { initProfileGalleryEditor } from './profile-gallery-editor.js';
+import { fetchGalleryPhotos } from './profile-gallery.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -13,6 +15,7 @@ export async function initCreatorEditor(clientOverride) {
   const signin = document.querySelector('[data-creator-signin]');
   const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
   const bookingEditor = initBookingHoursEditor(form.querySelector('[data-booking-editor]'));
+  const galleryEditor = initProfileGalleryEditor(form.querySelector('[data-gallery-editor]'), form.querySelector('[data-gallery-add-photo]'));
   let client;
   let generation = 0;
   let saving = false;
@@ -28,6 +31,7 @@ export async function initCreatorEditor(clientOverride) {
     form.reset();
     rateEditor.clear();
     bookingEditor.load(null);
+    galleryEditor.clear();
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -61,7 +65,9 @@ export async function initCreatorEditor(clientOverride) {
     status.textContent = 'Loading profile...';
     try {
       const row = await loadCreatorProfile(client, picker.value);
+      const photos = await fetchGalleryPhotos(client, row.id);
       if (active !== generation) return;
+      galleryEditor.load(photos);
       paint(row);
       form.querySelector('[data-creator-subscription]').textContent = subscriptionLabel(subscriptions.find(subscription => subscription.profile_id === row.id));
       form.classList.remove('preview-hidden');
@@ -113,15 +119,17 @@ export async function initCreatorEditor(clientOverride) {
     const values = Object.fromEntries(fieldNames.map(name => [name, form.elements[name].value]));
     values.tags = form.elements.tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
     values.is_published = form.elements.is_published.checked;
-    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); }
+    let photos;
+    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); photos = galleryEditor.value(); }
     catch (error) { status.textContent = error.message; return; }
     saving = true;
     fields.disabled = picker.disabled = reload.disabled = true;
     status.textContent = 'Saving profile...';
     try {
-      const updated = await saveCreatorProfile(client, profile.id, values);
+      const updated = await saveCreatorProfile(client, profile.id, values, photos);
       if (active !== generation) return;
       paint(updated);
+      galleryEditor.load(photos);
       status.textContent = 'Profile saved.';
     } catch (error) { if (active === generation) status.textContent = error.message; }
     finally {

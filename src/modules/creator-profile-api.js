@@ -1,5 +1,6 @@
 import { validateRateCategories } from './rate-cards.js';
 import { validateBookingHours } from './booking-hours.js';
+import { validateGalleryPhotos } from './profile-gallery.js';
 
 export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -49,9 +50,15 @@ export async function loadCreatorProfile(client, profileId) {
   return data;
 }
 
-export async function saveCreatorProfile(client, profileId, values) {
+export async function saveCreatorProfile(client, profileId, values, photos) {
   const changes = profileChanges(values);
+  const gallery = photos === undefined ? undefined : validateGalleryPhotos(photos);
   await requireOwnedSubscription(client, profileId);
+  if (gallery !== undefined) {
+    const { data, error } = await client.rpc('save_directory_profile_media', { target_profile: profileId, profile_changes: changes, photos: gallery }).maybeSingle();
+    if (error || !data) throw new Error('Profile and gallery were not saved. Check subscription access and field values.');
+    return data;
+  }
   const { data, error } = await client.from('directory_profiles').update(changes).eq('id', profileId).select(CREATOR_PROFILE_COLUMNS).maybeSingle();
   if (error || !data) throw new Error('Profile was not saved. Check your subscription and field values.');
   return data;
