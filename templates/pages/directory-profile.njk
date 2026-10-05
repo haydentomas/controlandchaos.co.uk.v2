@@ -12,22 +12,44 @@
   <div class="container">
     <p class="text-muted" data-public-profile-status role="status" aria-live="polite">Loading profile...</p>
     <div class="preview-hidden" data-public-profile-content>
-      <div class="public-profile-overview">
-        <img class="public-profile-avatar preview-hidden" data-public-profile-avatar alt="">
-        <div>
-          <span class="role-badge" data-public-profile-role></span>
-          <p class="font-mono font-xs text-gold" data-public-profile-username></p>
-          <p class="dom-quote" data-public-profile-tagline></p>
-          <p class="text-gold font-bold" data-public-profile-rate></p>
-          <p class="text-gold" data-public-profile-availability></p>
-          <p class="text-muted" data-public-profile-availability-note></p>
-          <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
+      <div class="public-profile-layout">
+        <div class="public-profile-main">
+          <section class="public-profile-panel public-profile-about-panel">
+            <h2 class="public-profile-section-title">About</h2>
+            <div class="public-profile-about" data-public-profile-about></div>
+          </section>
+          <section class="public-profile-panel preview-hidden" data-public-profile-rate-section>
+            <h2 class="public-profile-section-title">Rate Cards &amp; Menus</h2>
+            <div data-public-profile-rates></div>
+          </section>
+        </div>
+        <aside class="public-profile-sidebar">
+          <section class="public-profile-panel public-profile-summary">
+            <div class="public-profile-overview">
+              <img class="public-profile-avatar preview-hidden" data-public-profile-avatar alt="">
+              <div class="public-profile-identity">
+                <span class="role-badge" data-public-profile-role></span>
+                <p class="font-mono font-xs text-gold" data-public-profile-username></p>
+                <p class="dom-quote" data-public-profile-tagline></p>
+                <p class="text-gold font-bold" data-public-profile-rate></p>
+                <p class="text-gold public-profile-availability" data-public-profile-availability></p>
+                <p class="text-muted" data-public-profile-availability-note></p>
+                <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
+              </div>
+            </div>
+          </section>
+          <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
+            <h2 class="public-profile-section-title">Booking Hours</h2>
+            <div class="public-booking-hours" data-public-profile-hours></div>
+          </section>
         </div>
       </div>
-      <section class="section"><h2 class="section-title">About</h2><div class="public-profile-about" data-public-profile-about></div></section>
-      <section class="section preview-hidden" data-public-profile-rate-section><h2 class="section-title">Rate Cards &amp; Menus</h2><div data-public-profile-rates></div></section>
-      <section class="section preview-hidden" data-public-profile-booking-section><h2 class="section-title">Booking Hours</h2><div class="public-booking-hours" data-public-profile-hours></div></section>
-      <section class="section preview-hidden" data-public-profile-gallery><h2 class="section-title">Gallery</h2><p class="text-muted" data-public-gallery-status role="status"></p><div class="account-actions" id="gallery-library-filters"></div><div class="public-gallery-grid" id="gallery-library-grid"></div></section>
+      <section class="public-profile-panel public-profile-gallery preview-hidden" data-public-profile-gallery>
+        <h2 class="public-profile-section-title">Gallery</h2>
+        <p class="text-muted" data-public-gallery-status role="status"></p>
+        <div class="account-actions" id="gallery-library-filters"></div>
+        <div class="public-gallery-grid" id="gallery-library-grid"></div>
+      </section>
     </div>
     <a href="/directory.html" class="btn btn-secondary btn-sm">&#8592; Directory</a>
   </div>

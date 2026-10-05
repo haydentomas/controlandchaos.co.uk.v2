@@ -19,6 +19,7 @@ export async function initDirectoryProfile() {
     fill('[data-public-profile-tagline]', profile.tagline);
     fill('[data-public-profile-rate]', profile.starting_rate || 'Contact for rates');
     fill('[data-public-profile-about]', profile.about);
+    document.querySelector('.public-profile-about-panel').classList.toggle('preview-hidden', !String(profile.about || '').trim());
     fill('[data-public-profile-availability]', `Availability: ${{ available: 'Available', busy: 'Busy', away: 'Away', offline: 'Offline' }[profile.availability] || 'Contact for availability'}`);
     fill('[data-public-profile-availability-note]', profile.availability_note);
     document.title = `${profile.display_name} | Control & Chaos`;
@@ -33,10 +34,15 @@ export async function initDirectoryProfile() {
     const src = publicImageUrl(profile.avatar_image);
     if (src) {
       const image = document.querySelector('[data-public-profile-avatar]');
+      const overview = image.closest('.public-profile-overview');
       image.src = src;
       image.alt = profile.display_name;
       image.classList.remove('preview-hidden');
-      image.addEventListener('error', () => image.classList.add('preview-hidden'));
+      overview.classList.add('has-avatar');
+      image.addEventListener('error', () => {
+        image.classList.add('preview-hidden');
+        overview.classList.remove('has-avatar');
+      });
     }
     for (const tag of Array.isArray(profile.tags) ? profile.tags : []) {
       const badge = document.createElement('span');

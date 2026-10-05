@@ -1,19 +1,22 @@
 # V2 Resume Handoff
 
-Updated: 2026-10-05. The user is stopping for now. Complete the approved gallery/handoff push, then pause feature work until the user returns. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
+Updated: 2026-10-05. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
 
 ## Resume Here
 
-**Next action: confirm the V2 Netlify deployment contains gallery milestone `726b05d`, then test the gallery on the live site as testpress. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
+**Next action: continue the V1-style profile work locally, starting with the public profile layout. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
 
-1. Check the **V2** Netlify project (`controlandchaosv2.netlify.app`), not V1. The latest deploy must include `726b05d`; the subsequent handoff commit also contains this code. Get the latest commit with `git log -2 --oneline` rather than assuming a historical deploy is current.
-2. As the paid, verified alt **testpress**, touch the existing combined terminal and choose **My Account**, then **Edit profile**.
-3. In **Gallery Library**, add two photos using valid HTTPS image URLs or existing site paths, with titles/categories/descriptions. Publish one and leave the other unpublished.
-4. Save, reload, and confirm both photos and their order persist for the owner.
-5. Open the live public profile in a signed-out/private browser. Only the published photo should appear. Test category filtering and lightbox open/close; add a second published photo to test previous/next navigation.
-6. Confirm banner/avatar images still render and existing rate cards and booking hours are retained. Stop on a save or access error; do not disable RLS or recreate the account.
+The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
-The gallery milestone is locally tested, but **its Netlify publication and real hosted gallery save/read are not yet confirmed**. No terminal change, new secret or SQL rerun is needed for this test. Upload buttons/storage buckets are not implemented in this slice.
+- Confirmed the deployed site has the gallery editor, then saved one published and one unpublished photo.
+- Owner save/reload retained both photos and their publish states.
+- The signed-out public profile showed only the published photo. Category filtering, lightbox open/close, and previous/next navigation with a second published photo worked.
+- Removed all three temporary test photos and saved; the public profile is back to having no gallery photos.
+- Existing rate cards and booking hours remained visible. testpress has no avatar/banner image configured, so image rendering with configured profile images was not exercised.
+
+No terminal change, new secret, SQL rerun, or deployment is needed for the completed test. Gallery file uploads/storage buckets are not implemented.
+
+The user chose the richer public-profile layout as the first V1-style implementation slice. A local first pass now uses existing profile, rate-card, booking-hour, and gallery data only; it has not been deployed. Run tests/build after future changes, and do not commit, push, or deploy without fresh approval.
 
 ## Product Direction
 
@@ -92,7 +95,7 @@ Latest gallery validation: **118 tests passed; production build passed; relevant
 
 The reminder queue is polled by the running terminal approximately every five minutes, with catch-up after startup. Expiry enforcement is database-driven and does not depend on reminder delivery. Claims use five-minute leases, and notices are revalidated before IM submission. Lifetime, suspended and stale renewal notices are skipped. Persistent journals avoid resending submitted IMs while acknowledging; a reset in the ambiguous submission window pauses reminders for reconciliation. `delivered_at` records acknowledged **submission**, not recipient delivery/read proof.
 
-Outstanding: real hosted gallery test; actual expired reminder and offline receipt; fresh-account conflict/lifetime-payment staging checks; polished full V1-style studio/profile; real booking requests; Storage uploads/signed private media; voice/video; boundaries, socials, creator blogs/feed, SEO/custom domains and agreed VIP capabilities. The retained legacy templates are visual references, not evidence these features are connected. The authoritative live editor partial is [creator-editor.njk](templates/partials/creator-editor.njk).
+Outstanding: actual expired reminder and offline receipt; fresh-account conflict/lifetime-payment staging checks; finish the full V1-style studio/profile; real booking requests; Storage uploads/signed private media; voice/video; boundaries, socials, creator blogs/feed, SEO/custom domains and agreed VIP capabilities. The retained legacy templates are visual references, not evidence these features are connected. The authoritative live editor partial is [creator-editor.njk](templates/partials/creator-editor.njk).
 
 ## Restart Locally
 
@@ -127,8 +130,8 @@ Do not run `npm run capture`: it extracts V1 fixtures and can overwrite authorit
 - Only the current gallery/handoff push is approved. Obtain fresh approval for later commits/pushes/deployments or remote changes.
 - Do not request/print secrets, scan private environment files, force avatar verification, bypass paid-access rules, or disable RLS.
 - Do not automatically run quota-limited remote security scans.
-- Resume with the live gallery test first. Once it passes, agree the next V1 feature slice; uploads, voice/video or boundaries/socials are candidates, not pre-approved implementation.
+- Continue the locally validated public-profile layout slice, then agree follow-on profile/editor fields before implementing new features. Uploads, voice/video and boundaries/socials remain candidates, not pre-approved implementation.
 
 Suggested resume request:
 
-"Read v2/NEXT_STEPS.md and resume the live gallery test. Migrations 1-9 are already applied and checked. Keep V1 untouched, keep secrets in-world/server-only, and guide me through one external step at a time. The full V1 studio remains our end goal; do not commit/push or change production settings without approval."
+"Read v2/NEXT_STEPS.md and continue the public-profile layout work. The V2 gallery was tested live and temporary photos were removed. Migrations 1-9 are already applied and checked. Keep V1 untouched, keep secrets in-world/server-only, and do not commit/push or change production settings without approval."
