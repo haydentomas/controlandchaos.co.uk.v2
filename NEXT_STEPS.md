@@ -4,7 +4,7 @@ Updated: 2026-10-05. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Next action: continue the V1-style profile work locally, starting with the public profile layout. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
+**Next action: continue the V1-style Profile Studio work locally. Public profile layout commit `c14dcad` is pushed to V2 `main` and confirmed live. The live gallery test passed on V2. Migration 9 is already applied and its permissions are confirmed. Do not rerun migrations 1-9.**
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -16,7 +16,7 @@ The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
 No terminal change, new secret, SQL rerun, or deployment is needed for the completed test. Gallery file uploads/storage buckets are not implemented.
 
-The user chose the richer public-profile layout as the first V1-style implementation slice. A local first pass now uses existing profile, rate-card, booking-hour, and gallery data only; it has not been deployed. Run tests/build after future changes, and do not commit, push, or deploy without fresh approval.
+The user chose the richer V1-style listing/profile as the implementation direction and acknowledges it must be built iteratively. Commit `c14dcadc5f7fbf2e3e02da6637d7b70593df856a` is pushed; the deployed profile page contains the initial two-column layout. The current local, unpushed slice adds a V1-inspired profile hero, accessible Rate Card & Bio / Gallery tabs, and responsive section navigation/card styling in Profile Studio, all using existing fields and public published gallery data only. `npm test`, `npm run build`, and local desktop/mobile checks passed. The V1 fixture's VIP feed, blog, toys, boundaries, socials, booking requests and other unconnected controls remain visual references; do not fake these as live. Run tests/build after future changes, and do not commit, push, or deploy further work without fresh approval.
 
 ## Product Direction
 

@@ -56,55 +56,69 @@
       </div>
     </div>
   </nav>
-</site-navbar><header class="hero hero-compact">
+</site-navbar><header class="public-profile-hero">
+  <img class="public-profile-banner preview-hidden" data-public-profile-banner alt="" referrerpolicy="no-referrer">
   <canvas height="" width="" id="hero-canvas"></canvas>
-  <div class="container">
-    <h1 class="hero-title hero-title-subpage" data-public-profile-name>Profile</h1>
-    <p class="hero-description" data-public-profile-headline></p>
-    <img class="public-profile-banner preview-hidden" data-public-profile-banner alt="" referrerpolicy="no-referrer">
+  <div class="container public-profile-hero-content">
+    <img class="public-profile-hero-avatar preview-hidden" data-public-profile-avatar alt="">
+    <div class="public-profile-hero-copy">
+      <div class="public-profile-hero-title">
+        <h1 data-public-profile-name>Profile</h1>
+        <span class="role-badge" data-public-profile-role></span>
+        <span class="public-profile-hero-availability" data-public-profile-availability></span>
+      </div>
+      <p class="public-profile-hero-headline" data-public-profile-headline></p>
+      <p class="public-profile-hero-username">Second Life Username: <strong data-public-profile-username></strong></p>
+      <p class="public-profile-hero-tagline" data-public-profile-tagline></p>
+    </div>
   </div>
 </header>
 <main class="section">
   <div class="container">
     <p class="text-muted" data-public-profile-status role="status" aria-live="polite">Loading profile...</p>
     <div class="preview-hidden" data-public-profile-content>
-      <div class="public-profile-layout">
-        <div class="public-profile-main">
-          <section class="public-profile-panel public-profile-about-panel">
-            <h2 class="public-profile-section-title">About</h2>
-            <div class="public-profile-about" data-public-profile-about></div>
-          </section>
-          <section class="public-profile-panel preview-hidden" data-public-profile-rate-section>
-            <h2 class="public-profile-section-title">Rate Cards &amp; Menus</h2>
-            <div data-public-profile-rates></div>
-          </section>
+      <nav class="public-profile-tabs" data-public-profile-tabs aria-label="Profile views" hidden>
+        <div role="tablist">
+          <button type="button" id="profile-tab-details" class="public-profile-tab" role="tab" aria-controls="profile-panel-details" aria-selected="true" tabindex="0">Rate Card &amp; Bio</button>
+          <button type="button" id="profile-tab-gallery" class="public-profile-tab" role="tab" aria-controls="profile-panel-gallery" aria-selected="false" tabindex="-1" hidden>Gallery</button>
         </div>
-        <aside class="public-profile-sidebar">
-          <section class="public-profile-panel public-profile-summary">
-            <div class="public-profile-overview">
-              <img class="public-profile-avatar preview-hidden" data-public-profile-avatar alt="">
-              <div class="public-profile-identity">
-                <span class="role-badge" data-public-profile-role></span>
-                <p class="font-mono font-xs text-gold" data-public-profile-username></p>
-                <p class="dom-quote" data-public-profile-tagline></p>
-                <p class="text-gold font-bold" data-public-profile-rate></p>
-                <p class="text-gold public-profile-availability" data-public-profile-availability></p>
-                <p class="text-muted" data-public-profile-availability-note></p>
-                <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
+      </nav>
+      <section id="profile-panel-details" class="public-profile-tab-panel" role="tabpanel" aria-labelledby="profile-tab-details" tabindex="0" data-public-profile-details>
+        <div class="public-profile-layout">
+          <div class="public-profile-main">
+            <section class="public-profile-panel public-profile-about-panel">
+              <h2 class="public-profile-section-title">About</h2>
+              <div class="public-profile-about" data-public-profile-about></div>
+            </section>
+            <section class="public-profile-panel preview-hidden" data-public-profile-rate-section>
+              <h2 class="public-profile-section-title">Rate Cards &amp; Menus</h2>
+              <div data-public-profile-rates></div>
+            </section>
+          </div>
+          <aside class="public-profile-sidebar">
+            <section class="public-profile-panel public-profile-summary">
+              <div class="public-profile-overview">
+                <div class="public-profile-identity">
+                  <p class="text-gold font-bold" data-public-profile-rate></p>
+                  <p class="text-muted" data-public-profile-availability-note></p>
+                  <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
+                </div>
               </div>
-            </div>
-          </section>
-          <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
-            <h2 class="public-profile-section-title">Booking Hours</h2>
-            <div class="public-booking-hours" data-public-profile-hours></div>
-          </section>
+            </section>
+            <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
+              <h2 class="public-profile-section-title">Booking Hours</h2>
+              <div class="public-booking-hours" data-public-profile-hours></div>
+            </section>
+          </aside>
         </div>
-      </div>
-      <section class="public-profile-panel public-profile-gallery preview-hidden" data-public-profile-gallery>
-        <h2 class="public-profile-section-title">Gallery</h2>
-        <p class="text-muted" data-public-gallery-status role="status"></p>
-        <div class="account-actions" id="gallery-library-filters"></div>
-        <div class="public-gallery-grid" id="gallery-library-grid"></div>
+      </section>
+      <section id="profile-panel-gallery" class="public-profile-tab-panel preview-hidden" role="tabpanel" aria-labelledby="profile-tab-gallery" tabindex="0" data-public-profile-gallery>
+        <div class="public-profile-panel public-profile-gallery">
+          <h2 class="public-profile-section-title">Gallery</h2>
+          <p class="text-muted" data-public-gallery-status role="status"></p>
+          <div class="account-actions" id="gallery-library-filters"></div>
+          <div class="public-gallery-grid" id="gallery-library-grid"></div>
+        </div>
       </section>
     </div>
     <a href="/directory.html" class="btn btn-secondary btn-sm">&#8592; Directory</a>

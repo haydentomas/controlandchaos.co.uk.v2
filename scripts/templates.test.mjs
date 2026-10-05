@@ -13,6 +13,22 @@ test('all public and directory template families exist', () => {
   assert.ok(manifest.length >= 28);
 });
 
+test('directory profile tabs expose only supported views with accessible panel relationships', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  const tabs = [...document.querySelectorAll('[data-public-profile-tabs] [role="tab"]')];
+  assert.deepEqual(tabs.map(tab => tab.textContent.trim()), ['Rate Card & Bio', 'Gallery']);
+  assert.equal(document.querySelector('[data-public-profile-tabs]').hasAttribute('hidden'), true);
+  assert.equal(tabs[1].hasAttribute('hidden'), true);
+  for (const tab of tabs) {
+    const panel = document.getElementById(tab.getAttribute('aria-controls'));
+    assert.ok(panel);
+    assert.equal(panel.getAttribute('aria-labelledby'), tab.id);
+    assert.equal(panel.getAttribute('role'), 'tabpanel');
+  }
+  assert.equal(tabs[0].getAttribute('aria-selected'), 'true');
+  assert.equal(document.getElementById(tabs[1].getAttribute('aria-controls')).classList.contains('preview-hidden'), true);
+});
+
 for (const template of manifest) test(`${template.page}: flat, styled, and isolated from the backend`, async () => {
   const html = await fs.readFile(path.join(root, template.page), 'utf8');
   const { document } = parseHTML(html);

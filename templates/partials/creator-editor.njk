@@ -6,7 +6,15 @@
     <form class="preview-hidden" data-live-profile-form>
       <div class="creator-editor-toolbar"><label for="creator-profile">Profile</label><select id="creator-profile" class="form-select" data-creator-profile></select><p class="text-muted" data-creator-subscription></p><a class="btn btn-secondary preview-hidden" data-creator-public href="/directory.html" target="_blank" rel="noopener">View public profile</a></div>
       <fieldset disabled data-creator-fields>
-        <section class="creator-editor-section" aria-labelledby="creator-identity-title">
+        <nav class="creator-editor-nav" aria-label="Profile sections">
+          <a href="#creator-identity">Identity &amp; Availability</a>
+          <a href="#creator-booking">Booking Hours</a>
+          <a href="#creator-bio">Profile Text</a>
+          <a href="#creator-images">Photos &amp; Visuals</a>
+          <a href="#creator-gallery">Gallery</a>
+          <a href="#creator-rates">Rate Cards</a>
+        </nav>
+        <section class="creator-editor-section" id="creator-identity" aria-labelledby="creator-identity-title">
           <h2 id="creator-identity-title" class="account-subheading">Identity &amp; Availability</h2>
           <div class="form-grid-2">
             <div><label class="form-label" for="creator-name">Display name</label><input class="form-input" id="creator-name" name="display_name" maxlength="100" required></div>
@@ -18,7 +26,7 @@
           </div>
           <label class="form-label" for="creator-availability-note">Availability note</label><input class="form-input" id="creator-availability-note" name="availability_note" maxlength="500">
         </section>
-        <section class="creator-editor-section" aria-labelledby="creator-booking-title" data-booking-editor>
+        <section class="creator-editor-section" id="creator-booking" aria-labelledby="creator-booking-title" data-booking-editor>
           <h2 id="creator-booking-title" class="account-subheading">Booking Hours &amp; Availability</h2>
           <label class="profile-feature-switch"><input type="checkbox" data-booking-enabled><span>Show booking hours</span></label>
           <fieldset disabled data-booking-fields>
@@ -40,28 +48,28 @@
             <label class="form-label" for="booking-notes">Booking notice / lead-time note</label><textarea id="booking-notes" class="form-textarea" rows="3" maxlength="1000" data-booking-notes></textarea>
           </fieldset>
         </section>
-        <section class="creator-editor-section" aria-labelledby="creator-bio-title">
+        <section class="creator-editor-section" id="creator-bio" aria-labelledby="creator-bio-title">
           <h2 id="creator-bio-title" class="account-subheading">Profile Text</h2>
           <label class="form-label" for="creator-tagline">Tagline</label><textarea class="form-textarea" id="creator-tagline" name="tagline" rows="3" maxlength="1000"></textarea>
           <label class="form-label" for="creator-about">About</label><textarea class="form-textarea" id="creator-about" name="about" rows="8" maxlength="20000"></textarea>
           <label class="form-label" for="creator-tags">Tags (comma-separated)</label><input class="form-input" id="creator-tags" name="tags" maxlength="2000">
         </section>
-        <section class="creator-editor-section" aria-labelledby="creator-images-title">
+        <section class="creator-editor-section" id="creator-images" aria-labelledby="creator-images-title">
           <h2 id="creator-images-title" class="account-subheading">Photos &amp; Visuals</h2>
           <div class="form-grid-2">
             <div><label class="form-label" for="creator-avatar">Avatar image URL</label><input class="form-input" id="creator-avatar" name="avatar_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-avatar-preview alt="Avatar preview" loading="lazy"></div>
             <div><label class="form-label" for="creator-banner">Banner image URL</label><input class="form-input" id="creator-banner" name="banner_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-banner-preview alt="Banner preview" loading="lazy"></div>
           </div>
         </section>
-        <section class="creator-editor-section" aria-labelledby="creator-gallery-title">
+        <section class="creator-editor-section" id="creator-gallery" aria-labelledby="creator-gallery-title">
           <div class="creator-editor-toolbar"><h2 id="creator-gallery-title" class="account-subheading">Gallery Library</h2><button class="btn btn-secondary" type="button" data-gallery-add-photo>Add photo</button></div>
           <div data-gallery-editor></div>
         </section>
-        <section class="creator-editor-section" aria-labelledby="creator-rates-title">
+        <section class="creator-editor-section" id="creator-rates" aria-labelledby="creator-rates-title">
           <div class="creator-editor-toolbar"><h2 id="creator-rates-title" class="account-subheading">Rate Cards &amp; Menus</h2><button class="btn btn-secondary" type="button" data-rate-add-category>Add rate category</button></div>
           <div data-rate-editor></div>
         </section>
-        <div class="creator-editor-toolbar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><p class="text-muted" data-creator-publication></p></div>
+        <div class="creator-editor-toolbar creator-editor-savebar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><p class="text-muted" data-creator-publication></p></div>
       </fieldset>
     </form>
     <noscript><p>JavaScript is required to edit your profile.</p></noscript>

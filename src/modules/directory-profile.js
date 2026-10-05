@@ -3,6 +3,37 @@ import { renderPublicRateCards } from './rate-cards.js';
 import { renderBookingHours } from './booking-hours.js';
 import { fetchGalleryPhotos, renderProfileGallery } from './profile-gallery.js';
 
+function initProfileTabs(hasGallery) {
+  const nav = document.querySelector('[data-public-profile-tabs]');
+  const tabs = [...nav.querySelectorAll('[role="tab"]')];
+  const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
+  const galleryTab = document.getElementById('profile-tab-gallery');
+  galleryTab.hidden = !hasGallery;
+  nav.hidden = !hasGallery;
+  const activate = index => {
+    tabs.forEach((tab, tabIndex) => {
+      const selected = tabIndex === index;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      panels[tabIndex].classList.toggle('preview-hidden', !selected);
+    });
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activate(index));
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const available = tabs.filter(candidate => !candidate.hidden);
+      const currentIndex = available.indexOf(tab);
+      const nextIndex = event.key === 'Home' ? 0
+        : event.key === 'End' ? available.length - 1
+          : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + available.length) % available.length;
+      available[nextIndex].focus();
+      activate(tabs.indexOf(available[nextIndex]));
+    });
+  });
+}
+
 export async function initDirectoryProfile() {
   const status = document.querySelector('[data-public-profile-status]');
   const content = document.querySelector('[data-public-profile-content]');
@@ -34,15 +65,10 @@ export async function initDirectoryProfile() {
     const src = publicImageUrl(profile.avatar_image);
     if (src) {
       const image = document.querySelector('[data-public-profile-avatar]');
-      const overview = image.closest('.public-profile-overview');
       image.src = src;
       image.alt = profile.display_name;
       image.classList.remove('preview-hidden');
-      overview.classList.add('has-avatar');
-      image.addEventListener('error', () => {
-        image.classList.add('preview-hidden');
-        overview.classList.remove('has-avatar');
-      });
+      image.addEventListener('error', () => image.classList.add('preview-hidden'));
     }
     for (const tag of Array.isArray(profile.tags) ? profile.tags : []) {
       const badge = document.createElement('span');
@@ -58,13 +84,12 @@ export async function initDirectoryProfile() {
     document.querySelector('[data-public-profile-booking-section]').classList.toggle('preview-hidden', !hours.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
-    const gallery = document.querySelector('[data-public-profile-gallery]');
     try {
       const photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
       renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), photos);
-      gallery.classList.toggle('preview-hidden', !photos.length);
+      initProfileTabs(photos.length > 0);
     } catch {
-      gallery.classList.remove('preview-hidden');
+      initProfileTabs(true);
       document.querySelector('[data-public-gallery-status]').textContent = 'Gallery is temporarily unavailable.';
     }
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }
