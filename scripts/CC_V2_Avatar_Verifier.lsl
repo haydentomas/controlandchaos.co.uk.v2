@@ -30,7 +30,9 @@ default
     {
         key avatar = llDetectedKey(0);
         if (llStringLength(KIOSK_SECRET) < 32) { llRegionSayTo(avatar, 0, "Verification is not configured yet."); return; }
-        if (activeAvatar != NULL_KEY || requestId != NULL_KEY) { llRegionSayTo(avatar, 0, "The verifier is busy. Please try again shortly."); return; }
+        if (requestId != NULL_KEY) { llRegionSayTo(avatar, 0, "The verifier is busy. Please try again shortly."); return; }
+        if (activeAvatar != NULL_KEY && activeAvatar != avatar) { llRegionSayTo(avatar, 0, "The verifier is busy. Please try again shortly."); return; }
+        clearDialog();
         activeAvatar = avatar;
         dialogChannel = -100000 - (integer)llFrand(1000000000.0);
         listenHandle = llListen(dialogChannel, "", activeAvatar, "");
