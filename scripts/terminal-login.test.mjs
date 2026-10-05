@@ -54,14 +54,14 @@ test('redemption derives confirmed account identity from the consumed challenge,
   assert.equal(response.headers['Cache-Control'], 'no-store');
 });
 
-test('terminal challenges deny browser issuance/consumption, replay, expiry and revoked identities', async () => {
+test('terminal challenges deny browser issuance/consumption, replay, expiry and revoked identities', async context => {
   const database = new PGlite();
   try {
     await database.exec(`create role anon; create role authenticated; create role service_role bypassrls;
       create schema auth; create table auth.users(id uuid primary key);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050004_terminal_login.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050004_terminal_login.sql', '202610050005_terminal_login_limits.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     await database.query('insert into auth.users(id) values ($1)', [owner]);
@@ -76,6 +76,29 @@ test('terminal challenges deny browser issuance/consumption, replay, expiry and 
     await assert.rejects(database.query('select public.issue_terminal_login($1,$2)', [avatar, 'b'.repeat(64)]), /rate_limited/);
     assert.equal((await database.query('select public.consume_terminal_login($1) as id', ['a'.repeat(64)])).rows[0].id, owner);
     await assert.rejects(database.query('select public.consume_terminal_login($1)', ['a'.repeat(64)]), /expired_or_used/);
+    await context.test('ten-second cooldown and 100-link rolling daily cap preserve expiry and per-avatar isolation', async () => {
+      await database.query("update cc_private.terminal_login_challenges set created_at=now()-interval '9 seconds' where token_hash=$1", ['a'.repeat(64)]);
+      await assert.rejects(database.query('select public.issue_terminal_login($1,$2)', [avatar, 'd'.repeat(64)]), /rate_limited/);
+      await database.query("update cc_private.terminal_login_challenges set created_at=now()-interval '11 seconds' where token_hash=$1", ['a'.repeat(64)]);
+      await database.exec('set role service_role');
+      assert.equal((await database.query('select public.issue_terminal_login($1,$2) as id', [avatar, 'd'.repeat(64)])).rows[0].id, owner);
+      await database.exec('reset role');
+      const duration = await database.query('select extract(epoch from expires_at-created_at)::integer as seconds from cc_private.terminal_login_challenges where token_hash=$1', ['d'.repeat(64)]);
+      assert.equal(duration.rows[0].seconds, 120);
+      await database.query("update cc_private.terminal_login_challenges set created_at=now()-interval '11 seconds' where token_hash=$1", ['d'.repeat(64)]);
+      await database.query(`insert into cc_private.terminal_login_challenges(token_hash,avatar_uuid,user_id,created_at,expires_at,consumed_at)
+        select lpad(to_hex(sequence),64,'0'),$1,$2,now()-interval '1 hour',now()-interval '58 minutes',now()-interval '59 minutes'
+        from generate_series(1,97) as sequence`, [avatar, owner]);
+      assert.equal((await database.query('select public.issue_terminal_login($1,$2) as id', [avatar, 'e'.repeat(64)])).rows[0].id, owner);
+      await assert.rejects(database.query('select public.consume_terminal_login($1)', ['d'.repeat(64)]), /expired_or_used/);
+      await database.query("update cc_private.terminal_login_challenges set created_at=now()-interval '11 seconds' where token_hash=$1", ['e'.repeat(64)]);
+      await assert.rejects(database.query('select public.issue_terminal_login($1,$2)', [avatar, 'f'.repeat(64)]), /rate_limited/);
+      const otherAvatar = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+      await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [otherAvatar, owner, 'other.resident']);
+      assert.equal((await database.query('select public.issue_terminal_login($1,$2) as id', [otherAvatar, '1'.repeat(64)])).rows[0].id, owner);
+      await database.query("update cc_private.terminal_login_challenges set created_at=now()-interval '25 hours' where avatar_uuid=$1 and token_hash not in ($2,$3,$4)", [avatar, 'a'.repeat(64), 'd'.repeat(64), 'e'.repeat(64)]);
+      assert.equal((await database.query('select public.issue_terminal_login($1,$2) as id', [avatar, 'f'.repeat(64)])).rows[0].id, owner);
+    });
     await database.query("insert into cc_private.terminal_login_challenges(token_hash,avatar_uuid,user_id,expires_at) values ($1,$2,$3,now()-interval '1 second')", ['b'.repeat(64), avatar, owner]);
     await assert.rejects(database.query('select public.consume_terminal_login($1)', ['b'.repeat(64)]), /expired_or_used/);
     await database.query('insert into cc_private.terminal_login_challenges(token_hash,avatar_uuid,user_id) values ($1,$2,$3)', ['c'.repeat(64), avatar, owner]);
