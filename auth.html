@@ -66,7 +66,12 @@
     <section class="preview-hidden" data-account-session>
       <h2 class="account-subheading">Signed in</h2>
       <p class="text-gold" data-account-email></p>
-      <p class="text-muted">Profile editing remains locked until verified ownership is assigned.</p>
+      <section class="account-verification" data-account-directory>
+        <h2 class="account-subheading">Directory subscription</h2>
+        <p class="account-status" data-subscription-status role="status" aria-live="polite"></p>
+        <div class="account-actions" data-subscription-list></div>
+        <button type="button" class="btn btn-secondary" data-subscription-refresh>Refresh subscription</button>
+      </section>
       <section class="account-verification" data-avatar-verification>
         <h2 class="account-subheading">Second Life avatar</h2>
         <p class="account-status" data-avatar-status role="status" aria-live="polite"></p>

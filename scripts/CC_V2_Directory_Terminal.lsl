@@ -12,7 +12,7 @@ string ACCOUNT_URL = "https://controlandchaosv2.netlify.app/auth.html";
 string KIOSK_SECRET = "";
 // IN-WORLD COPY ONLY: match CC_VERIFICATION_KIOSK_SECRET; keep it separate from the payment secret.
 string VERIFICATION_SECRET = "";
-string SCRIPT_VERSION = "directory-v3";
+string SCRIPT_VERSION = "directory-v3.1";
 
 list PLAN_CODES = ["basic_monthly", "basic_lifetime", "vip_monthly", "vip_lifetime"];
 list PLAN_LABELS = ["Basic Monthly", "Basic Lifetime", "VIP Monthly", "VIP Lifetime"];
@@ -206,7 +206,16 @@ default
             integer validLogin = llSubStringIndex(url, tokenPrefix) == 0 && llStringLength(url) == llStringLength(tokenPrefix) + 64;
             if (status == 200 && (validLogin || url == ACCOUNT_URL + "#terminal_setup=1"))
                 llLoadURL(accountAvatar, "Private sign-in link: open now, do not share. Login links expire in two minutes.", url);
-            else llRegionSayTo(accountAvatar, 0, "Account link unavailable. Wait a minute before trying again, or sign in at " + ACCOUNT_URL);
+            else
+            {
+                string reason = "Account service unavailable.";
+                if (status == 403) reason = "Terminal authentication denied; check the verification secret, owner and object settings.";
+                else if (status == 404) reason = "Terminal login endpoint is not deployed at this address.";
+                else if (status == 429) reason = "Account-link request limit reached; wait before trying again.";
+                else if (status == 200) reason = "Account service returned an unexpected link format.";
+                llRegionSayTo(accountAvatar, 0, "Account link unavailable (HTTP " + (string)status + "). " + reason + " Your account has not been deleted by this request. You can sign in at " + ACCOUNT_URL);
+                llOwnerSay("My Account request failed (HTTP " + (string)status + "). " + reason);
+            }
             accountAvatar = NULL_KEY;
             accountDeadline = 0;
             return;

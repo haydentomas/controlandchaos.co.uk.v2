@@ -12,6 +12,15 @@ const environment = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_SECR
 const event = payload => ({ httpMethod: 'POST', headers: { 'x-cc-kiosk-secret': environment.CC_VERIFICATION_KIOSK_SECRET, 'x-secondlife-owner-key': owner, 'x-secondlife-object-key': object }, body: JSON.stringify(payload) });
 const hash = token => createHash('sha256').update(token).digest('hex');
 
+test('terminal account errors expose status and safe reasons, never response bodies or private links', async () => {
+  const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  assert.match(script, /Account link unavailable \(HTTP /);
+  assert.match(script, /status == 403/);
+  assert.match(script, /status == 404/);
+  assert.match(script, /status == 429/);
+  assert.doesNotMatch(script, /ll(?:OwnerSay|RegionSayTo|InstantMessage)\([^;\r\n]*(?:,\s*|\+\s*)(?:body|url|VERIFICATION_SECRET|KIOSK_SECRET)\b/);
+});
+
 test('terminal login issuance is trusted-object-only and stores a hash instead of the link token', async () => {
   const calls = [];
   const handler = createTerminalLoginHandler(environment, () => ({ rpc: async (name, args) => { calls.push({ name, args }); return { data: owner }; } }));

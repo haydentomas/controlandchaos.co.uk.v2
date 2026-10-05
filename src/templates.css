@@ -1,3 +1,15 @@
+@layer components {
+  .creator-editor { max-width: 1000px; }
+  .creator-editor fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .creator-editor-section { padding: 24px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
+  .creator-editor-section .form-label { margin-top: 12px; }
+  .creator-editor-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px 0; }
+  .creator-editor-toolbar .form-select { max-width: 100%; width: auto; }
+  .creator-editor-toolbar p { overflow-wrap: anywhere; }
+  .creator-image-preview { display: block; width: 100%; height: 160px; object-fit: contain; margin-top: 12px; }
+  .account-subscription-row { min-width: 0; max-width: 100%; }
+  .account-subscription-row p { overflow-wrap: anywhere; }
+}
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);
 @import "tailwindcss/utilities.css" layer(utilities) prefix(tw);

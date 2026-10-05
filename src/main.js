@@ -11,7 +11,7 @@ if (page === 'auth') import('./modules/auth.js').then(module => module.initAuth(
 
 if (page.startsWith('profile')) import('./modules/profile.js').then(module => module.initProfile());
 if (document.getElementById('gallery-lightbox')) import('./modules/gallery.js').then(module => module.initGallery());
-if (page === 'directory-editor') import('./modules/editor.js').then(module => module.initEditor());
+if (page === 'directory-editor') import('./modules/creator-editor.js').then(module => module.initCreatorEditor());
 if (page === 'events') import('./modules/events.js').then(module => module.initEvents());
 if (page === 'blog' || page.startsWith('blog-')) import('./modules/blog.js').then(module => module.initBlog());
-if (page !== 'auth' && document.querySelector('form, [data-preview-action]')) import('./modules/preview-actions.js').then(module => module.initPreviewActions());
+if (!['auth', 'directory-editor'].includes(page) && document.querySelector('form, [data-preview-action]')) import('./modules/preview-actions.js').then(module => module.initPreviewActions());

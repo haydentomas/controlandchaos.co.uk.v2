@@ -1,0 +1,38 @@
+<main class="section">
+  <div class="editor-wide-container creator-editor">
+    <header class="account-heading"><h1 class="section-title">Profile Studio</h1><a class="btn btn-secondary" href="/auth.html">My account</a></header>
+    <p class="account-status" data-creator-status role="status" aria-live="polite">Checking profile access...</p>
+    <div class="account-actions"><a class="btn btn-gold preview-hidden" data-creator-signin href="/auth.html">Sign in</a><button class="btn btn-secondary" type="button" data-creator-reload>Refresh access</button></div>
+    <form class="preview-hidden" data-live-profile-form>
+      <div class="creator-editor-toolbar"><label for="creator-profile">Profile</label><select id="creator-profile" class="form-select" data-creator-profile></select><p class="text-muted" data-creator-subscription></p><a class="btn btn-secondary preview-hidden" data-creator-public href="/directory.html" target="_blank" rel="noopener">View public profile</a></div>
+      <fieldset disabled data-creator-fields>
+        <section class="creator-editor-section" aria-labelledby="creator-identity-title">
+          <h2 id="creator-identity-title" class="account-subheading">Identity &amp; Availability</h2>
+          <div class="form-grid-2">
+            <div><label class="form-label" for="creator-name">Display name</label><input class="form-input" id="creator-name" name="display_name" maxlength="100" required></div>
+            <div><label class="form-label" for="creator-username">Second Life username</label><input class="form-input" id="creator-username" data-creator-username readonly></div>
+            <div><label class="form-label" for="creator-role">Role</label><select class="form-select" id="creator-role" name="role_type"><option value="domme">Dominant / Domme</option><option value="sub">Submissive / Finsub</option><option value="switch">Switch</option></select></div>
+            <div><label class="form-label" for="creator-availability">Availability</label><select class="form-select" id="creator-availability" name="availability"><option value="available">Available</option><option value="busy">Busy</option><option value="away">Away</option><option value="offline">Offline</option></select></div>
+            <div><label class="form-label" for="creator-headline">Headline</label><input class="form-input" id="creator-headline" name="headline" maxlength="160"></div>
+            <div><label class="form-label" for="creator-rate">Starting rate</label><input class="form-input" id="creator-rate" name="starting_rate" maxlength="100"></div>
+          </div>
+        </section>
+        <section class="creator-editor-section" aria-labelledby="creator-bio-title">
+          <h2 id="creator-bio-title" class="account-subheading">Profile Text</h2>
+          <label class="form-label" for="creator-tagline">Tagline</label><textarea class="form-textarea" id="creator-tagline" name="tagline" rows="3" maxlength="1000"></textarea>
+          <label class="form-label" for="creator-about">About</label><textarea class="form-textarea" id="creator-about" name="about" rows="8" maxlength="20000"></textarea>
+          <label class="form-label" for="creator-tags">Tags (comma-separated)</label><input class="form-input" id="creator-tags" name="tags" maxlength="2000">
+        </section>
+        <section class="creator-editor-section" aria-labelledby="creator-images-title">
+          <h2 id="creator-images-title" class="account-subheading">Images</h2>
+          <div class="form-grid-2">
+            <div><label class="form-label" for="creator-avatar">Avatar image URL</label><input class="form-input" id="creator-avatar" name="avatar_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-avatar-preview alt="Avatar preview" loading="lazy"></div>
+            <div><label class="form-label" for="creator-banner">Banner image URL</label><input class="form-input" id="creator-banner" name="banner_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-banner-preview alt="Banner preview" loading="lazy"></div>
+          </div>
+        </section>
+        <div class="creator-editor-toolbar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><p class="text-muted" data-creator-publication></p></div>
+      </fieldset>
+    </form>
+    <noscript><p>JavaScript is required to edit your profile.</p></noscript>
+  </div>
+</main>

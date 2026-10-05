@@ -1,5 +1,6 @@
 import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin } from './auth-api.js';
 import { initAvatarVerification } from './avatar-verification.js';
+import { initAccountDirectory } from './account-directory.js';
 
 export async function initAuth() {
   const status = document.querySelector('[data-account-status]');
@@ -16,6 +17,8 @@ export async function initAuth() {
   let recovery = false;
   let busy = false;
   let client;
+  let refreshDirectory;
+  let refreshGeneration = 0;
   const message = value => { status.textContent = value; };
   const setBusy = value => {
     busy = value;
@@ -50,22 +53,33 @@ export async function initAuth() {
     else { panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', `account-tab-${mode}`); }
   };
   const refresh = async () => {
+    const active = ++refreshGeneration;
     const { data: stored } = await client.auth.getSession();
     const { data, error } = stored?.session ? await client.auth.getUser() : { data: {}, error: null };
+    if (active !== refreshGeneration) return;
     const user = error ? null : data.user;
     sessionPanel.classList.toggle('preview-hidden', !user);
     document.querySelector('[data-account-email]').textContent = user?.email || '';
     container.classList.toggle('preview-hidden', !!user && !recovery);
     if (recovery && user && mode !== 'update') showMode('update');
     if (!user && mode === 'update') { recovery = false; showMode('signin'); }
+    await refreshDirectory(user);
+    if (user && active === refreshGeneration) document.querySelector('[data-avatar-refresh]').click();
   };
   const callback = callbackState(location.href);
   if (location.search || location.hash) history.replaceState(null, '', callback.cleanUrl);
   try { client = createCreatorClient(); } catch { message('Account service is unavailable. Please try again later.'); return; }
   initAvatarVerification(client);
+  refreshDirectory = initAccountDirectory(client);
+  const subscriptionRefresh = document.querySelector('[data-subscription-refresh]');
+  subscriptionRefresh.addEventListener('click', async () => {
+    subscriptionRefresh.disabled = true;
+    try { await refresh(); } catch { message('Unable to refresh your account. Please try again.'); }
+    finally { subscriptionRefresh.disabled = false; }
+  });
   const { data: listener } = client.auth.onAuthStateChange(event => {
     if (event === 'PASSWORD_RECOVERY') recovery = true;
-    if (event === 'SIGNED_OUT') recovery = false;
+    if (event === 'SIGNED_OUT') { recovery = false; refreshGeneration++; }
     if (!busy) setTimeout(() => refresh().catch(() => message('Unable to check your account. Please try again.')), 0);
   });
   window.addEventListener('pagehide', event => { if (!event.persisted) listener.subscription.unsubscribe(); });
