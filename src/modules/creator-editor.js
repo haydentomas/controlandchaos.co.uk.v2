@@ -1,6 +1,7 @@
 import { createCreatorClient } from './auth-api.js';
 import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, subscriptionLabel } from './creator-profile-api.js';
 import { publicImageUrl } from './directory-api.js';
+import { initRateCardEditor } from './rate-card-editor.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -9,6 +10,7 @@ export async function initCreatorEditor(clientOverride) {
   const picker = form.querySelector('[data-creator-profile]');
   const reload = document.querySelector('[data-creator-reload]');
   const signin = document.querySelector('[data-creator-signin]');
+  const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
   let client;
   let generation = 0;
   let saving = false;
@@ -22,6 +24,7 @@ export async function initCreatorEditor(clientOverride) {
     subscriptions = [];
     fields.disabled = true;
     form.reset();
+    rateEditor.clear();
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -34,6 +37,7 @@ export async function initCreatorEditor(clientOverride) {
     else image.removeAttribute('src');
   };
   const paint = row => {
+    rateEditor.load(row.rate_categories);
     profile = row;
     for (const name of fieldNames) form.elements[name].value = row[name] || '';
     form.elements.tags.value = (row.tags || []).join(', ');
@@ -105,6 +109,8 @@ export async function initCreatorEditor(clientOverride) {
     const values = Object.fromEntries(fieldNames.map(name => [name, form.elements[name].value]));
     values.tags = form.elements.tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
     values.is_published = form.elements.is_published.checked;
+    try { values.rate_categories = rateEditor.value(); }
+    catch (error) { status.textContent = error.message; return; }
     saving = true;
     fields.disabled = picker.disabled = reload.disabled = true;
     status.textContent = 'Saving profile...';

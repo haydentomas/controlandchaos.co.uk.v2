@@ -30,6 +30,10 @@
             <div><label class="form-label" for="creator-banner">Banner image URL</label><input class="form-input" id="creator-banner" name="banner_image" maxlength="2048"><img class="creator-image-preview preview-hidden" data-creator-banner-preview alt="Banner preview" loading="lazy"></div>
           </div>
         </section>
+        <section class="creator-editor-section" aria-labelledby="creator-rates-title">
+          <div class="creator-editor-toolbar"><h2 id="creator-rates-title" class="account-subheading">Rate Cards &amp; Menus</h2><button class="btn btn-secondary" type="button" data-rate-add-category>Add rate category</button></div>
+          <div data-rate-editor></div>
+        </section>
         <div class="creator-editor-toolbar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><p class="text-muted" data-creator-publication></p></div>
       </fieldset>
     </form>

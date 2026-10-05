@@ -1,7 +1,9 @@
-export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved';
+import { validateRateCategories } from './rate-cards.js';
+
+export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const limits = { display_name: 100, headline: 160, tagline: 1000, about: 20000, starting_rate: 100 };
-const editable = new Set([...Object.keys(limits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published']);
+const editable = new Set([...Object.keys(limits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published', 'rate_categories']);
 
 export async function myDirectorySubscriptions(client) {
   const { data, error } = await client.rpc('my_directory_subscriptions');
@@ -24,6 +26,7 @@ export function profileChanges(values) {
     changes[name] = value;
   }
   if (!Array.isArray(values.tags) || values.tags.length > 20 || values.tags.some(tag => typeof tag !== 'string' || !tag.trim()) || new TextEncoder().encode(values.tags.join('|')).length > 2000) throw new Error('Use up to 20 non-empty tags.');
+  if (values.rate_categories !== undefined) changes.rate_categories = validateRateCategories(values.rate_categories);
   return { ...changes, role_type: values.role_type, availability: values.availability, is_published: values.is_published, tags: [...new Set(values.tags.map(tag => tag.trim()))] };
 }
 

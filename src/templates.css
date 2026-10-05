@@ -9,6 +9,18 @@
   .creator-image-preview { display: block; width: 100%; height: 160px; object-fit: contain; margin-top: 12px; }
   .account-subscription-row { min-width: 0; max-width: 100%; }
   .account-subscription-row p { overflow-wrap: anywhere; }
+  .rate-editor-category { padding: 16px 0 24px; border-bottom: 1px solid rgba(212,175,55,0.25); }
+  .rate-editor-item { padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .rate-editor-services { margin: 16px 0; }
+  .rate-editor-category .creator-editor-toolbar { padding: 10px 0; }
+  .rate-editor-category h3, .rate-editor-category h4 { margin: 0 auto 0 0; }
+  .rate-editor-category .btn-sm { min-width: 36px; min-height: 36px; }
+  .rate-editor-category input, .rate-editor-category textarea { max-width: 100%; }
+  .public-rate-category { margin-bottom: 32px; }
+  .public-rate-item { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,auto); gap: 8px 16px; padding: 18px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
+  .public-rate-item h4, .public-rate-item p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .public-rate-item p:last-child { grid-column: 1 / -1; }
+  @media (max-width: 700px) { .public-rate-item { grid-template-columns: minmax(0,1fr); } }
 }
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);

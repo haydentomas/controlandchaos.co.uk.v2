@@ -1,4 +1,5 @@
 import { createPublicDirectoryClient, directoryConfig, fetchPublicProfile, publicImageUrl } from './directory-api.js';
+import { renderPublicRateCards } from './rate-cards.js';
 
 export async function initDirectoryProfile() {
   const status = document.querySelector('[data-public-profile-status]');
@@ -30,6 +31,9 @@ export async function initDirectoryProfile() {
       badge.textContent = String(tag);
       document.querySelector('[data-public-profile-tags]').appendChild(badge);
     }
+    const rates = document.querySelector('[data-public-profile-rates]');
+    renderPublicRateCards(rates, profile.rate_categories || []);
+    document.querySelector('[data-public-profile-rate-section]').classList.toggle('preview-hidden', !rates.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }
