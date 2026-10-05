@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Public project URL and public kiosk identifiers, not secrets; keep CC_VERIFICATION_KIOSK_SECRET/SUPABASE_SECRET_KEY scanned.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,CC_VERIFICATION_KIOSK_OBJECT,CC_VERIFICATION_KIOSK_OWNER"
 
 [functions]
   directory = "netlify/functions"
