@@ -16,6 +16,10 @@
   .rate-editor-category h3, .rate-editor-category h4 { margin: 0 auto 0 0; }
   .rate-editor-category .btn-sm { min-width: 36px; min-height: 36px; }
   .rate-editor-category input, .rate-editor-category textarea { max-width: 100%; }
+  .creator-editor fieldset.booking-day-list { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 16px; }
+  .booking-day-list label { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; }
+  .booking-day-list input { width: 18px; height: 18px; accent-color: #d4af37; }
+  .public-booking-hours p { white-space: pre-wrap; overflow-wrap: anywhere; }
   .public-rate-category { margin-bottom: 32px; }
   .public-rate-item { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,auto); gap: 8px 16px; padding: 18px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
   .public-rate-item h4, .public-rate-item p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }

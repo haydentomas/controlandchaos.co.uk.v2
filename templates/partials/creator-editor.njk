@@ -16,6 +16,29 @@
             <div><label class="form-label" for="creator-headline">Headline</label><input class="form-input" id="creator-headline" name="headline" maxlength="160"></div>
             <div><label class="form-label" for="creator-rate">Starting rate</label><input class="form-input" id="creator-rate" name="starting_rate" maxlength="100"></div>
           </div>
+          <label class="form-label" for="creator-availability-note">Availability note</label><input class="form-input" id="creator-availability-note" name="availability_note" maxlength="500">
+        </section>
+        <section class="creator-editor-section" aria-labelledby="creator-booking-title" data-booking-editor>
+          <h2 id="creator-booking-title" class="account-subheading">Booking Hours &amp; Availability</h2>
+          <label class="profile-feature-switch"><input type="checkbox" data-booking-enabled><span>Show booking hours</span></label>
+          <fieldset disabled data-booking-fields>
+            <div class="form-grid-2">
+              <div><label class="form-label" for="booking-timezone">Timezone reference</label><select id="booking-timezone" class="form-select" data-booking-timezone></select></div>
+              <div><label class="form-label" for="booking-interval">Appointment interval</label><select id="booking-interval" class="form-select" data-booking-interval><option value="30">30 minutes</option><option value="60">1 hour</option><option value="120">2 hours</option></select></div>
+              <div><label class="form-label" for="booking-start">Start time</label><input id="booking-start" class="form-input" type="time" step="60" required data-booking-start></div>
+              <div><label class="form-label" for="booking-end">End time</label><input id="booking-end" class="form-input" type="time" step="60" required data-booking-end></div>
+            </div>
+            <fieldset class="booking-day-list"><legend class="form-label">Available days</legend>
+              <label><input type="checkbox" data-booking-day="mon"><span>Monday</span></label>
+              <label><input type="checkbox" data-booking-day="tue"><span>Tuesday</span></label>
+              <label><input type="checkbox" data-booking-day="wed"><span>Wednesday</span></label>
+              <label><input type="checkbox" data-booking-day="thu"><span>Thursday</span></label>
+              <label><input type="checkbox" data-booking-day="fri"><span>Friday</span></label>
+              <label><input type="checkbox" data-booking-day="sat"><span>Saturday</span></label>
+              <label><input type="checkbox" data-booking-day="sun"><span>Sunday</span></label>
+            </fieldset>
+            <label class="form-label" for="booking-notes">Booking notice / lead-time note</label><textarea id="booking-notes" class="form-textarea" rows="3" maxlength="1000" data-booking-notes></textarea>
+          </fieldset>
         </section>
         <section class="creator-editor-section" aria-labelledby="creator-bio-title">
           <h2 id="creator-bio-title" class="account-subheading">Profile Text</h2>

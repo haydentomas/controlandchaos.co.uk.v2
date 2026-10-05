@@ -1,5 +1,6 @@
 import { createPublicDirectoryClient, directoryConfig, fetchPublicProfile, publicImageUrl } from './directory-api.js';
 import { renderPublicRateCards } from './rate-cards.js';
+import { renderBookingHours } from './booking-hours.js';
 
 export async function initDirectoryProfile() {
   const status = document.querySelector('[data-public-profile-status]');
@@ -16,6 +17,8 @@ export async function initDirectoryProfile() {
     fill('[data-public-profile-tagline]', profile.tagline);
     fill('[data-public-profile-rate]', profile.starting_rate || 'Contact for rates');
     fill('[data-public-profile-about]', profile.about);
+    fill('[data-public-profile-availability]', `Availability: ${{ available: 'Available', busy: 'Busy', away: 'Away', offline: 'Offline' }[profile.availability] || 'Contact for availability'}`);
+    fill('[data-public-profile-availability-note]', profile.availability_note);
     document.title = `${profile.display_name} | Control & Chaos`;
     const src = publicImageUrl(profile.avatar_image);
     if (src) {
@@ -34,6 +37,9 @@ export async function initDirectoryProfile() {
     const rates = document.querySelector('[data-public-profile-rates]');
     renderPublicRateCards(rates, profile.rate_categories || []);
     document.querySelector('[data-public-profile-rate-section]').classList.toggle('preview-hidden', !rates.children.length);
+    const hours = document.querySelector('[data-public-profile-hours]');
+    renderBookingHours(hours, profile.booking_hours ?? null);
+    document.querySelector('[data-public-profile-booking-section]').classList.toggle('preview-hidden', !hours.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }

@@ -5,12 +5,40 @@ import fs from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { validateRateCategories, renderPublicRateCards } from '../src/modules/rate-cards.js';
 import { initRateCardEditor } from '../src/modules/rate-card-editor.js';
+import { validateBookingHours, bookingLocalTime, renderBookingHours, initBookingHoursEditor } from '../src/modules/booking-hours.js';
 import { initAccountDirectory } from '../src/modules/account-directory.js';
 import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
 
 const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
 const rates = [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Consultations', description: 'Private appointments', items: [{ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Introduction', price: 'L$1,000', unit: '30 minutes', description: 'A first appointment' }] }];
+const hours = { timezone: 'America/Los_Angeles', days: ['sat', 'sun'], start_time: '20:00', end_time: '23:00', slot_minutes: 60, notes: 'Advance booking recommended.' };
+
+test('booking hours validate timezones, days and intervals, including explicit overnight windows', () => {
+  assert.deepEqual(validateBookingHours(hours), hours);
+  assert.equal(validateBookingHours(null), null);
+  assert.equal(validateBookingHours({ ...hours, end_time: '02:00' }).end_time, '02:00');
+  assert.deepEqual(validateBookingHours({ ...hours, days: [] }).days, []);
+  for (const invalid of [{ ...hours, timezone: 'GMT' }, { ...hours, days: ['sat', 'sat'] }, { ...hours, start_time: '25:00' }, { ...hours, start_time: '20:00', end_time: '20:00' }, { ...hours, end_time: '20:15' }, { ...hours, slot_minutes: 15 }, { ...hours, is_approved: true }]) {
+    assert.throws(() => validateBookingHours(invalid));
+  }
+  assert.deepEqual(profileChanges({ ...values, booking_hours: hours }).booking_hours, hours);
+});
+
+test('booking timezone rules handle DST and public notes render as text rather than markup', () => {
+  assert.equal(bookingLocalTime(hours, new Date('2026-01-05T12:00:00Z')), '04:00');
+  assert.equal(bookingLocalTime(hours, new Date('2026-07-05T12:00:00Z')), '05:00');
+  const { document } = parseHTML('<div id="hours"></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    renderBookingHours(document.getElementById('hours'), { ...hours, end_time: '02:00', notes: '<script>unsafe()</script>' });
+    assert.match(document.getElementById('hours').textContent, /following day/);
+    assert.equal(document.querySelectorAll('script').length, 0);
+    renderBookingHours(document.getElementById('hours'), null);
+    assert.equal(document.getElementById('hours').children.length, 0);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
 
 test('rate cards preserve order and flexible prices while rejecting malformed or privileged nested fields', () => {
   assert.deepEqual(validateRateCategories(rates), rates);
@@ -46,7 +74,7 @@ test('rate-card database schema enforces paid ownership, structure and public pu
       create schema auth; create table auth.users(id uuid primary key);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     await database.query('insert into auth.users(id) values ($1),($2)', [owner, stranger]);
@@ -59,6 +87,10 @@ test('rate-card database schema enforces paid ownership, structure and public pu
       await database.exec(`set role ${role}`);
     };
     await actAs('authenticated', owner);
+    assert.equal((await database.query('update public.directory_profiles set booking_hours=$1::jsonb,availability_note=$2 where id=$3 returning booking_hours', [JSON.stringify(hours), 'Available by appointment', profile])).rows.length, 1);
+    for (const invalid of [{ ...hours, timezone: 'GMT' }, { ...hours, days: ['sat', 'sat'] }, { ...hours, end_time: '20:00' }, { ...hours, start_time: '25:00' }, { ...hours, is_approved: true }]) {
+      await assert.rejects(database.query('update public.directory_profiles set booking_hours=$1::jsonb where id=$2', [JSON.stringify(invalid), profile]), error => error.code === '23514');
+    }
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning rate_categories', [JSON.stringify(rates), profile])).rows.length, 1);
     for (const invalid of [{}, [{ ...rates[0], extra: true }], [{ ...rates[0], items: [{ ...rates[0].items[0], price: 100 }] }], [rates[0], rates[0]]]) {
       await assert.rejects(database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2', [JSON.stringify(invalid), profile]), error => error.code === '23514');
@@ -66,16 +98,19 @@ test('rate-card database schema enforces paid ownership, structure and public pu
     await actAs('anon');
     assert.equal((await database.query('select rate_categories from public.directory_profiles')).rows.length, 0);
     await actAs('authenticated', stranger);
+    assert.equal((await database.query('update public.directory_profiles set booking_hours=null where id=$1 returning id', [profile])).rows.length, 0);
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning id', ['[]', profile])).rows.length, 0);
     await actAs('authenticated', owner);
     await database.query('update public.directory_profiles set is_published=true where id=$1', [profile]);
     await actAs('anon');
     assert.deepEqual((await database.query('select rate_categories from public.directory_profiles')).rows[0].rate_categories, rates);
+    assert.deepEqual((await database.query('select booking_hours from public.directory_profiles')).rows[0].booking_hours, hours);
     await actAs('service_role');
     await database.query("update cc_private.directory_subscriptions set expires_at=now()-interval '1 second' where avatar_uuid=$1", [rates[0].id]);
     await actAs('anon');
     assert.equal((await database.query('select rate_categories from public.directory_profiles')).rows.length, 0);
     await actAs('authenticated', owner);
+    assert.equal((await database.query('update public.directory_profiles set booking_hours=null where id=$1 returning id', [profile])).rows.length, 0);
     assert.equal((await database.query('update public.directory_profiles set rate_categories=$1::jsonb where id=$2 returning id', ['[]', profile])).rows.length, 0);
   } finally { await database.close(); }
 });
@@ -162,4 +197,24 @@ test('rate editor reorders and removes services without changing identifiers or 
     if (previous === undefined) delete globalThis.document;
     else globalThis.document = previous;
   }
+});
+
+test('booking editor distinguishes unset schedules and no available days without losing overnight times', () => {
+  const { document } = parseHTML('<div id="editor"><input type="checkbox" data-booking-enabled><fieldset data-booking-fields><select data-booking-timezone></select><input data-booking-start><input data-booking-end><select data-booking-interval><option value="60">60</option></select><textarea data-booking-notes></textarea><input type="checkbox" data-booking-day="sat"><input type="checkbox" data-booking-day="sun"></fieldset></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    for (const select of document.querySelectorAll('#editor select')) {
+      let value = select.querySelector('option')?.value || '';
+      Object.defineProperty(select, 'value', { get: () => value, set: next => { value = String(next); } });
+    }
+    const editor = initBookingHoursEditor(document.getElementById('editor'));
+    editor.load(null);
+    assert.equal(editor.value(), null);
+    assert.equal(document.querySelector('[data-booking-fields]').disabled, true);
+    editor.load({ ...hours, end_time: '02:00' });
+    assert.deepEqual(editor.value(), { ...hours, end_time: '02:00' });
+    editor.load({ ...hours, days: [] });
+    assert.deepEqual(editor.value().days, []);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
 });

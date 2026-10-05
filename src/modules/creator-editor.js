@@ -2,6 +2,7 @@ import { createCreatorClient } from './auth-api.js';
 import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, subscriptionLabel } from './creator-profile-api.js';
 import { publicImageUrl } from './directory-api.js';
 import { initRateCardEditor } from './rate-card-editor.js';
+import { initBookingHoursEditor } from './booking-hours.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -11,13 +12,14 @@ export async function initCreatorEditor(clientOverride) {
   const reload = document.querySelector('[data-creator-reload]');
   const signin = document.querySelector('[data-creator-signin]');
   const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
+  const bookingEditor = initBookingHoursEditor(form.querySelector('[data-booking-editor]'));
   let client;
   let generation = 0;
   let saving = false;
   let profile;
   let timer;
   let subscriptions = [];
-  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability'];
+  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note'];
   const lock = message => {
     generation++;
     profile = null;
@@ -25,6 +27,7 @@ export async function initCreatorEditor(clientOverride) {
     fields.disabled = true;
     form.reset();
     rateEditor.clear();
+    bookingEditor.load(null);
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -38,6 +41,7 @@ export async function initCreatorEditor(clientOverride) {
   };
   const paint = row => {
     rateEditor.load(row.rate_categories);
+    bookingEditor.load(row.booking_hours);
     profile = row;
     for (const name of fieldNames) form.elements[name].value = row[name] || '';
     form.elements.tags.value = (row.tags || []).join(', ');
@@ -109,7 +113,7 @@ export async function initCreatorEditor(clientOverride) {
     const values = Object.fromEntries(fieldNames.map(name => [name, form.elements[name].value]));
     values.tags = form.elements.tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
     values.is_published = form.elements.is_published.checked;
-    try { values.rate_categories = rateEditor.value(); }
+    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); }
     catch (error) { status.textContent = error.message; return; }
     saving = true;
     fields.disabled = picker.disabled = reload.disabled = true;
