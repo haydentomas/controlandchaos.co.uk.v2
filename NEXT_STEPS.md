@@ -4,12 +4,14 @@ Updated: 2026-10-05. Work paused at the user's request. No more implementation, 
 
 ## Resume Here
 
-**Real end-to-end avatar verification succeeded. The next user action is Following Step 7: test replay/expiry/failure behavior in staging.**
+**Real end-to-end avatar verification succeeded, and replay protection is confirmed. The next user action is the expiry test (part of Following Step 7).**
 
 - Verifier object UUID: `18190500-5d59-7853-5c5a-7c86906d900b`
 - Owner avatar UUID: `b3d25fb5-a5d9-4734-8d86-5e1f70ba8bec`
 - Script is now `scripts/CC_V2_Avatar_Verifier.lsl` v3 (pushed as `eaa02e9`). The v1/v2 busy-lock logic had a real bug: `clearDialog()` never reset `requestId`, so a dropped/failed HTTP response could permanently wedge the object until a full script reset. v3 fixes this via a single `resetSession()` and adds touch/version diagnostics (`Verifier ready (v3)...`, `Touch #N from <name>`).
 - Real flow confirmed working: signed in at `/auth.html` as `hello@pixaful.com`, pressed Get Verification Code, touched the verifier, pasted the code, object replied "Avatar linked...", pressed Refresh verification, and the account page now shows **"Verified avatar: alek.zane"**.
+- Replay test confirmed: re-submitting the same already-consumed code correctly failed (server rejects reuse); submitting a fresh code first correctly succeeded.
+- Remaining Step 7 sub-tests: expiry (request a code, wait past its ~10-minute window, confirm it's rejected) and cross-avatar conflict (a different account's code cannot claim an avatar already linked elsewhere).
 
 Do not repeat Steps 1-6 (commit/push, Netlify site env, Netlify Functions env, in-world kiosk secret, deploy, real verification). Migration 2 is already applied; do not run it again.
 
