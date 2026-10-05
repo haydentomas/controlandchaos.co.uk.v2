@@ -1,0 +1,8 @@
+{
+  "template": "directory-profile",
+  "title": "Directory Profile | Control & Chaos",
+  "bodyClass": "",
+  "whiteLabel": false,
+  "meta": [{ "name": "description", "content": "Public Control & Chaos creator profile." }],
+  "links": []
+}

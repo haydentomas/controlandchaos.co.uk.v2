@@ -1,11 +1,13 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import { cp, readdir, rm, writeFile } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 import { adminRoutePlugin, pageShellPlugin } from './scripts/page-shell.mjs';
 import { generateTemplates, staleBlogPages, staleGuidePages, templateWatchPlugin } from './scripts/render-templates.mjs';
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ mode }) => {
+  const environment = loadEnv(mode, import.meta.dirname, 'VITE_SUPABASE_');
+  if (environment.VITE_SUPABASE_PUBLISHABLE_KEY && !environment.VITE_SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_')) throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY must be a publishable key, never a secret key.');
   const pages = await generateTemplates();
   const publicRoot = resolve(import.meta.dirname, 'public');
   const buildRoot = resolve(import.meta.dirname, 'build');

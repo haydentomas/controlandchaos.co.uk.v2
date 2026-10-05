@@ -1,6 +1,6 @@
 # V2 Shared Site Templates
 
-This is the isolated V2 frontend of the existing Control & Chaos site. Shared layouts are implemented. Decap supports global settings, events, site blog posts and product manuals locally; hosted OAuth/publishing still need setup. Creator content remains safe preview fixtures, with no payments or Supabase connection.
+This is the isolated V2 frontend of the existing Control & Chaos site. Decap supports staff settings/events/news/manuals. Public directory browsing and creator account signup/signin/recovery use Supabase locally. Avatar verification, authenticated profile editing and private/paid features remain unimplemented. Real email flows and deployment setup still need manual verification.
 
 ## Stack
 
@@ -22,6 +22,8 @@ The page bodies originate from the approved flat visual templates. Their appeara
 - `content/events`: editable event records rendered into shared cards; published state, order and calendar dates are validated during builds.
 - `content/blog`: staff site news, separate from creator posts. One shared article template and build-derived metadata replace per-post captures.
 - `content/guides`: product manuals, features, commands, specifications and directory cards. One shared manual template generates new published IDs; stable section anchors support external links.
+- `src/modules/directory-api.js`: public Supabase read client; ignored `.env.local` uses names from `.env.example`. `directory.js` handles public list states/filters/pagination; `directory-profile.js` is the basic public detail reader, not the old fixture editor.
+- `src/modules/auth-api.js` / `auth.js`: separate persistent PKCE creator sessions and `/auth.html` forms. This does not assign avatar ownership or activate the old preview editor. See `SUPABASE_SETUP.md` for the real-account test and mailer limits.
 - `content/pages`: per-page metadata and internal creator/tab presentation configuration. Do not expose presentation attributes as CMS fields.
 - `content/creator-preview.json`: one public-safe creator hero fixture, not production creator persistence.
 - `src/modules`: browser behaviors; `src/main.js` selects the modules needed by the current page.

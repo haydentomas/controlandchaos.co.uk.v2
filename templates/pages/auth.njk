@@ -1,0 +1,40 @@
+{% extends "layouts/site.njk" %}
+{% block content %}
+<main class="section account-section">
+  <div class="container account-container">
+    <header class="account-heading">
+      <h1 class="section-title">Creator account</h1>
+    </header>
+    <p class="account-status" data-account-status role="status" aria-live="polite">Checking account...</p>
+    <section class="preview-hidden" data-account-session>
+      <h2 class="account-subheading">Signed in</h2>
+      <p class="text-gold" data-account-email></p>
+      <p class="text-muted">Profile editing remains locked until verified ownership is assigned.</p>
+      <section class="account-verification" data-avatar-verification>
+        <h2 class="account-subheading">Second Life avatar</h2>
+        <p class="account-status" data-avatar-status role="status" aria-live="polite"></p>
+        <code class="account-verification-code preview-hidden" data-avatar-code></code>
+        <div class="account-actions"><button type="button" class="btn btn-secondary" data-avatar-request>Get verification code</button><button type="button" class="btn btn-secondary" data-avatar-refresh>Refresh verification</button></div>
+      </section>
+      <div class="account-actions"><a href="/directory.html" class="btn btn-secondary">Directory</a><button type="button" class="btn btn-secondary" data-account-signout>Sign out</button></div>
+    </section>
+    <div class="preview-hidden" data-account-form-container>
+      <div class="account-tabs" role="tablist" aria-label="Account action" data-account-tabs>
+        <button type="button" class="btn btn-gold" role="tab" id="account-tab-signin" aria-controls="account-panel" aria-selected="true" data-account-mode="signin">Sign in</button>
+        <button type="button" class="btn btn-secondary" role="tab" id="account-tab-signup" aria-controls="account-panel" aria-selected="false" tabindex="-1" data-account-mode="signup">Create account</button>
+        <button type="button" class="btn btn-secondary" role="tab" id="account-tab-reset" aria-controls="account-panel" aria-selected="false" tabindex="-1" data-account-mode="reset">Reset password</button>
+      </div>
+      <section id="account-panel" role="tabpanel" aria-labelledby="account-tab-signin">
+        <h2 class="account-subheading preview-hidden" data-account-recovery-title>Choose a new password</h2>
+        <form class="account-form" data-live-auth-form>
+          <div data-account-email-field><label for="account-email">Email address</label><input id="account-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <div data-account-password-field><label for="account-password">Password</label><input id="account-password" name="password" type="password" autocomplete="current-password" required></div>
+          <div class="preview-hidden" data-account-confirm-field><label for="account-confirm">Confirm password</label><input id="account-confirm" name="confirmation" type="password" autocomplete="new-password"></div>
+          <button type="submit" class="btn btn-gold account-submit" data-account-submit>Sign in</button>
+        </form>
+      </section>
+    </div>
+    <noscript><p>JavaScript is required to sign in.</p></noscript>
+  </div>
+</main>
+{% endblock %}

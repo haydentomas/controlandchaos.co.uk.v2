@@ -35,6 +35,31 @@
 }
 
 @layer components {
+  .account-section { padding-top: 120px; min-height: 70vh; }
+  .account-container { max-width: 600px; }
+  .account-heading .section-title { font-size: 30px; text-align: left; margin-bottom: 16px; }
+  .account-subheading { font-family: var(--font-heading); font-size: 20px; color: var(--gold-bright); margin: 20px 0 12px; }
+  .account-status { min-height: 48px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
+  .account-tabs, .account-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+  .account-tabs button { min-height: 44px; flex: 1; white-space: normal; }
+  .account-form { display: grid; gap: 20px; }
+  .account-form label { display: block; font-size: 13px; font-weight: 600; color: var(--gold-bright); margin-bottom: 8px; }
+  .account-form input { width: 100%; min-height: 48px; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--gold-border); border-radius: 4px; background: var(--bg-card); color: var(--text-primary); font: inherit; }
+  .account-submit { min-height: 48px; width: 100%; }
+  .account-verification { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--gold-border); }
+  .account-verification-code { display: block; padding: 12px; background: var(--bg-card); border: 1px solid var(--gold-border); border-radius: 4px; font-family: var(--font-mono); overflow-wrap: anywhere; user-select: all; }
+  .account-form input:focus-visible, .account-tabs button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+  .account-actions button:disabled, .account-tabs button:disabled, .account-submit:disabled { opacity: 0.5; cursor: wait; }
+  [data-directory-grid] { min-height: 200px; }
+  [data-directory-grid] .dom-name, [data-directory-grid] .dom-quote, [data-directory-grid] .dom-rate-price { overflow-wrap: anywhere; }
+  .directory-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+  .directory-pagination button { min-width: 110px; }
+  .directory-pagination button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .public-profile-overview { display: grid; grid-template-columns: minmax(100px, 160px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .public-profile-avatar { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+  .public-profile-about { white-space: pre-line; line-height: 1.75; overflow-wrap: anywhere; }
+  [data-public-profile-name], [data-public-profile-headline] { overflow-wrap: anywhere; }
+  @media (max-width: 600px) { .public-profile-overview { grid-template-columns: minmax(0, 1fr); } .public-profile-avatar { width: 140px; } }
   .manual-rich-text { font-size: 14.5px; line-height: 1.7; color: var(--text-primary); overflow-wrap: anywhere; }
   .manual-rich-text p, .manual-rich-text ul, .manual-rich-text ol { margin: 0 0 12px; }
   .manual-rich-text ul, .manual-rich-text ol { padding-left: 22px; }

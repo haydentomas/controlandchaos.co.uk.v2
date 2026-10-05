@@ -5,8 +5,9 @@ import http from 'node:http';
 import { gunzipSync } from 'node:zlib';
 
 const root = path.resolve(import.meta.dirname, '..');
-const manifest = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8'));
+const inventory = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8'));
 const references = JSON.parse(gunzipSync(await fs.readFile(new URL('./fixtures/visual-reference.json.gz', import.meta.url))).toString('utf8'));
+const manifest = inventory.filter(template => references[template.page]);
 const output = path.join(root, 'test-results/visual');
 let server;
 let baseUrl = process.env.TEMPLATE_BASE_URL;

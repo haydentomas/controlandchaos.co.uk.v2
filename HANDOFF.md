@@ -1,14 +1,24 @@
 # V2 Shared Template Handoff
 
+Latest pause point (2026-10-04): read [NEXT_STEPS.md](NEXT_STEPS.md) first. The user confirmed real sign-in and migration 2 verification, then paused before creating the test verifier prim. That file supersedes historical "not applied"/"signup unverified" statements below. Database/Auth/verifier code remains local and unpushed; 78 tests/build pass. No further work tonight.
+
 ## Current Stage
 
 The user requested a separate `v2` folder containing a flat version of the current site's templates in the latest Tailwind, preserving the current appearance before building the production application properly.
 
 Updated 2026-10-04: no Astro; use HTML/Tailwind/modular JavaScript with build-time Nunjucks. Shared templates were pushed as `c34fde0`. The user now approved the completed CMS milestone commit/push and requested step-by-step directory database setup. Tests/build pass; verify Netlify deployment after the push. Hosted CMS OAuth and Supabase remain unconfigured.
 
-Next user action: create a separate Free-plan Supabase development project per `SUPABASE_SETUP.md`. `.env.example` contains empty public-client placeholders only. No database client, migration or connection has been implemented yet. Never read/print user secrets or request them in chat.
+Supabase development project: London, `https://fqzcaragavsutdkswsnm.supabase.co`. Migration/demo seed succeeded and hosted RLS was checked without frontend filters. User confirmed Auth redirect/provider settings. Account page is now implemented locally at `/auth.html`, not pushed; next action is one manual development signup per Step 6 in `SUPABASE_SETUP.md`. Avatar verification/owner editor remain unimplemented. Never display key values or read credential files through model-visible tools.
+
+Public directory remains anonymous. Creator Auth uses `auth-api.js` / `auth.js`, separate persistent PKCE storage, explicit safe callbacks, no-referrer policy and server-verified user display. Signup/signin/signout/recovery are implemented with generic errors and no directory writes. Real Auth forms are excluded from preview-action handlers. Full suite: 72 tests passing; build passes. Browser Auth tests use intercepted fake accounts, including mobile recovery; real hosted email delivery/signup is not yet verified. Default mailer is team-only and rate-limited; do not disable confirmation to bypass it.
 
 ## Initial CMS Slice
+
+Avatar verification work is prepared locally, unpushed: migration `202610040002_avatar_verification.sql`, its read-only check, `avatar-verification.js` account controls, a privileged Netlify verifier, and a dedicated blank-secret V2 LSL script. Next user step is applying migration 2/check per Step 7 in `SUPABASE_SETUP.md`. No remote migration/configuration/deployment has been performed. 78 tests/build pass. LSL still needs SL compilation/runtime checks.
+
+Boundary: authenticated users request rate-limited ten-minute codes; only the configured secret/object-bound server consumes them. Secret belongs in Netlify Functions and private kiosk script, not browser code. Headers alone are spoofable. Replays/expired codes, conflicting account links and revoked avatars are denied. Avatar linking does not yet provision profiles or assign editor ownership. User has confirmed real sign-in; real verification remains untested.
+
+Auth callback follow-up: user reported an invalid/expired email link. Handler now captures optional `sb_flow_id` before cleanup and passes it to SDK exchange; actual SDK multi-flow storage is tested with the opt-in flag enabled only in that regression. Default client configuration is unchanged. Rejected links suggest password sign-in; safe messages distinguish unconfirmed email/rate limits. Await user's real sign-in result: the specific link failure cause and successful real confirmation remain unverified. Full suite/build: 74 tests pass. No real emails/accounts were created during this validation.
 
 - `public/admin`: pinned Decap 3.16.3 and GitHub backend targeting the V2 repository only.
 - Collections: events, site Blog & News, Product Guides & Manuals and global branding/navigation/footer; no creator/private collections.

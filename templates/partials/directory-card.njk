@@ -1,0 +1,22 @@
+<template data-directory-card>
+  <article class="dom-rate-card">
+    <div>
+      <div class="flex-row gap-16 align-center mb-16">
+        <div class="avatar-icon-circle" data-directory-avatar></div>
+        <div class="tw:[display:flex] tw:[flex-direction:column] tw:[gap:4px] tw:[min-width:0]">
+          <div><span class="role-badge" data-directory-role></span></div>
+          <h3 class="dom-name m-0 tw:[font-size:1.35rem] tw:[font-weight:800] tw:[font-family:var(--font-heading)] tw:[color:var(--gold-bright)] tw:[line-height:1.15]" data-directory-name></h3>
+          <div class="font-mono font-xs text-gold" data-directory-username></div>
+          <div class="tw:[margin-top:2px]"><span class="traffic-status" data-directory-availability></span></div>
+        </div>
+      </div>
+      <div class="text-gold font-bold mb-10 tw:[font-size:15px]" data-directory-headline></div>
+      <p class="dom-quote" data-directory-tagline></p>
+      <div class="flex-row flex-wrap gap-8 mb-20" data-directory-tags></div>
+    </div>
+    <div class="dom-rate-footer">
+      <div><span class="font-2xs text-muted block">Rates From:</span><span class="dom-rate-price" data-directory-rate></span></div>
+      <a class="dom-rate-pill" data-directory-link>PROFILE &#8594;</a>
+    </div>
+  </article>
+</template>

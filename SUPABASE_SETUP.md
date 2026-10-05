@@ -4,7 +4,7 @@
 
 Keep staff events, site news and manuals in Decap. Supabase will own live directory profiles, accounts and creator content. Start with a database-backed public directory and authorized profile editing; payments, subscriber unlocks, production imports and private-media migration are later milestones.
 
-No Supabase project is connected, no SQL has been applied, and the current directory/editor still use preview fixtures. Adding environment variables alone will not connect them.
+Development project: London, `https://fqzcaragavsutdkswsnm.supabase.co`. Migration and demo seed succeeded; hosted RLS hides the unpublished control. Public browsing and the creator account page are implemented locally. Real signup/email delivery is the next manual test; creator editing, avatar verification and private features remain unconnected.
 
 ## Step 1: Create The Development Project
 
@@ -18,20 +18,107 @@ No Supabase project is connected, no SQL has been applied, and the current direc
 
 Tell the assistant that the project is ready, its region and its public project URL. The URL is not a secret. Do not share database passwords, secret keys, service-role keys or access tokens.
 
-## Step 2: Configure Public Client Values
+## Step 2: Apply The Directory Foundation
+
+1. Open this development project's SQL Editor: https://supabase.com/dashboard/project/fqzcaragavsutdkswsnm/sql/new.
+2. Open `supabase/migrations/202610040001_directory_foundation.sql` in this V2 workspace.
+3. Paste the complete SQL into a new query and run it once, in the London development project only.
+4. The migration creates public `directory_profiles` and private `cc_private.verified_avatar_links` / `cc_private.profile_owners`, with permissions in the same transaction. It does not import data or modify existing V1 storage.
+5. Run `supabase/verify-directory.sql` in a separate query. Expect three tables with `rls_enabled = true`, three profile policies, and privilege results `true, false, false, true, false` in the displayed column order.
+6. Tell the assistant whether both queries succeeded. If an error appears, share the error text only, not credentials or account data. Do not bypass it by disabling RLS or adding broad grants.
+
+The migration deliberately fails if these tables already exist rather than overwriting them. If you accidentally run it twice, stop and report the duplicate-object error; do not drop tables to make it pass. The verification query can be rerun safely.
+
+Do not manually assign your production avatar or publish real profiles yet. Verified identity/ownership rows are privileged, and the verification flow is not implemented. A UUID alone is not proof of ownership.
+
+## Step 3: Configure Public Client Values
 
 After the project is ready, use its Connect dialog or Settings > API Keys to find its URL and publishable key. Use the current `sb_publishable_...` key, not a secret key.
 
 Enter the values directly into ignored `.env.local` in the V2 root, using the names in `.env.example`:
 
 ```dotenv
-VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_URL=https://fqzcaragavsutdkswsnm.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 The publishable key is designed for browser use but does not grant ownership or bypass database permissions. Never put `sb_secret_...`, a legacy service-role key or a database password in a `VITE_` variable. Keep privileged credentials server-only if a later backend task requires them.
 
 We will configure matching Netlify staging variables and Auth redirect URLs when the database/client implementation is ready. Do not configure the live V1 site.
+
+Do not add `cc_private` to exposed API schemas. It contains account-to-avatar/owner mappings. It has no client table grants; the owner policy calls only a narrow identity-bound helper function.
+
+## Migration Scope And Local Validation
+
+- The public table contains only public directory/profile fields, not emails, tokens, payment references, private posts or subscription records.
+- Signed-out visitors see approved published rows. A verified owner can additionally read their own draft and edit only granted content/publication columns.
+- Clients cannot create/delete profiles or change slug, Second Life username, approval, featured status, timestamps or ownership. Initial provisioning and verified ownership assignment remain server/dashboard-only until their workflows are implemented.
+- Revoking an avatar link removes owner-edit access. It does not automatically unpublish an already-approved public listing; moderation/account deletion workflows remain later work.
+- No avatar challenge flow, frontend Auth/client, paid entitlement policies, private media or import tooling is implemented by this migration.
+- `npm run test:db` executes the actual migration in PGlite's local Postgres engine. Six permission scenarios pass, plus the parent test. Supabase roles and `auth.uid()` are emulated locally; hosted Auth/API configuration must still be verified on the development project.
+
+The public reader uses the official pinned client without session persistence. It explicitly requests approved/published records, a public column allowlist and pages of 12 with stable ordering. Cards use textContent and safe image URLs; they link to the public reader at `/directory-profile.html?slug=...`, not the old fixture profile. Search/role/tag filters, loading/empty/error/retry and pagination are wired.
+
+Vite rejects non-publishable keys before bundling. When changing `.env.local`, restart the dev server if it has not automatically restarted. The filename must include the leading dot; the user's initial `env.local` was corrected without reading its values.
+
+## Step 4: Add Safe Development Listings
+
+1. In the London development project's SQL Editor, run `supabase/seed-directory-demo.sql`.
+2. It creates two clearly labelled visible demos and one unpublished control, with no account/verified-avatar/owner mappings. It can be rerun without duplicates and does not overwrite existing records.
+3. Refresh `http://127.0.0.1:4182/directory.html`. Expect Demo Dominant and Demo Submissive, never Unpublished Demo Control.
+4. Test name search, role/tag filters and each profile link. A filtered list may legitimately be empty.
+5. Hosted seed verification is now complete: a direct anonymous query without client visibility filters returns exactly the two visible demos; a direct request for `demo-unpublished-control` returns no rows. Public detail lookup succeeds. No remote records were changed during these checks.
+
+These are development samples, not real or avatar-verified listings. Before live launch, remove them in SQL Editor with a query restricted to their three exact demo slugs. Do not import production profiles yet.
+
+No sample rows have been inserted remotely by the assistant. The SQL seed is tested in local Postgres only. Owner editing stays gated until the avatar-verification flow is ready.
+
+## Netlify Staging, Later In This Step
+
+After local demo reads are verified, enter `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` directly into the V2 Netlify project's build environment and trigger a rebuild. The publishable value is intended for public browser use; never use secret credentials. These local code changes are not pushed/deployed yet. The original creator/profile templates remain preview-only until their live replacements are implemented.
+
+## Public Reader Validation
+
+- Real hosted public empty read and a quoted search/combined-role/tag request succeed without logging keys or data.
+- Local browser verifies the real empty state. Intercepted mobile API responses exercise paging, filtering, error/retry and basic profile navigation, without database writes.
+- `npm run test:directory` covers configuration, column/visibility filters, query grammar, pagination, error redaction, profile lookup and DOM escaping.
+- Current full suite: 74 passing tests including creator Auth helpers, SDK-generated PKCE verifier compatibility, session separation, migration policies and hidden-control denial. Build passes.
+- Hosted creator sessions, owner writes, subscriber access, paid status and SSR/custom-domain profile metadata remain future work.
+
+## Step 5: Configure Creator Authentication
+
+1. Open Authentication > URL Configuration in this Supabase development project.
+2. Set Site URL to `https://controlandchaosv2.netlify.app`.
+3. Add exact redirect URLs:
+	- `http://127.0.0.1:4182/auth.html`
+	- `http://localhost:4182/auth.html`
+	- `https://controlandchaosv2.netlify.app/auth.html`
+4. Save. Do not add broad wildcard redirects or the V1 live domain.
+5. Under Authentication > Sign In / Providers (label may vary), ensure Email authentication is enabled and Confirm email remains enabled. Leave anonymous sign-in disabled; do not weaken database policies.
+6. The user confirmed these settings are saved. The local account/callback page is now implemented at `http://127.0.0.1:4182/auth.html`; it is not pushed/deployed yet.
+
+Email/password registration, confirmation, sign-in/out and password recovery are implemented. A separate creator client uses PKCE and its own session storage; the public directory client stays anonymous. Callbacks are exchanged explicitly, URL codes/error fragments are stripped, and account pages send no referrers. Session display verifies the user with Supabase. No account action creates profile ownership or modifies directory records.
+
+Supabase's default development mailer only delivers to project-team email addresses and is currently limited to two messages per hour. Production requires custom SMTP and anti-abuse configuration. Never disable email confirmation to bypass a mail-delivery problem.
+
+## Step 6: Test A Real Development Account
+
+1. Open `http://127.0.0.1:4182/auth.html` and select Create account.
+2. Use your Supabase project-team email address for the default mailer. Enter a unique password of at least 12 characters directly into the form; never share it through chat.
+3. Submit once, check inbox/spam and open the confirmation link in the same browser/profile that submitted signup. Keep the dev server running and use the same origin (127.0.0.1 versus localhost matters for PKCE storage).
+4. Expect Signed in, your own email and a message that avatar/profile access is not linked. Sign out and sign back in to test the password flow.
+5. Report success or the on-screen error only. Never send passwords, email link URLs, codes, session tokens or local storage contents.
+6. Recovery can be tested separately after accounting for the mailer's rate limit: Reset password sends an email; its same-browser link opens the new-password form. Successful update signs this browser out and returns to sign-in.
+
+If a confirmation link is rejected, first open the plain `/auth.html` address and try Sign in using the password chosen at signup. Email verification may already have succeeded even if the callback session failed. If sign-in reports email not confirmed, report that screen message before repeatedly creating the same account or requesting more emails. Never share the link/code and never disable confirmation/RLS to bypass the issue.
+
+Callback compatibility: the installed SDK can append `sb_flow_id` when its opt-in flow-ID redirect feature is enabled. The handler captures it before URL cleanup and passes it explicitly to `exchangeCodeForSession`. A regression uses real SDK signup-generated verifier slots with two concurrent flows. This does not prove the cause of a specific expired/used-link response. Safe error categories provide recovery guidance without displaying provider descriptions or tokens.
+
+Verification: desktop/mobile browser tests used intercepted Auth responses and fake users/tokens, covering validation, signup confirmation, generic recovery messages, server-verified sign-in display, sign-out, PKCE recovery/password update and URL cleanup. No real accounts or emails were created by the assistant. Hosted registration/email/recovery remain unverified until your manual test.
+
+Creator accounts need independently verified Second Life ownership before profile writes. Unlike Decap's local filesystem proxy, creator authentication is genuine even on localhost. The old creator editor remains a preview and is not connected by this account-page step.
+
+Official references: https://supabase.com/docs/guides/auth/redirect-urls and https://supabase.com/docs/guides/auth/passwords
 
 ## Work Split
 
@@ -49,3 +136,29 @@ Assistant: prepare versioned SQL migrations and permission tests, public-directo
 - Do not change production payments, kiosk credentials, custom domains or live storage during this development milestone.
 
 Provider documentation: https://supabase.com/docs/guides/api/api-keys
+
+## Step 7: Add Avatar Verification Database Rules
+
+1. In the development project's SQL Editor, run `supabase/migrations/202610040002_avatar_verification.sql` once. Migration 1 must already be applied.
+2. Run `supabase/verify-avatar-verification.sql` separately. The challenge table must have RLS enabled. Expected function/table privilege results: `false, true, false, true, false`.
+3. Report success or error text only. Do not create ownership rows manually or weaken grants.
+
+This creates private ten-minute challenges, one-minute issuance cooldown and a ten-per-day account cap. Codes are atomically single-use. Anonymous clients cannot request codes; account clients cannot consume them, list all codes or assign avatar identity. Reused/expired codes, another account's existing avatar and revoked links are denied.
+
+## Verification Deployment, After Step 7
+
+The new code is local and not pushed. Before an in-world test, approve the V2 commit/push and configure the following directly in the V2 Netlify project's Functions environment:
+
+- `SUPABASE_URL`: the development project URL.
+- `SUPABASE_SECRET_KEY`: an `sb_secret_...` server-only key from Supabase Settings > API Keys. Never use a `VITE_` prefix or put it in an LSL script/browser.
+- `CC_VERIFICATION_KIOSK_SECRET`: a fresh random ASCII secret of at least 32 characters, generated/stored privately. Do not reuse V1's published credential.
+- `CC_VERIFICATION_KIOSK_OWNER`: the trusted kiosk owner's avatar UUID.
+- `CC_VERIFICATION_KIOSK_OBJECT`: the verifier object's UUID printed to its owner by the new script. Reconfigure if rerezzing changes it.
+
+The dedicated `scripts/CC_V2_Avatar_Verifier.lsl` goes into a separate test object, not the old payment kiosk. Set its blank `KIOSK_SECRET` directly in Second Life to match the Netlify kiosk secret. Keep script contents private and do not distribute the configured script or object; protect inventory/group permissions and rotate the secret if exposed.
+
+The endpoint validates the secret and registered object/owner headers before a privileged RPC. Second Life headers alone can be spoofed; secrecy and a trusted, unmodified kiosk are the authentication boundary. It obtains the avatar from the LSL touch/listen event, not browser-submitted identity. Never enter a challenge someone else supplied: a code links the avatar to the account that requested it.
+
+After deployment/configuration: sign in locally, request a code, complete it at the verifier as your own avatar, then press Refresh verification. This links the avatar only; profile ownership/provisioning and the real editor are subsequent steps. Never send codes or secrets through chat.
+
+Validation: 78 tests and build pass. Real Postgres tests cover grants, expiry, replay, cross-account claims and revoked links; server tests cover secret/object/payload denial; browser state tests cover stale responses after sign-out. LSL compilation and deployed/in-world integration are not verified in this workspace. The assistant has not applied migration 2 or deployed/configured the verifier remotely.
