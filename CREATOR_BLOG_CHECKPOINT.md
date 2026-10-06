@@ -6,6 +6,8 @@ Base commit: `b68d7fe` (`feat: collapse toys and wishlist sections`)
 
 ## Current State
 
+Rollout update: the user approved pushing the feature branch for a Netlify branch deploy, leaving main and the v4.1 in-world terminal unchanged. Commit `1778816` is pushed. Branch-deploy settings are enabled for this branch per the user's screenshot; build/preview availability is not yet confirmed. A further approved documentation commit/push will trigger the newly enabled branch build. Preview auth callback configuration remains pending.
+
 Latest local milestone: mixed-media posts with up to 10 ordered image/audio/video attachments, owner previews, and account-password recovery/settings are implemented and approved for a local-only commit on this branch. No push, merge or deployment is authorized; do not infer hosted availability. The user reported applying migration 15 at 20:40 and the final verification result `4, true, true`; earlier RPC existence/privilege result sets have not been separately confirmed. Do not reapply the migration. The user confirmed mixed-media draft save/reload persistence at 20:42.
 
 The V2 creator blog and finance-alt pass-through are committed and pushed as `cad00d9` on this feature branch; no merge into `main` or feature deployment is confirmed. The user applied migration 14 to the sole, production-bound V2 Supabase project and confirmed the initial table/private-bucket checks. After explicit approval and verification of the owner/avatar mapping, the user applied the V1 import. Their SQL result confirms Alek Zane's profile `fc88de3a-315d-44db-b3b4-cb04ef1c0409` remains unpublished with 4 imported posts, 1 subscriber post and L$1,500/month. No Netlify secrets or trusted kiosk identity have been changed by the assistant, and no finance-terminal replacement or debit grant has been reported.
@@ -21,6 +23,9 @@ The local implementation includes:
 The approved V1 import carried over Alek Zane's 3 feed posts, 1 public blog post, L$1,500/month offer and benefits. One locked media file must be re-uploaded to V2 private storage; its old URL was excluded. The user ran the import twice, and the SQL check confirms 4 imported posts, not duplicates. Do not rerun after editing posts/uploading media: the importer updates existing legacy records.
 
 ## Validation
+
+- Local milestone committed as `1778816`, then pushed with explicit preview-only approval. Pre-existing trailing Git commands were excluded and remain unstaged. Main deployment remains at `b68d7fe` per the user's Netlify screenshot.
+- At 21:17 a live owner-authorized 10-second signed link for a saved unpublished draft video returned HTTP 206 immediately and HTTP 400 / `InvalidJWT` on a new unauthenticated no-store request after 20 seconds. No media URL/token/body was returned to chat, and no metadata/files were changed. Expired-link new-request denial is verified; cached/downloaded content revocation and real paid-subscriber playback are not.
 
 - Real database checks reported by the user: anonymous access to the unpublished profile returned zero feed posts and zero Storage rows. At 20:56 an explicitly approved rollback-only publication test returned 5 visible posts, 3 public posts, 2 locked posts and 0 subscriber body/media/attachment metadata leaks. The profile and test draft were published only inside that transaction, ending with rollback.
 - At 21:00 the approved rollback-only published-profile Storage check returned 2 actual subscriber files tested and 0 anonymously visible subscriber files. Anonymous Storage row denial for those files is now verified. No persistent publication was requested.
