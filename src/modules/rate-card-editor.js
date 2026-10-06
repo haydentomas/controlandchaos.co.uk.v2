@@ -9,7 +9,7 @@ export function initRateCardEditor(container, addCategory) {
     node.className = className;
     return node;
   };
-  const field = (parent, model, name, labelText, maximum, required = false) => {
+  const field = (parent, model, name, labelText, maximum, required = false, editorOptions) => {
     const group = element('div');
     const label = element('label', 'form-label');
     const input = element(name === 'description' ? 'textarea' : 'input', name === 'description' ? 'form-textarea' : 'form-input');
@@ -24,7 +24,7 @@ export function initRateCardEditor(container, addCategory) {
     input.addEventListener('input', () => { model[name] = input.value; });
     group.append(label, input);
     parent.append(group);
-    if (name === 'description') textEditors.push(initRichTextEditor(input));
+    if (name === 'description') textEditors.push(initRichTextEditor(input, editorOptions));
   };
   const button = (text, title, action, disabled = false) => {
     const control = element('button', 'btn btn-secondary btn-sm');
@@ -91,7 +91,7 @@ export function initRateCardEditor(container, addCategory) {
         field(priceFields, item, 'price', 'Price', 100);
         field(priceFields, item, 'unit', 'Duration / unit', 100);
         row.append(priceFields);
-        field(row, item, 'description', 'Service description', 2000);
+        field(row, item, 'description', 'Service description', 2000, false, { height: '150px', minHeight: '110px' });
         services.append(row);
       });
       section.append(services, button('Add service', 'Add service', () => {

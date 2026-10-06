@@ -23,6 +23,10 @@ test('profile protocol controls are labelled and bounded, and public cards start
   }
   const anchor = editor.querySelector('.creator-editor-nav a[href="#creator-protocol"]');
   assert.ok(editor.querySelector(anchor.getAttribute('href')));
+  const username = editor.querySelector('[data-creator-username]');
+  assert.equal(username.hasAttribute('readonly'), true);
+  assert.equal(username.getAttribute('aria-describedby'), 'creator-username-note');
+  assert.equal(editor.getElementById('creator-username-note').textContent, 'From your linked avatar');
   const sidebar = editor.querySelector('.creator-editor-sidebar');
   assert.ok(sidebar.contains(editor.querySelector('.creator-editor-nav')));
   assert.ok(sidebar.contains(editor.querySelector('.creator-editor-savebar')));

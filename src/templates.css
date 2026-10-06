@@ -11,6 +11,8 @@
   .creator-editor-section { min-width: 0; padding: 22px 24px 26px; border: 1px solid rgba(212,175,55,0.22); border-radius: 8px; background: rgba(26,23,20,0.55); scroll-margin-top: 110px; }
   .creator-editor-section .form-label { margin-top: 12px; }
   .creator-editor-section > :last-child { margin-bottom: 0; }
+  .creator-verified-username .form-input[readonly] { border-color: var(--gold-border-subtle); background: rgba(20,18,16,0.72); color: var(--text-muted); cursor: text; box-shadow: none; }
+  .creator-verified-username .text-muted { margin: 5px 0 0; font-size: 12px; }
   .creator-editor .form-grid-2 { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .creator-editor .form-grid-2 > * { min-width: 0; }
   @media (max-width: 640px) { .creator-editor .form-grid-2 { grid-template-columns: minmax(0,1fr); } }

@@ -19,7 +19,7 @@ function loadEditor() {
   return editorModule;
 }
 
-export function initRichTextEditor(input) {
+export function initRichTextEditor(input, { height = '300px', minHeight = '220px' } = {}) {
   if (instances.has(input)) return instances.get(input);
   if (!input.id) input.id = `rich-text-${++nextId}`;
   const doc = input.ownerDocument;
@@ -81,8 +81,8 @@ export function initRichTextEditor(input) {
       editor = new Editor({
         el: host,
         theme: 'dark',
-        height: '300px',
-        minHeight: '220px',
+        height,
+        minHeight,
         initialEditType: visualMarkdownSupported(input.value) ? 'wysiwyg' : 'markdown',
         initialValue: input.value,
         previewStyle: 'tab',
