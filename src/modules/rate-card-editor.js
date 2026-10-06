@@ -4,12 +4,13 @@ import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } f
 export function initRateCardEditor(container, addCategory) {
   let categories = [];
   let textEditors = [];
+  let expandedServiceId = null;
   const element = (tag, className = '') => {
     const node = document.createElement(tag);
     node.className = className;
     return node;
   };
-  const field = (parent, model, name, labelText, maximum, required = false, editorOptions) => {
+  const field = (parent, model, name, labelText, maximum, required = false, editorOptions, richTextEnabled = true) => {
     const group = element('div');
     const label = element('label', 'form-label');
     const input = element(name === 'description' ? 'textarea' : 'input', name === 'description' ? 'form-textarea' : 'form-input');
@@ -24,7 +25,8 @@ export function initRateCardEditor(container, addCategory) {
     input.addEventListener('input', () => { model[name] = input.value; });
     group.append(label, input);
     parent.append(group);
-    if (name === 'description') textEditors.push(initRichTextEditor(input, editorOptions));
+    if (name === 'description' && richTextEnabled) textEditors.push(initRichTextEditor(input, editorOptions));
+    return input;
   };
   const button = (text, title, action, disabled = false) => {
     const control = element('button', 'btn btn-secondary btn-sm');
@@ -45,9 +47,10 @@ export function initRateCardEditor(container, addCategory) {
     const [moved] = list.splice(index, 1);
     list.splice(target, 0, moved);
     paint();
-    document.getElementById(`rate-${moved.id}-${moved.items ? 'title' : 'name'}`)?.focus();
+    document.getElementById(`rate-${moved.id}-${moved.items ? 'title' : expandedServiceId === moved.id ? 'name' : 'toggle'}`)?.focus();
   };
   const paint = () => {
+    flushRichTextEditors(container);
     for (const editor of textEditors) editor.destroy();
     textEditors = [];
     container.replaceChildren();
@@ -77,27 +80,61 @@ export function initRateCardEditor(container, addCategory) {
       category.items.forEach((item, itemIndex) => {
         const row = element('div', 'rate-editor-item');
         row.dataset.rateItem = item.id;
+        const expanded = item.id === expandedServiceId;
+        const details = element('div', 'rate-service-details');
+        details.id = `rate-${item.id}-details`;
+        details.hidden = !expanded;
+        const summaryButton = element('button', 'rate-service-toggle');
+        summaryButton.type = 'button';
+        summaryButton.id = `rate-${item.id}-toggle`;
+        summaryButton.dataset.rateServiceToggle = '';
+        summaryButton.setAttribute('aria-expanded', String(expanded));
+        summaryButton.setAttribute('aria-controls', details.id);
+        const summaryCopy = element('span', 'rate-service-summary-copy');
+        const summaryName = element('span', 'rate-service-summary-name');
+        const summaryMeta = element('span', 'rate-service-summary-meta');
+        summaryCopy.append(summaryName, summaryMeta);
+        const summaryAction = element('span', 'rate-service-summary-action');
+        summaryAction.textContent = expanded ? 'Close' : 'Edit';
+        summaryButton.append(summaryCopy, summaryAction);
+        const updateSummary = () => {
+          summaryName.textContent = item.name.trim() || `Untitled service ${itemIndex + 1}`;
+          summaryMeta.textContent = [item.price.trim(), item.unit.trim()].filter(Boolean).join(' | ') || 'Price and duration not set';
+          summaryButton.setAttribute('aria-label', `${expanded ? 'Close' : 'Edit'} service ${itemIndex + 1}: ${item.name.trim() || 'Untitled service'}`);
+        };
+        updateSummary();
+        summaryButton.addEventListener('click', () => {
+          expandedServiceId = expanded ? null : item.id;
+          paint();
+          document.getElementById(`rate-${item.id}-toggle`)?.focus();
+        });
         const controls = element('div', 'creator-editor-toolbar');
         const label = element('h4');
         label.textContent = `Service ${itemIndex + 1}`;
         controls.append(label,
           button('\u2191', 'Move service up', () => move(category.items, itemIndex, -1), itemIndex === 0),
           button('\u2193', 'Move service down', () => move(category.items, itemIndex, 1), itemIndex === category.items.length - 1),
-          button('Remove service', 'Remove service', () => { category.items.splice(itemIndex, 1); paint(); }));
-        row.append(controls);
+          button('Remove service', 'Remove service', () => { if (expandedServiceId === item.id) expandedServiceId = null; category.items.splice(itemIndex, 1); paint(); }));
+        const header = element('div', 'rate-service-header');
+        header.append(summaryButton, controls);
+        row.append(header, details);
         services.append(row);
-        field(row, item, 'name', 'Service name', 100, true);
+        const nameInput = field(details, item, 'name', 'Service name', 100, expanded);
+        nameInput.addEventListener('input', updateSummary);
         const priceFields = element('div', 'form-grid-2');
-        field(priceFields, item, 'price', 'Price', 100);
-        field(priceFields, item, 'unit', 'Duration / unit', 100);
-        row.append(priceFields);
-        field(row, item, 'description', 'Service description', 2000, false, COMPACT_RICH_TEXT_OPTIONS);
-        services.append(row);
+        const priceInput = field(priceFields, item, 'price', 'Price', 100);
+        const unitInput = field(priceFields, item, 'unit', 'Duration / unit', 100);
+        priceInput.addEventListener('input', updateSummary);
+        unitInput.addEventListener('input', updateSummary);
+        details.append(priceFields);
+        field(details, item, 'description', 'Service description', 2000, false, COMPACT_RICH_TEXT_OPTIONS, expanded);
       });
       section.append(services, button('Add service', 'Add service', () => {
-        category.items.push({ id: crypto.randomUUID(), name: '', price: '', unit: '', description: '' });
+        const item = { id: crypto.randomUUID(), name: '', price: '', unit: '', description: '' };
+        category.items.push(item);
+        expandedServiceId = item.id;
         paint();
-        document.getElementById(`rate-${category.items.at(-1).id}-name`)?.focus();
+        document.getElementById(`rate-${item.id}-name`)?.focus();
       }, category.items.length >= RATE_ITEM_LIMIT || total >= RATE_TOTAL_ITEM_LIMIT));
       container.append(section);
     });
@@ -109,8 +146,8 @@ export function initRateCardEditor(container, addCategory) {
     document.getElementById(`rate-${categories.at(-1).id}-title`)?.focus();
   });
   return {
-    load(value) { categories = validateRateCategories(value || []); paint(); },
-    clear() { categories = []; paint(); },
+    load(value) { categories = validateRateCategories(value || []); expandedServiceId = null; paint(); },
+    clear() { categories = []; expandedServiceId = null; paint(); },
     value() { flushRichTextEditors(container); return validateRateCategories(categories); }
   };
 }

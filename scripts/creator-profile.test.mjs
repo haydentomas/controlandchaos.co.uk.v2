@@ -395,6 +395,18 @@ test('rate editor reorders and removes services without changing identifiers or 
     const editor = initRateCardEditor(document.getElementById('editor'), document.getElementById('add'));
     const second = { ...rates[0].items[0], id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', name: 'Follow-up' };
     editor.load([{ ...rates[0], items: [rates[0].items[0], second] }]);
+    const rowFor = id => document.querySelector(`[data-rate-item="${id}"]`);
+    assert.equal(rowFor(rates[0].items[0].id).querySelector('[data-rate-service-toggle]').getAttribute('aria-expanded'), 'false');
+    assert.equal(rowFor(rates[0].items[0].id).querySelector('.rate-service-summary-name').textContent, rates[0].items[0].name);
+    assert.match(rowFor(rates[0].items[0].id).querySelector('.rate-service-summary-meta').textContent, /\|/);
+    assert.equal(document.querySelectorAll('.rate-service-details [data-rich-text-source]').length, 0);
+    rowFor(rates[0].items[0].id).querySelector('[data-rate-service-toggle]').click();
+    assert.equal(rowFor(rates[0].items[0].id).querySelector('.rate-service-details').hidden, false);
+    assert.equal(rowFor(rates[0].items[0].id).querySelectorAll('[data-rich-text-source]').length, 1);
+    rowFor(second.id).querySelector('[data-rate-service-toggle]').click();
+    assert.equal(document.querySelectorAll('[data-rate-service-toggle][aria-expanded="true"]').length, 1);
+    assert.equal(document.querySelectorAll('.rate-service-details [data-rich-text-source]').length, 1);
+    rowFor(rates[0].items[0].id).querySelector('[data-rate-service-toggle]').click();
     const name = document.getElementById(`rate-${rates[0].items[0].id}-name`);
     name.value = 'Updated appointment';
     name.dispatchEvent(new document.defaultView.Event('input'));

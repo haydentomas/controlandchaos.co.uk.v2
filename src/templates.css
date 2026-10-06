@@ -28,8 +28,18 @@
   .account-subscription-row { min-width: 0; max-width: 100%; }
   .account-subscription-row p { overflow-wrap: anywhere; }
   .rate-editor-category { padding: 16px 0 24px; border-bottom: 1px solid rgba(212,175,55,0.25); }
-  .rate-editor-item { padding: 12px 0 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .rate-editor-item { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
   .rate-editor-services { margin: 16px 0; }
+  .rate-service-header { display: flex; min-width: 0; align-items: center; gap: 12px; }
+  .rate-service-toggle { display: flex; min-width: 0; min-height: 64px; flex: 1 1 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); color: inherit; cursor: pointer; text-align: left; }
+  .rate-service-toggle:hover, .rate-service-toggle:focus-visible { border-color: var(--gold-bright); outline: none; }
+  .rate-service-summary-copy { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+  .rate-service-summary-name { overflow-wrap: anywhere; font-weight: 700; }
+  .rate-service-summary-meta { color: var(--text-muted); font-size: 12px; overflow-wrap: anywhere; }
+  .rate-service-summary-action { flex: 0 0 auto; color: var(--gold-bright); font-size: 12px; font-weight: 700; }
+  .rate-service-header .creator-editor-toolbar { flex: 0 0 auto; gap: 6px; padding: 0; }
+  .rate-service-header .creator-editor-toolbar .btn { min-width: 36px; min-height: 36px; }
+  .rate-service-details { padding-top: 14px; }
   .rate-editor-category .creator-editor-toolbar { padding: 10px 0; }
   .rate-editor-category h3, .rate-editor-category h4 { margin: 0 auto 0 0; }
   .rate-editor-category .btn-sm { min-width: 36px; min-height: 36px; }
@@ -77,6 +87,9 @@
   }
   @media (max-width: 600px) { .creator-editor-section { padding: 18px; } }
   @media (max-width: 480px) {
+    .rate-service-header { flex-wrap: wrap; }
+    .rate-service-toggle { flex-basis: 100%; }
+    .rate-service-header .creator-editor-toolbar { margin-left: auto; }
     .gallery-photo-header { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 8px; }
     .gallery-photo-thumbnail-button { grid-column: 1; grid-row: 1; }
     .gallery-photo-toggle { grid-column: 2; grid-row: 1; }
