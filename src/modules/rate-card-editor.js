@@ -1,5 +1,5 @@
 import { validateRateCategories, RATE_CATEGORY_LIMIT, RATE_ITEM_LIMIT, RATE_TOTAL_ITEM_LIMIT } from './rate-cards.js';
-import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
+import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } from './rich-text-editor.js';
 
 export function initRateCardEditor(container, addCategory) {
   let categories = [];
@@ -71,7 +71,7 @@ export function initRateCardEditor(container, addCategory) {
       section.append(toolbar);
       container.append(section);
       field(section, category, 'title', 'Category title', 100, true);
-      field(section, category, 'description', 'Category description', 1000);
+      field(section, category, 'description', 'Category description', 1000, false, COMPACT_RICH_TEXT_OPTIONS);
       const services = element('div', 'rate-editor-services');
       section.append(services);
       category.items.forEach((item, itemIndex) => {
@@ -91,7 +91,7 @@ export function initRateCardEditor(container, addCategory) {
         field(priceFields, item, 'price', 'Price', 100);
         field(priceFields, item, 'unit', 'Duration / unit', 100);
         row.append(priceFields);
-        field(row, item, 'description', 'Service description', 2000, false, { height: '150px', minHeight: '110px' });
+        field(row, item, 'description', 'Service description', 2000, false, COMPACT_RICH_TEXT_OPTIONS);
         services.append(row);
       });
       section.append(services, button('Add service', 'Add service', () => {

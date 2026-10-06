@@ -3,6 +3,7 @@ import { richTextLink, visualMarkdownSupported } from './profile-rich-text.js';
 const instances = new WeakMap();
 let nextId = 0;
 let editorModule;
+export const COMPACT_RICH_TEXT_OPTIONS = Object.freeze({ height: '150px', minHeight: '110px' });
 
 export function flushRichTextEditors(container) {
   for (const input of container.querySelectorAll('[data-rich-text-source]')) instances.get(input)?.flush();

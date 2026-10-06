@@ -1,5 +1,5 @@
 import { renderRichText } from './profile-rich-text.js';
-import { initRichTextEditor } from './rich-text-editor.js';
+import { initRichTextEditor, COMPACT_RICH_TEXT_OPTIONS } from './rich-text-editor.js';
 
 export const BOOKING_TIMEZONES = [
   ['America/Los_Angeles', 'Second Life Time (Pacific)'],
@@ -84,7 +84,7 @@ export function initBookingHoursEditor(container) {
   const end = container.querySelector('[data-booking-end]');
   const interval = container.querySelector('[data-booking-interval]');
   const notes = container.querySelector('[data-booking-notes]');
-  const notesEditor = initRichTextEditor(notes);
+  const notesEditor = initRichTextEditor(notes, COMPACT_RICH_TEXT_OPTIONS);
   const checkboxes = [...container.querySelectorAll('[data-booking-day]')];
   for (const [zone, label] of BOOKING_TIMEZONES) {
     const option = document.createElement('option');

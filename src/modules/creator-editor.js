@@ -6,7 +6,7 @@ import { initBookingHoursEditor } from './booking-hours.js';
 import { initProfileGalleryEditor } from './profile-gallery-editor.js';
 import { initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, validateHardwareItems, validateWishlistItems, createHardwareItem, createWishlistItem } from './profile-collections.js';
 import { fetchGalleryPhotos } from './profile-gallery.js';
-import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
+import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } from './rich-text-editor.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -15,7 +15,7 @@ export async function initCreatorEditor(clientOverride) {
   const picker = form.querySelector('[data-creator-profile]');
   const reload = document.querySelector('[data-creator-reload]');
   const signin = document.querySelector('[data-creator-signin]');
-  const textEditors = Object.fromEntries(['tagline', 'about', 'boundaries', 'booking_instructions'].map(name => [name, initRichTextEditor(form.elements[name])]));
+  const textEditors = Object.fromEntries(['tagline', 'about', 'boundaries', 'booking_instructions'].map(name => [name, initRichTextEditor(form.elements[name], name === 'tagline' ? COMPACT_RICH_TEXT_OPTIONS : undefined)]));
   const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
   const bookingEditor = initBookingHoursEditor(form.querySelector('[data-booking-editor]'));
   const galleryEditor = initProfileGalleryEditor(form.querySelector('[data-gallery-editor]'), form.querySelector('[data-gallery-add-photo]'));
