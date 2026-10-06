@@ -20,7 +20,10 @@ export function createCreatorClient(config = directoryConfig(), options = {}) {
 export function authRedirect(locationUrl) {
   const url = new URL(locationUrl);
   const local = url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '4182';
-  const staging = url.origin === 'https://controlandchaosv2.netlify.app';
+  const staging = [
+    'https://controlandchaosv2.netlify.app',
+    'https://feature-creator-blog-pass-through-20261006--controlandchaosv2.netlify.app'
+  ].includes(url.origin);
   if (!local && !staging) throw new Error('This sign-in address is not configured.');
   return `${url.origin}/auth.html`;
 }

@@ -73,6 +73,12 @@ test('account redirects accept only configured exact local/staging addresses', (
   assert.equal(authRedirect('http://127.0.0.1:4182/auth.html?next=https://unsafe.test'), 'http://127.0.0.1:4182/auth.html');
   assert.equal(authRedirect('https://controlandchaosv2.netlify.app/auth.html'), 'https://controlandchaosv2.netlify.app/auth.html');
   assert.throws(() => authRedirect('https://unsafe.test/auth.html'));
+  const preview = 'https://feature-creator-blog-pass-through-20261006--controlandchaosv2.netlify.app';
+  assert.equal(authRedirect(`${preview}/directory-editor.html?next=https://unsafe.test`), `${preview}/auth.html`);
+  assert.throws(() => authRedirect(preview.replace('https:', 'http:')));
+  assert.throws(() => authRedirect(`${preview}:444/auth.html`));
+  assert.throws(() => authRedirect('https://unapproved--controlandchaosv2.netlify.app/auth.html'));
+  assert.throws(() => authRedirect(`${preview}.unsafe.test/auth.html`));
   assert.throws(() => authRedirect('http://localhost:9999/auth.html'));
   assert.notEqual(AUTH_STORAGE_KEY, 'sb-example-auth-token');
 });

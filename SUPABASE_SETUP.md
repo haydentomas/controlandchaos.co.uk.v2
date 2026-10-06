@@ -93,6 +93,7 @@ After local demo reads are verified, enter `VITE_SUPABASE_URL` and `VITE_SUPABAS
 	- `http://127.0.0.1:4182/auth.html`
 	- `http://localhost:4182/auth.html`
 	- `https://controlandchaosv2.netlify.app/auth.html`
+	- `https://feature-creator-blog-pass-through-20261006--controlandchaosv2.netlify.app/auth.html` (approved creator-blog branch deploy only)
 4. Save. Do not add broad wildcard redirects or the V1 live domain.
 5. Under Authentication > Sign In / Providers (label may vary), ensure Email authentication is enabled and Confirm email remains enabled. Leave anonymous sign-in disabled; do not weaken database policies.
 6. The user confirmed these settings are saved. The local account/callback page is now implemented at `http://127.0.0.1:4182/auth.html`; it is not pushed/deployed yet.
