@@ -481,6 +481,7 @@ test('gallery editor stages optimized WebP uploads and rolls back failed profile
     const original = { ...photos[0], storage_path: `${profileId}/${photos[0].id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, image_url: '' };
     editor.load([original]);
     const input = document.querySelector('input[type="file"]');
+    assert.equal(document.querySelector('[data-gallery-editor-photo]').children[1].querySelector('input[type="file"]'), input);
     const file = new Blob(['jpeg'], { type: 'image/jpeg' });
     Object.defineProperty(file, 'name', { value: 'portrait.jpg' });
     Object.defineProperty(input, 'files', { configurable: true, value: [file] });
@@ -529,7 +530,7 @@ test('booking recipient RPC is private and requires an active published booking 
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth,storage to anon,authenticated,service_role;
       grant select,insert,update,delete on storage.objects to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await database.query('select public,file_size_limit,allowed_mime_types from storage.buckets where id=$1', ['directory-gallery'])).rows[0], { public: false, file_size_limit: 2097152, allowed_mime_types: ['image/webp'] });
@@ -556,14 +557,16 @@ test('booking recipient RPC is private and requires an active published booking 
     assert.equal((await canUpload(twentyFirst)).rows[0].allowed, false);
     const toys = [{ name: 'Lovense Gush', desc: 'Remote control', icon: '\u{1F4A0}', badge_text: 'Ready' }];
     const wishlist = [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts' }];
-    const collectionChanges = { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist };
+    const collectionChanges = { boundaries: 'Respect limits.', booking_instructions: 'Contact me.', hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist };
     const saved = (await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, JSON.stringify(collectionChanges), JSON.stringify(storagePhotos), 'bookings@example.test'])).rows[0];
+    assert.equal(saved.boundaries, 'Respect limits.');
+    assert.equal(saved.booking_instructions, 'Contact me.');
     assert.equal(saved.hardware_title, 'My Toys');
     assert.deepEqual(saved.hardware_compat, toys);
     assert.equal(saved.wishlist_title, 'Wishlist & Tributes');
     assert.deepEqual(saved.wishlist, wishlist);
-    const profileCollections = (await database.query('select hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
-    assert.deepEqual(profileCollections, { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
+    const profileCollections = (await database.query('select boundaries,booking_instructions,hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
+    assert.deepEqual(profileCollections, { boundaries: 'Respect limits.', booking_instructions: 'Contact me.', hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
     assert.deepEqual((await database.query('select show_in_sidebar,storage_path,image_url from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, storagePhotos.map(photo => ({ show_in_sidebar: photo.show_in_sidebar, storage_path: photo.storage_path, image_url: '' })));
     assert.equal((await canUpload(`${profile}/${photos[0].id}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`)).rows[0].allowed, true);
     assert.equal((await canUpload(`${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`)).rows[0].allowed, false);

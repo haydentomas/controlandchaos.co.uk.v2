@@ -116,7 +116,6 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
         }
       });
       uploadGroup.append(uploadLabel, uploadInput, uploadNote);
-      grid.append(uploadGroup);
       const publication = create('label', 'profile-feature-switch');
       const published = create('input');
       published.type = 'checkbox';
@@ -133,7 +132,7 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
       const sidebarText = create('span');
       sidebarText.textContent = 'Show in sidebar preview';
       sidebarChoice.append(showInSidebar, sidebarText);
-      row.append(grid, image, imageStatus, publication, sidebarChoice);
+      row.append(uploadGroup, grid, image, imageStatus, publication, sidebarChoice);
       preview();
       container.append(row);
     });

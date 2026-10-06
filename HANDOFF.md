@@ -1,15 +1,15 @@
 # V2 Shared Template Handoff
 
-Latest handover (2026-10-06): read [NEXT_STEPS.md](NEXT_STEPS.md) first. Commit `ccc0f6a` is pushed and Netlify serves the Alt-test profile UI. Migration 11 is applied. Local migration 12 implements direct private Storage photo uploads, optimized in-browser to WebP with per-file and per-profile caps; it is not applied or deployed. No live uploads or booking emails were made. Apply and verify migration 12 only after approved deployment preparation. The resume file supersedes every older deployment/setup statement below.
+Latest handover (2026-10-06): read [NEXT_STEPS.md](NEXT_STEPS.md) first. Commit `1c21ac8` is pushed and the gallery upload UI is live. The user applied migration 12 and verified its bucket, quota, grants, trigger, and Storage policies. Alt testing exposed a save failure: migration 12's replacement RPC omitted the existing Boundaries and How to Book fields from its allowlist. Migration 13 fixes this forward; it is local and must be applied before retrying saves. The upload picker is also being moved higher in each photo row for the follow-up deploy. No live image was saved. The resume file supersedes older deployment/setup statements below.
 
 ## October 6 Booking Enquiry Progress
 
-### Gallery uploads (local; migration 12 pending)
+### Gallery uploads (migration 12 applied; save fix pending)
 
 - Studio accepts JPEG/PNG/WebP up to 10 MB; it resizes the long edge to 2048 px and iteratively converts to WebP <=2 MB. Netlify never handles image bytes.
 - A private `directory-gallery` bucket enforces WebP/2 MB. Owner Storage RLS checks the verified paid profile and 20-photo cap, including pending files; replacing a photo at capacity remains allowed. Public read policy requires a published photo on an approved, published, active profile. Draft images are signed only for the owner; published images use one-hour signed URLs.
 - Gallery metadata stores only profile/photo-scoped Storage paths. Profile/gallery save remains atomic; staged uploads are cleaned up when profile save fails, and replaced/removed objects are cleaned after success.
-- Migration 12 is **not applied**. Apply after an approved push/deploy and run [verify-directory-gallery-storage.sql](supabase/verify-directory-gallery-storage.sql). No remote bucket, schema, or setting was changed and no upload has been performed.
+- The user applied migration 12 and the verification screenshots confirmed the private bucket, zero over-cap profiles, expected function grants, trigger, and five Storage policies. Migration 13 ([202610060013_directory_profile_booking_fields.sql](supabase/migrations/202610060013_directory_profile_booking_fields.sql)) restores validation and persistence for Boundaries and How to Book through the combined save RPC; apply it before retrying an upload. The picker-placement fix and migration 13 still need a follow-up push/deploy. No image was successfully saved.
 
 - V2 rate selection now shows the V1-style quote CTA when booking hours are enabled. The live public form collects client name/contact, requested date/time and notes; selected service IDs are verified and repriced server-side before the request is emailed.
 - Schedule choices follow the creator's saved timezone, available days, interval and overnight windows. Profiles without regular booking days can receive flexible requests. Local preview submissions are blocked.
