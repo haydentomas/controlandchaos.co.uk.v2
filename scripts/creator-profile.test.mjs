@@ -394,8 +394,20 @@ test('rate editor reorders and removes services without changing identifiers or 
   try {
     const editor = initRateCardEditor(document.getElementById('editor'), document.getElementById('add'));
     const second = { ...rates[0].items[0], id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', name: 'Follow-up' };
-    editor.load([{ ...rates[0], items: [rates[0].items[0], second] }]);
+    const otherCategory = { ...rates[0], id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', title: 'Other services', items: [] };
+    editor.load([{ ...rates[0], items: [rates[0].items[0], second] }, otherCategory]);
     const rowFor = id => document.querySelector(`[data-rate-item="${id}"]`);
+    const categoryFor = id => document.querySelector(`[data-rate-category="${id}"]`);
+    assert.equal(categoryFor(rates[0].id).querySelector('[data-rate-category-toggle]').getAttribute('aria-expanded'), 'false');
+    assert.equal(categoryFor(rates[0].id).querySelector('.rate-category-summary-title').textContent, rates[0].title);
+    assert.equal(categoryFor(rates[0].id).querySelector('.rate-category-summary-meta').textContent, '2 services');
+    assert.equal(categoryFor(rates[0].id).querySelector('.rate-category-details').hidden, true);
+    categoryFor(rates[0].id).querySelector('[data-rate-category-toggle]').click();
+    assert.equal(categoryFor(rates[0].id).querySelector('.rate-category-details').hidden, false);
+    assert.equal(categoryFor(rates[0].id).querySelectorAll('[data-rich-text-source]').length, 1);
+    categoryFor(otherCategory.id).querySelector('[data-rate-category-toggle]').click();
+    assert.equal(document.querySelectorAll('[data-rate-category-toggle][aria-expanded="true"]').length, 1);
+    categoryFor(rates[0].id).querySelector('[data-rate-category-toggle]').click();
     assert.equal(rowFor(rates[0].items[0].id).querySelector('[data-rate-service-toggle]').getAttribute('aria-expanded'), 'false');
     assert.equal(rowFor(rates[0].items[0].id).querySelector('.rate-service-summary-name').textContent, rates[0].items[0].name);
     assert.match(rowFor(rates[0].items[0].id).querySelector('.rate-service-summary-meta').textContent, /\|/);
@@ -416,7 +428,11 @@ test('rate editor reorders and removes services without changing identifiers or 
     document.querySelector('[aria-label="Remove service"]').click();
     assert.equal(editor.value()[0].items.length, 1);
     document.querySelector('[aria-label="Remove category"]').click();
+    document.querySelector('[aria-label="Remove category"]').click();
     assert.deepEqual(editor.value(), []);
+    document.getElementById('add').click();
+    assert.equal(document.querySelectorAll('[data-rate-category-toggle][aria-expanded="true"]').length, 1);
+    document.querySelector('[aria-label="Remove category"]').click();
   } finally {
     if (previous === undefined) delete globalThis.document;
     else globalThis.document = previous;

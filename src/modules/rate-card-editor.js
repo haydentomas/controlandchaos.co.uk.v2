@@ -4,6 +4,7 @@ import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } f
 export function initRateCardEditor(container, addCategory) {
   let categories = [];
   let textEditors = [];
+  let expandedCategoryId = null;
   let expandedServiceId = null;
   const element = (tag, className = '') => {
     const node = document.createElement(tag);
@@ -47,7 +48,10 @@ export function initRateCardEditor(container, addCategory) {
     const [moved] = list.splice(index, 1);
     list.splice(target, 0, moved);
     paint();
-    document.getElementById(`rate-${moved.id}-${moved.items ? 'title' : expandedServiceId === moved.id ? 'name' : 'toggle'}`)?.focus();
+    const focusField = moved.items
+      ? expandedCategoryId === moved.id ? 'title' : 'category-toggle'
+      : expandedServiceId === moved.id ? 'name' : 'toggle';
+    document.getElementById(`rate-${moved.id}-${focusField}`)?.focus();
   };
   const paint = () => {
     flushRichTextEditors(container);
@@ -64,19 +68,53 @@ export function initRateCardEditor(container, addCategory) {
     categories.forEach((category, categoryIndex) => {
       const section = element('section', 'rate-editor-category');
       section.dataset.rateCategory = category.id;
+      const expanded = category.id === expandedCategoryId;
+      const details = element('div', 'rate-category-details');
+      details.id = `rate-${category.id}-details`;
+      details.hidden = !expanded;
       const toolbar = element('div', 'creator-editor-toolbar');
-      const heading = element('h3', 'account-subheading');
-      heading.textContent = `Category ${categoryIndex + 1}`;
-      toolbar.append(heading,
+      const summaryButton = element('button', 'rate-category-toggle');
+      summaryButton.type = 'button';
+      summaryButton.id = `rate-${category.id}-category-toggle`;
+      summaryButton.dataset.rateCategoryToggle = '';
+      summaryButton.setAttribute('aria-expanded', String(expanded));
+      summaryButton.setAttribute('aria-controls', details.id);
+      const summaryCopy = element('span', 'rate-category-summary-copy');
+      const summaryTitle = element('span', 'rate-category-summary-title');
+      const summaryMeta = element('span', 'rate-category-summary-meta');
+      summaryCopy.append(summaryTitle, summaryMeta);
+      const summaryAction = element('span', 'rate-category-summary-action');
+      summaryAction.textContent = expanded ? 'Close' : 'Edit';
+      summaryButton.append(summaryCopy, summaryAction);
+      const updateSummary = () => {
+        summaryTitle.textContent = category.title.trim() || `Untitled category ${categoryIndex + 1}`;
+        summaryMeta.textContent = `${category.items.length} ${category.items.length === 1 ? 'service' : 'services'}`;
+        summaryButton.setAttribute('aria-label', `${expanded ? 'Close' : 'Edit'} category ${categoryIndex + 1}: ${category.title.trim() || 'Untitled category'}`);
+      };
+      updateSummary();
+      summaryButton.addEventListener('click', () => {
+        const nextCategoryId = expanded ? null : category.id;
+        if (expandedServiceId && !category.items.some(item => item.id === expandedServiceId)) expandedServiceId = null;
+        expandedCategoryId = nextCategoryId;
+        paint();
+        document.getElementById(`rate-${category.id}-category-toggle`)?.focus();
+      });
+      toolbar.append(summaryButton,
         button('\u2191', 'Move category up', () => move(categories, categoryIndex, -1), categoryIndex === 0),
         button('\u2193', 'Move category down', () => move(categories, categoryIndex, 1), categoryIndex === categories.length - 1),
-        button('Remove category', 'Remove category', () => { categories.splice(categoryIndex, 1); paint(); }));
-      section.append(toolbar);
+        button('Remove category', 'Remove category', () => {
+          if (expandedServiceId && category.items.some(item => item.id === expandedServiceId)) expandedServiceId = null;
+          if (expandedCategoryId === category.id) expandedCategoryId = null;
+          categories.splice(categoryIndex, 1);
+          paint();
+        }));
+      section.append(toolbar, details);
       container.append(section);
-      field(section, category, 'title', 'Category title', 100, true);
-      field(section, category, 'description', 'Category description', 1000, false, COMPACT_RICH_TEXT_OPTIONS);
+      const titleInput = field(details, category, 'title', 'Category title', 100, expanded);
+      titleInput.addEventListener('input', updateSummary);
+      field(details, category, 'description', 'Category description', 1000, false, COMPACT_RICH_TEXT_OPTIONS, expanded);
       const services = element('div', 'rate-editor-services');
-      section.append(services);
+      details.append(services);
       category.items.forEach((item, itemIndex) => {
         const row = element('div', 'rate-editor-item');
         row.dataset.rateItem = item.id;
@@ -129,7 +167,7 @@ export function initRateCardEditor(container, addCategory) {
         details.append(priceFields);
         field(details, item, 'description', 'Service description', 2000, false, COMPACT_RICH_TEXT_OPTIONS, expanded);
       });
-      section.append(services, button('Add service', 'Add service', () => {
+      details.append(button('Add service', 'Add service', () => {
         const item = { id: crypto.randomUUID(), name: '', price: '', unit: '', description: '' };
         category.items.push(item);
         expandedServiceId = item.id;
@@ -141,13 +179,16 @@ export function initRateCardEditor(container, addCategory) {
   };
   addCategory.addEventListener('click', () => {
     if (container.closest('fieldset')?.disabled || categories.length >= RATE_CATEGORY_LIMIT) return;
-    categories.push({ id: crypto.randomUUID(), title: '', description: '', items: [] });
+    const category = { id: crypto.randomUUID(), title: '', description: '', items: [] };
+    categories.push(category);
+    expandedCategoryId = category.id;
+    expandedServiceId = null;
     paint();
-    document.getElementById(`rate-${categories.at(-1).id}-title`)?.focus();
+    document.getElementById(`rate-${category.id}-title`)?.focus();
   });
   return {
-    load(value) { categories = validateRateCategories(value || []); expandedServiceId = null; paint(); },
-    clear() { categories = []; expandedServiceId = null; paint(); },
+    load(value) { categories = validateRateCategories(value || []); expandedCategoryId = null; expandedServiceId = null; paint(); },
+    clear() { categories = []; expandedCategoryId = null; expandedServiceId = null; paint(); },
     value() { flushRichTextEditors(container); return validateRateCategories(categories); }
   };
 }
