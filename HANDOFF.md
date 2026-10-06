@@ -1,8 +1,15 @@
 # V2 Shared Template Handoff
 
-Latest handover (2026-10-06): read [NEXT_STEPS.md](NEXT_STEPS.md) first. Commit `ccc0f6a` is pushed and Netlify serves the Alt-test profile UI. The user reports migration 11 is applied; the attached screenshot confirms the hardware/wishlist column privileges. The first RPC-permission result was not included in that screenshot. No real booking/email has been sent. The user should populate toy, wishlist and gallery repeaters in hosted Studio, then compare on an Alt; verify the RPC permission row before live booking submissions. The resume file supersedes every older deployment/setup statement below.
+Latest handover (2026-10-06): read [NEXT_STEPS.md](NEXT_STEPS.md) first. Commit `ccc0f6a` is pushed and Netlify serves the Alt-test profile UI. Migration 11 is applied. Local migration 12 implements direct private Storage photo uploads, optimized in-browser to WebP with per-file and per-profile caps; it is not applied or deployed. No live uploads or booking emails were made. Apply and verify migration 12 only after approved deployment preparation. The resume file supersedes every older deployment/setup statement below.
 
 ## October 6 Booking Enquiry Progress
+
+### Gallery uploads (local; migration 12 pending)
+
+- Studio accepts JPEG/PNG/WebP up to 10 MB; it resizes the long edge to 2048 px and iteratively converts to WebP <=2 MB. Netlify never handles image bytes.
+- A private `directory-gallery` bucket enforces WebP/2 MB. Owner Storage RLS checks the verified paid profile and 20-photo cap, including pending files; replacing a photo at capacity remains allowed. Public read policy requires a published photo on an approved, published, active profile. Draft images are signed only for the owner; published images use one-hour signed URLs.
+- Gallery metadata stores only profile/photo-scoped Storage paths. Profile/gallery save remains atomic; staged uploads are cleaned up when profile save fails, and replaced/removed objects are cleaned after success.
+- Migration 12 is **not applied**. Apply after an approved push/deploy and run [verify-directory-gallery-storage.sql](supabase/verify-directory-gallery-storage.sql). No remote bucket, schema, or setting was changed and no upload has been performed.
 
 - V2 rate selection now shows the V1-style quote CTA when booking hours are enabled. The live public form collects client name/contact, requested date/time and notes; selected service IDs are verified and repriced server-side before the request is emailed.
 - Schedule choices follow the creator's saved timezone, available days, interval and overnight windows. Profiles without regular booking days can receive flexible requests. Local preview submissions are blocked.

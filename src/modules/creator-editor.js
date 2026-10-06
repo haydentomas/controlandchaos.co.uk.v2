@@ -132,18 +132,27 @@ export async function initCreatorEditor(clientOverride) {
     values.tags = form.elements.tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
     values.is_published = form.elements.is_published.checked;
     let photos;
-    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); values.hardware_compat = hardwareEditor.value(); values.wishlist = wishlistEditor.value(); photos = galleryEditor.value(); }
+    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); values.hardware_compat = hardwareEditor.value(); values.wishlist = wishlistEditor.value(); }
     catch (error) { status.textContent = error.message; return; }
     saving = true;
     fields.disabled = picker.disabled = reload.disabled = true;
-    status.textContent = 'Saving profile...';
+    let uploadBatch;
+    let profileSaved = false;
     try {
+      uploadBatch = await galleryEditor.uploadPending(profile.id, client.storage, message => { status.textContent = message; });
+      photos = galleryEditor.value();
+      status.textContent = 'Saving profile...';
       const updated = await saveCreatorProfile(client, profile.id, values, photos);
+      profileSaved = true;
+      await galleryEditor.commitUploads(client.storage, uploadBatch);
       if (active !== generation) return;
       paint(updated);
-      galleryEditor.load(photos);
+      try { galleryEditor.load(await fetchGalleryPhotos(client, profile.id)); } catch {}
       status.textContent = 'Profile saved.';
-    } catch (error) { if (active === generation) status.textContent = error.message; }
+    } catch (error) {
+      if (!profileSaved && uploadBatch) await galleryEditor.rollbackUploads(client.storage, uploadBatch);
+      if (active === generation) status.textContent = error.message;
+    }
     finally {
       saving = false;
       if (active === generation && profile) fields.disabled = picker.disabled = false;

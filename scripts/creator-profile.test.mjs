@@ -1,3 +1,4 @@
+import { GALLERY_SOURCE_MAX_BYTES, GALLERY_STORED_MAX_BYTES, validateGalleryUpload, optimizeGalleryUpload } from '../src/modules/gallery-image-upload.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHTML } from 'linkedom';
@@ -23,7 +24,39 @@ test('gallery validation accepts metadata and safe image locations but rejects f
   for (const image_url of ['javascript:alert(1)', '//unsafe.test/image.jpg', 'http://unsafe.test/image.jpg', 'https://user:password@unsafe.test/image.jpg', '/\\unsafe.test/image.jpg']) assert.equal(galleryImageUrl(image_url), '');
   assert.throws(() => validateGalleryPhotos([{ ...photos[0], profile_id: profileId }]));
   assert.throws(() => validateGalleryPhotos([photos[0], photos[0]]));
+  assert.throws(() => validateGalleryPhotos([{ ...photos[0], image_url: '', storage_path: `${profileId}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.webp` }]));
 });
+
+  test('gallery upload accepts common photo formats and optimizes them to bounded WebP', async () => {
+    assert.equal(validateGalleryUpload({ type: 'image/jpeg', size: 1000 }), true);
+    assert.equal(validateGalleryUpload({ type: 'image/png', size: 1000 }), true);
+    assert.equal(validateGalleryUpload({ type: 'image/webp', size: 1000 }), true);
+    assert.equal(validateGalleryUpload({ type: 'image/jpeg', size: GALLERY_SOURCE_MAX_BYTES }), true);
+    assert.throws(() => validateGalleryUpload({ type: 'image/svg+xml', size: 1000 }), /JPEG, PNG, or WebP/);
+    assert.throws(() => validateGalleryUpload({ type: 'image/jpeg', size: GALLERY_SOURCE_MAX_BYTES + 1 }), /no larger than 10 MB/);
+    let closed = false;
+    let canvas;
+    const qualities = [];
+    const bitmap = { width: 4000, height: 2000, close() { closed = true; } };
+    const documentImpl = { createElement: () => {
+      canvas = {
+        getContext: () => ({ drawImage() {} }),
+        toBlob(callback, type, quality) {
+          qualities.push(quality);
+          const size = qualities.length === 1 ? GALLERY_STORED_MAX_BYTES + 1 : 1000;
+          callback(new Blob([new Uint8Array(size)], { type }));
+        }
+      };
+      return canvas;
+    } };
+    const createImageBitmapImpl = async () => bitmap;
+    const blob = await optimizeGalleryUpload({ type: 'image/jpeg', size: 1000 }, { createImageBitmapImpl, documentImpl });
+    assert.equal(blob.type, 'image/webp');
+    assert.ok(blob.size <= GALLERY_STORED_MAX_BYTES);
+    assert.deepEqual(qualities, [0.84, 0.76]);
+    assert.equal(closed, true);
+    assert.deepEqual([canvas.width, canvas.height], [2048, 1024]);
+  });
 
 test('booking hours validate timezones, days and intervals, including explicit overnight windows', () => {
   assert.deepEqual(validateBookingHours(hours), hours);
@@ -399,12 +432,13 @@ test('booking editor distinguishes unset schedules and no available days without
 });
 
 test('gallery editor reorders and removes photos while public rendering excludes unpublished URLs', () => {
-  const { document } = parseHTML('<button id="add"></button><fieldset><div id="editor"></div></fieldset><div id="filters"></div><div id="grid"></div>');
+  const { document } = parseHTML('<section id="creator-gallery"><button id="add"></button><p data-gallery-count></p><fieldset><div id="editor"></div></fieldset></section><div id="filters"></div><div id="grid"></div>');
   const previous = globalThis.document;
   globalThis.document = document;
   try {
     const editor = initProfileGalleryEditor(document.getElementById('editor'), document.getElementById('add'));
     editor.load(photos);
+    assert.equal(document.querySelector('[data-gallery-count]').textContent, '2 / 20 photos');
     const sidebarChoice = document.querySelectorAll('[data-gallery-editor-photo] .profile-feature-switch input[type="checkbox"]')[1];
     assert.equal(sidebarChoice.checked, true);
     sidebarChoice.checked = false;
@@ -415,11 +449,58 @@ test('gallery editor reorders and removes photos while public rendering excludes
     assert.equal(editor.value()[1].show_in_sidebar, false);
     document.querySelector('[aria-label="Remove photo"]').click();
     assert.equal(editor.value().length, 1);
+    assert.equal(document.querySelector('[data-gallery-count]').textContent, '1 / 20 photos');
     renderProfileGallery(document.getElementById('grid'), document.getElementById('filters'), [{ ...photos[0], title: '<script>unsafe()</script>' }, photos[1]]);
     assert.equal(document.querySelectorAll('[data-photo]').length, 1);
     assert.equal(document.querySelectorAll('script').length, 0);
     assert.ok(!document.getElementById('grid').innerHTML.includes(photos[1].image_url));
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('gallery editor stages optimized WebP uploads and rolls back failed profile saves', async () => {
+  const { document } = parseHTML('<button id="add"></button><fieldset><div id="editor"></div></fieldset>');
+  const previousDocument = globalThis.document;
+  const previousCreateObjectUrl = URL.createObjectURL;
+  const previousRevokeObjectUrl = URL.revokeObjectURL;
+  globalThis.document = document;
+  let objectNumber = 0;
+  URL.createObjectURL = () => `blob:test-${++objectNumber}`;
+  URL.revokeObjectURL = () => {};
+  const uploaded = [];
+  const removed = [];
+  const optimized = new Blob(['webp'], { type: 'image/webp' });
+  const storage = { from(bucket) {
+    assert.equal(bucket, 'directory-gallery');
+    return {
+      upload: async (path, body, options) => { uploaded.push({ path, body, options }); return { error: null }; },
+      remove: async paths => { removed.push(...paths); return { error: null }; }
+    };
+  } };
+  try {
+    const editor = initProfileGalleryEditor(document.getElementById('editor'), document.getElementById('add'), { optimizeImage: async file => { assert.equal(file.type, 'image/jpeg'); return optimized; } });
+    const original = { ...photos[0], storage_path: `${profileId}/${photos[0].id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, image_url: '' };
+    editor.load([original]);
+    const input = document.querySelector('input[type="file"]');
+    const file = new Blob(['jpeg'], { type: 'image/jpeg' });
+    Object.defineProperty(file, 'name', { value: 'portrait.jpg' });
+    Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+    input.dispatchEvent(new document.defaultView.Event('change'));
+    const batch = await editor.uploadPending(profileId, storage);
+    assert.equal(uploaded.length, 1);
+    assert.match(uploaded[0].path, new RegExp(`^${profileId}/${photos[0].id}/[a-f0-9-]{36}\\.webp$`));
+    assert.equal(uploaded[0].body, optimized);
+    assert.equal(uploaded[0].options.contentType, 'image/webp');
+    assert.equal(editor.value()[0].storage_path, uploaded[0].path);
+    assert.equal(editor.value()[0].image_url, '');
+    await editor.rollbackUploads(storage, batch);
+    assert.deepEqual(removed, [uploaded[0].path]);
+    assert.equal(editor.value()[0].storage_path, original.storage_path);
+    assert.equal(editor.value()[0].image_url, '');
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document; else globalThis.document = previousDocument;
+    URL.createObjectURL = previousCreateObjectUrl;
+    URL.revokeObjectURL = previousRevokeObjectUrl;
+  }
 });
 
 test('profile and gallery save through one atomic RPC and failed responses never report success', async () => {
@@ -443,11 +524,15 @@ test('booking recipient RPC is private and requires an active published booking 
   try {
     await database.exec(`create role anon; create role authenticated; create role service_role bypassrls;
       create schema auth; create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz);
+      create schema storage; create table storage.buckets(id text primary key,name text not null,public boolean not null,file_size_limit bigint,allowed_mime_types text[]);
+      create table storage.objects(bucket_id text not null,name text not null,primary key(bucket_id,name)); alter table storage.objects enable row level security;
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
-      grant usage on schema public,auth to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql']) {
+      grant usage on schema public,auth,storage to anon,authenticated,service_role;
+      grant select,insert,update,delete on storage.objects to anon,authenticated,service_role;`);
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
+    assert.deepEqual((await database.query('select public,file_size_limit,allowed_mime_types from storage.buckets where id=$1', ['directory-gallery'])).rows[0], { public: false, file_size_limit: 2097152, allowed_mime_types: ['image/webp'] });
     await database.query('insert into auth.users(id,email,email_confirmed_at) values ($1,$2,now()),($3,$4,now())', [owner, 'creator@example.test', stranger, 'stranger@example.test']);
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [rates[0].id, owner, 'test.resident']);
     await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'");
@@ -455,18 +540,33 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.query('select set_config(\'request.jwt.claim.sub\',$1,false)', [owner]);
     await database.exec('set role authenticated');
     await database.query('update public.directory_profiles set is_published=true,rate_categories=$1::jsonb,booking_hours=$2::jsonb where id=$3', [JSON.stringify(rates), JSON.stringify(hours), profile]);
-    const sidebarPhotos = [{ ...photos[0], show_in_sidebar: false }, { ...photos[1], show_in_sidebar: true }];
+    const storagePhotos = [
+      { ...photos[0], image_url: '', storage_path: `${profile}/${photos[0].id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, show_in_sidebar: false },
+      { ...photos[1], image_url: '', storage_path: `${profile}/${photos[1].id}/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.webp`, show_in_sidebar: true }
+    ];
+    const canUpload = path => database.query('select cc_private.can_upload_directory_gallery_object($1) as allowed', [path]);
+    assert.equal((await canUpload(storagePhotos[0].storage_path)).rows[0].allowed, true);
+    await database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['directory-gallery', storagePhotos[0].storage_path]);
+    assert.equal((await canUpload(storagePhotos[1].storage_path)).rows[0].allowed, true);
+    await database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['directory-gallery', storagePhotos[1].storage_path]);
+    const twentyFirst = `${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`;
+    for (let index = 0; index < 18; index++) {
+      await database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['directory-gallery', `${profile}/${String(index).padStart(8, '0')}-ffff-4fff-8fff-ffffffffffff/dddddddd-dddd-4ddd-8ddd-dddddddddddd.webp`]);
+    }
+    assert.equal((await canUpload(twentyFirst)).rows[0].allowed, false);
     const toys = [{ name: 'Lovense Gush', desc: 'Remote control', icon: '\u{1F4A0}', badge_text: 'Ready' }];
     const wishlist = [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts' }];
     const collectionChanges = { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist };
-    const saved = (await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, JSON.stringify(collectionChanges), JSON.stringify(sidebarPhotos), 'bookings@example.test'])).rows[0];
+    const saved = (await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, JSON.stringify(collectionChanges), JSON.stringify(storagePhotos), 'bookings@example.test'])).rows[0];
     assert.equal(saved.hardware_title, 'My Toys');
     assert.deepEqual(saved.hardware_compat, toys);
     assert.equal(saved.wishlist_title, 'Wishlist & Tributes');
     assert.deepEqual(saved.wishlist, wishlist);
     const profileCollections = (await database.query('select hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
     assert.deepEqual(profileCollections, { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
-    assert.deepEqual((await database.query('select show_in_sidebar from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, [{ show_in_sidebar: false }, { show_in_sidebar: true }]);
+    assert.deepEqual((await database.query('select show_in_sidebar,storage_path,image_url from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, storagePhotos.map(photo => ({ show_in_sidebar: photo.show_in_sidebar, storage_path: photo.storage_path, image_url: '' })));
+    assert.equal((await canUpload(`${profile}/${photos[0].id}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`)).rows[0].allowed, true);
+    assert.equal((await canUpload(`${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`)).rows[0].allowed, false);
     assert.equal((await database.query('select public.my_directory_booking_contact($1)', [profile])).rows[0].my_directory_booking_contact, 'bookings@example.test');
     await database.exec('reset role; set role service_role');
     for (const invalid of [
@@ -478,14 +578,17 @@ test('booking recipient RPC is private and requires an active published booking 
     const recipient = async () => (await database.query('select * from public.directory_booking_recipient($1)', [profile])).rows;
     assert.deepEqual(await recipient(), [{ recipient_email: 'bookings@example.test', display_name: 'test.resident', sl_username: 'test.resident', rate_categories: rates, booking_hours: hours }]);
     await database.exec('reset role; set role anon');
+    assert.deepEqual((await database.query('select name from storage.objects where bucket_id=$1 order by name', ['directory-gallery'])).rows, [{ name: storagePhotos[0].storage_path }]);
     const publicCollections = (await database.query('select hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
     assert.deepEqual(publicCollections, { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
     assert.equal(Object.hasOwn(publicCollections, 'contact_email'), false);
     await assert.rejects(database.query('select contact_email from cc_private.directory_booking_contacts'), error => error.code === '42501');
+    assert.deepEqual((await database.query('select name from storage.objects where bucket_id=$1 order by name', ['directory-gallery'])).rows, [{ name: storagePhotos[0].storage_path }]);
     await database.exec('reset role; set role authenticated');
     await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
     assert.equal((await database.query('select contact_email from cc_private.directory_booking_contacts')).rows.length, 0);
     assert.equal((await database.query('select public.my_directory_booking_contact($1)', [profile])).rows[0].my_directory_booking_contact, null);
+    await assert.rejects(database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['directory-gallery', `${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`]), error => error.code === '42501');
     await database.exec('reset role; set role service_role');
     await database.query('delete from cc_private.directory_booking_contacts where profile_id=$1', [profile]);
     assert.equal((await recipient())[0].recipient_email, 'creator@example.test');
@@ -499,6 +602,8 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.query('update public.directory_profiles set is_published=true where id=$1', [profile]);
     await database.query("update cc_private.directory_subscriptions set expires_at=now()-interval '1 second' where avatar_uuid=$1", [rates[0].id]);
     assert.deepEqual(await recipient(), []);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select name from storage.objects where bucket_id=$1', ['directory-gallery'])).rows.length, 0);
   } finally { await database.close(); }
 });
 
@@ -558,14 +663,32 @@ test('gallery fetch falls back to legacy columns until sidebar migration is appl
       eq() { return chain; },
       order() { return chain; },
       then(resolve) {
-        if (selected.at(-1).includes('show_in_sidebar')) return resolve({ data: null, error: { message: 'column show_in_sidebar is missing from schema cache' } });
+        const columns = selected.at(-1);
+        if (columns.includes('storage_path')) return resolve({ data: null, error: { message: 'column storage_path is missing from schema cache' } });
+        if (columns.includes('show_in_sidebar')) return resolve({ data: null, error: { message: 'column show_in_sidebar is missing from schema cache' } });
         return resolve({ data: [{ ...photos[0], sort_order: 0 }], error: null });
       }
     };
     return chain;
   } };
   const result = await fetchGalleryPhotos(client, profileId);
-  assert.equal(selected.length, 2);
+  assert.equal(selected.length, 3);
+  assert.equal(selected[2].includes('show_in_sidebar'), false);
   assert.equal(result[0].id, photos[0].id);
   assert.equal(result[0].show_in_sidebar, undefined);
+});
+
+test('storage-backed gallery images use short-lived signed URLs', async () => {
+  const calls = [];
+  const storedPhoto = { ...photos[0], image_url: '', storage_path: `${profileId}/${photos[0].id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, show_in_sidebar: true, sort_order: 0 };
+  const client = {
+    from: () => {
+      const query = { select: () => query, eq: () => query, order: () => query, then: resolve => Promise.resolve({ data: [storedPhoto], error: null }).then(resolve) };
+      return query;
+    },
+    storage: { from: bucket => ({ createSignedUrl: async (path, expires) => { calls.push({ bucket, path, expires }); return { data: { signedUrl: 'https://signed.example/photo.webp' }, error: null }; } }) }
+  };
+  const [photo] = await fetchGalleryPhotos(client, profileId, { publishedOnly: true });
+  assert.equal(photo.image_url, 'https://signed.example/photo.webp');
+  assert.deepEqual(calls, [{ bucket: 'directory-gallery', path: storedPhoto.storage_path, expires: 3600 }]);
 });

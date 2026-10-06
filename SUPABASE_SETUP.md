@@ -151,6 +151,12 @@ User: create the development project, retain credentials privately, enter reques
 
 Assistant: prepare versioned SQL migrations and permission tests, public-directory queries and pagination, safe frontend configuration, real creator sessions and verified avatar ownership. Give one dashboard/setup step at a time.
 
+### Gallery photo uploads (migration 12; local code only)
+
+For an approved upload test, run [202610060012_directory_gallery_storage.sql](supabase/migrations/202610060012_directory_gallery_storage.sql) after migration 11, then run [verify-directory-gallery-storage.sql](supabase/verify-directory-gallery-storage.sql). The migration creates a private `directory-gallery` bucket capped at 2 MB per WebP, adds a 20-photo-per-profile cap, and adds owner/published-photo Storage policies. The browser accepts JPEG, PNG or WebP up to 10 MB, resizes to a 2048 px long edge, re-encodes to WebP under 2 MB, and uploads directly to Supabase Storage; Netlify does not receive image bytes. Drafts use authenticated owner access; public display uses short-lived signed URLs for published photos only. Originals are not stored.
+
+Migration 12 is not applied remotely. Free-plan limits are adequate for development and a small Alt test; check Storage/egress usage and spend caps before opening uploads to the wider public.
+
 ## Gates Before Real Directory Editing
 
 - Design private account/ownership data separately from the public directory projection.
