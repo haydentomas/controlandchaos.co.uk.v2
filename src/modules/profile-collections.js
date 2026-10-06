@@ -45,6 +45,7 @@ export function validateWishlistItems(items) {
 
 export function initProfileCollectionEditor(container, addButton, { kind, fields, validate, createItem, limit }) {
   let items = [];
+  let expandedItem = null;
   const element = (tag, className = '') => {
     const node = document.createElement(tag);
     node.className = className;
@@ -62,7 +63,11 @@ export function initProfileCollectionEditor(container, addButton, { kind, fields
     });
     return control;
   };
-  const focusItem = index => container.querySelector(`[data-collection-item="${kind}-${index}"] input`)?.focus();
+  const focusItem = index => {
+    const item = items[index];
+    const row = container.querySelector(`[data-collection-item="${kind}-${index}"]`);
+    row?.querySelector(item === expandedItem ? 'input' : '[data-collection-toggle]')?.focus();
+  };
   const paint = () => {
     container.replaceChildren();
     addButton.disabled = items.length >= limit;
@@ -72,11 +77,41 @@ export function initProfileCollectionEditor(container, addButton, { kind, fields
       container.append(empty);
     }
     items.forEach((item, index) => {
+      const expanded = item === expandedItem;
       const card = element('section', 'profile-collection-editor-item');
       card.dataset.collectionItem = `${kind}-${index}`;
+      const details = element('div', 'profile-collection-details');
+      details.id = `${kind}-${index}-details`;
+      details.hidden = !expanded;
+      const summaryButton = element('button', 'profile-collection-toggle');
+      summaryButton.type = 'button';
+      summaryButton.id = `${kind}-${index}-toggle`;
+      summaryButton.dataset.collectionToggle = '';
+      summaryButton.setAttribute('aria-expanded', String(expanded));
+      summaryButton.setAttribute('aria-controls', details.id);
+      const summaryCopy = element('span', 'profile-collection-summary-copy');
+      const summaryTitle = element('span', 'profile-collection-summary-title');
+      const summaryMeta = element('span', 'profile-collection-summary-meta');
+      summaryCopy.append(summaryTitle, summaryMeta);
+      const summaryAction = element('span', 'profile-collection-summary-action');
+      summaryAction.textContent = expanded ? 'Close' : 'Edit';
+      summaryButton.append(summaryCopy, summaryAction);
+      const updateSummary = () => {
+        const title = kind === 'toys' ? item.name : item.title;
+        summaryTitle.textContent = title || `Untitled ${kind === 'toys' ? 'item' : 'wishlist link'} ${index + 1}`;
+        const meta = kind === 'toys'
+          ? [item.badge_text, item.desc].filter(Boolean)
+          : [item.url ? 'Link added' : '', item.note].filter(Boolean);
+        summaryMeta.textContent = meta.join(' | ') || (kind === 'toys' ? 'Toy / feature' : 'No link or note');
+        summaryButton.setAttribute('aria-label', `${expanded ? 'Close' : 'Edit'} ${kind === 'toys' ? 'item' : 'wishlist link'} ${index + 1}: ${title || 'Untitled'}`);
+      };
+      updateSummary();
+      summaryButton.addEventListener('click', () => {
+        expandedItem = expanded ? null : item;
+        paint();
+        container.querySelector(`[data-collection-item="${kind}-${index}"] [data-collection-toggle]`)?.focus();
+      });
       const toolbar = element('div', 'creator-editor-toolbar');
-      const heading = element('h3', 'account-subheading');
-      heading.textContent = `${kind === 'toys' ? 'Item' : 'Wishlist'} ${index + 1}`;
       const move = offset => {
         const target = index + offset;
         if (target < 0 || target >= items.length) return;
@@ -85,11 +120,13 @@ export function initProfileCollectionEditor(container, addButton, { kind, fields
         paint();
         focusItem(target);
       };
-      toolbar.append(heading,
+      toolbar.append(
         button('\u2191', `Move ${kind === 'toys' ? 'item' : 'wishlist'} up`, () => move(-1), index === 0),
         button('\u2193', `Move ${kind === 'toys' ? 'item' : 'wishlist'} down`, () => move(1), index === items.length - 1),
-        button(`Remove ${kind === 'toys' ? 'item' : 'wishlist'}`, `Remove ${kind === 'toys' ? 'item' : 'wishlist'}`, () => { items.splice(index, 1); paint(); }));
-      card.append(toolbar);
+        button(`Remove ${kind === 'toys' ? 'item' : 'wishlist'}`, `Remove ${kind === 'toys' ? 'item' : 'wishlist'}`, () => { if (expandedItem === item) expandedItem = null; items.splice(index, 1); paint(); }));
+      const header = element('div', 'profile-collection-header');
+      header.append(summaryButton, toolbar);
+      card.append(header, details);
       const grid = element('div', 'form-grid-2');
       for (const [name, labelText, maximum, type] of fields) {
         const group = element('div');
@@ -99,28 +136,30 @@ export function initProfileCollectionEditor(container, addButton, { kind, fields
         input.name = `${kind}[${index}][${name}]`;
         input.value = item[name] || '';
         input.maxLength = maximum;
-        input.required = name === 'name' || name === 'title';
+        input.required = expanded && (name === 'name' || name === 'title');
         if (type === 'textarea') input.rows = 2;
         else input.type = type || 'text';
         label.htmlFor = input.id;
         label.textContent = labelText;
-        input.addEventListener('input', () => { item[name] = input.value; });
+        input.addEventListener('input', () => { item[name] = input.value; updateSummary(); });
         group.append(label, input);
         grid.append(group);
       }
-      card.append(grid);
+      details.append(grid);
       container.append(card);
     });
   };
   addButton.addEventListener('click', () => {
     if (container.closest('fieldset')?.disabled || items.length >= limit) return;
-    items.push(createItem());
+    const item = createItem();
+    items.push(item);
+    expandedItem = item;
     paint();
     focusItem(items.length - 1);
   });
   return {
-    load(value) { items = validate(value ?? []); paint(); },
-    clear() { items = []; paint(); },
+    load(value) { items = validate(value ?? []); expandedItem = null; paint(); },
+    clear() { items = []; expandedItem = null; paint(); },
     value() { return validate(items); }
   };
 }
