@@ -1,12 +1,13 @@
 import { validateRateCategories } from './rate-cards.js';
 import { validateBookingHours } from './booking-hours.js';
-import { validateGalleryPhotos } from './profile-gallery.js';
+import { fetchGalleryPhotos, validateGalleryPhotos } from './profile-gallery.js';
+import { validateHardwareItems, validateWishlistItems } from './profile-collections.js';
 
-export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours,boundaries,booking_instructions';
+export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours,boundaries,booking_instructions,hardware_title,hardware_compat,wishlist_title,wishlist';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const limits = { display_name: 100, headline: 160, tagline: 1000, about: 20000, starting_rate: 100 };
 const optionalTextLimits = { availability_note: 500, boundaries: 4000, booking_instructions: 4000 };
-const editable = new Set([...Object.keys(limits), ...Object.keys(optionalTextLimits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published', 'rate_categories', 'booking_hours']);
+const editable = new Set([...Object.keys(limits), ...Object.keys(optionalTextLimits), 'role_type', 'avatar_image', 'banner_image', 'availability', 'tags', 'is_published', 'rate_categories', 'booking_hours', 'booking_email', 'hardware_title', 'hardware_compat', 'wishlist_title', 'wishlist']);
 
 export async function myDirectorySubscriptions(client) {
   const { data, error } = await client.rpc('my_directory_subscriptions');
@@ -31,10 +32,21 @@ export function profileChanges(values) {
   if (!Array.isArray(values.tags) || values.tags.length > 20 || values.tags.some(tag => typeof tag !== 'string' || !tag.trim()) || new TextEncoder().encode(values.tags.join('|')).length > 2000) throw new Error('Use up to 20 non-empty tags.');
   if (values.rate_categories !== undefined) changes.rate_categories = validateRateCategories(values.rate_categories);
   if (values.booking_hours !== undefined) changes.booking_hours = validateBookingHours(values.booking_hours);
+  if (values.hardware_compat !== undefined) changes.hardware_compat = validateHardwareItems(values.hardware_compat);
+  if (values.wishlist !== undefined) changes.wishlist = validateWishlistItems(values.wishlist);
+  for (const name of ['hardware_title', 'wishlist_title']) {
+    if (values[name] === undefined) continue;
+    if (typeof values[name] !== 'string' || values[name].length > 100) throw new Error(`${name.replaceAll('_', ' ')} must be at most 100 characters.`);
+    changes[name] = values[name].trim();
+  }
   for (const [name, maximum] of Object.entries(optionalTextLimits)) {
     if (values[name] === undefined) continue;
     if (typeof values[name] !== 'string' || values[name].length > maximum) throw new Error(`${name.replaceAll('_', ' ')} must be at most ${maximum} characters.`);
     changes[name] = values[name].trim();
+  }
+  if (values.booking_email !== undefined) {
+    if (typeof values.booking_email !== 'string' || values.booking_email.length > 254 || (values.booking_email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.booking_email.trim()))) throw new Error('Enter a valid booking contact email.');
+    changes.booking_email = values.booking_email.trim();
   }
   return { ...changes, role_type: values.role_type, availability: values.availability, is_published: values.is_published, tags: [...new Set(values.tags.map(tag => tag.trim()))] };
 }
@@ -49,17 +61,22 @@ export async function loadCreatorProfile(client, profileId) {
   await requireOwnedSubscription(client, profileId);
   const { data, error } = await client.from('directory_profiles').select(CREATOR_PROFILE_COLUMNS).eq('id', profileId).maybeSingle();
   if (error || !data) throw new Error('Profile unavailable or access has expired.');
-  return data;
+  const { data: bookingEmail, error: contactError } = await client.rpc('my_directory_booking_contact', { target_profile: profileId });
+  if (contactError) throw new Error('Profile booking contact is unavailable.');
+  return { ...data, booking_email: bookingEmail || '' };
 }
 
 export async function saveCreatorProfile(client, profileId, values, photos) {
   const changes = profileChanges(values);
-  const gallery = photos === undefined ? undefined : validateGalleryPhotos(photos);
+  const bookingEmail = changes.booking_email;
+  delete changes.booking_email;
+  let gallery = photos === undefined ? undefined : validateGalleryPhotos(photos);
   await requireOwnedSubscription(client, profileId);
+  if (bookingEmail !== undefined && gallery === undefined) gallery = await fetchGalleryPhotos(client, profileId);
   if (gallery !== undefined) {
-    const { data, error } = await client.rpc('save_directory_profile_media', { target_profile: profileId, profile_changes: changes, photos: gallery }).maybeSingle();
+    const { data, error } = await client.rpc('save_directory_profile_booking', { target_profile: profileId, profile_changes: changes, photos: gallery, contact_email: bookingEmail ?? '' }).maybeSingle();
     if (error || !data) throw new Error('Profile and gallery were not saved. Check subscription access and field values.');
-    return data;
+    return { ...data, ...(bookingEmail === undefined ? {} : { booking_email: bookingEmail }) };
   }
   const { data, error } = await client.from('directory_profiles').update(changes).eq('id', profileId).select(CREATOR_PROFILE_COLUMNS).maybeSingle();
   if (error || !data) throw new Error('Profile was not saved. Check your subscription and field values.');

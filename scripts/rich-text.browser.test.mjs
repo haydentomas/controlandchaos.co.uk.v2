@@ -27,7 +27,8 @@ test('standard editor links, modes and all profile fields persist through save/r
         starting_rate: 'L$100', availability: 'available', availability_note: 'Available today', tags: ['Example'],
         is_published: true, is_approved: true, boundaries: 'Respect limits.\n\n- Ask first\n- Confirm',
         booking_instructions: 'Contact me.\n\n1. Send a message\n2. Agree a time',
-        rate_categories: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Consultations', description: '**Category** description', items: [{ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Introduction', price: 'L$100', unit: '30 minutes', description: '- Detail one\n- Detail two' }] }],
+        rate_categories: [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Consultations', description: '**Category** description', items: [{ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Introduction', price: 'L$7,500+', unit: '30 minutes', description: '- Detail one\n- Detail two' }] }],
+        booking_email: 'bookings@example.test',
         booking_hours: { timezone: 'Europe/London', days: ['sat'], start_time: '18:00', end_time: '22:00', slot_minutes: 60, notes: '**Advance notice**\n\nContact first.' }
       },
       photos: [{ id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', title: 'Portrait', category: 'Portraits', description: '**Photo** description\n\n- Detail', image_url: '/images/shop-banner.png', is_published: true }]
@@ -41,10 +42,12 @@ test('standard editor links, modes and all profile fields persist through save/r
           auth: { getUser: async () => ({ data: { user: { id: 'fake-owner' } } }), onAuthStateChange: callback => { window.notifyAuth = callback; return { data: { subscription: { unsubscribe() {} } } }; } },
           rpc(name, args) {
             if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: window.fixture.row.id, avatar_uuid: window.fixture.row.id, plan_code: 'basic_lifetime', is_active: true, is_lifetime: true }] });
-            if (name !== 'save_directory_profile_media') throw new Error(`Unexpected RPC ${name}`);
+            if (name === 'my_directory_booking_contact') return Promise.resolve({ data: window.fixture.row.booking_email || '', error: null });
+            if (name !== 'save_directory_profile_booking') throw new Error(`Unexpected RPC ${name}`);
             return { maybeSingle: async () => {
               window.saves.push(structuredClone(args));
               Object.assign(window.fixture.row, args.profile_changes);
+              window.fixture.row.booking_email = args.contact_email;
               window.fixture.photos = args.photos;
               return { data: structuredClone(window.fixture.row) };
             } };
@@ -159,6 +162,7 @@ test('standard editor links, modes and all profile fields persist through save/r
     assert.deepEqual(saved.args.profile_changes.rate_categories, fixture.row.rate_categories);
     assert.deepEqual(saved.args.profile_changes.booking_hours, fixture.row.booking_hours);
     assert.equal(saved.args.profile_changes.headline, fixture.row.headline);
+    assert.equal(saved.args.contact_email, 'bookings@example.test');
     await mountEditor(saved.fixture);
     assert.match(await page.locator('#creator-about').inputValue(), /https:\/\/example.com\/about/);
     assert.match(await page.locator('#creator-booking-instructions').inputValue(), /https:\/\/example.com\/book/);
@@ -208,6 +212,22 @@ test('standard editor links, modes and all profile fields persist through save/r
     assert.equal(await page.locator('.public-rate-category > .rich-text-content strong').textContent(), 'Category');
     assert.equal(await page.locator('.public-rate-item li').count(), 2);
     assert.equal(await page.locator('[data-public-profile-hours] a').getAttribute('href'), 'https://example.com/notice');
+    await page.locator('.service-select-toggle').click();
+    assert.equal(await page.locator('[name="selected_services"]').inputValue(), '["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"]');
+    const expectedBookingMessage = [
+      'Hello Sample Creator,',
+      '',
+      'I would like to request a booking/session for the following services:',
+      '  \u2022 Introduction (Consultations \u2014 L7,500)',
+      '',
+      'Estimated Total: L7,500 (~30)',
+      '',
+      'Session Preferences & Notes:',
+      '[Please specify your scenario, preferences, or timing details here]'
+    ].join('\n');
+    assert.equal(await page.locator('[name="message"]').inputValue(), expectedBookingMessage);
+    await page.locator('.service-select-toggle').click();
+    assert.equal(await page.locator('[name="message"]').inputValue(), '');
     await page.locator('[data-public-gallery-preview] [data-photo]').click();
     assert.equal(await page.locator('#lightbox-description li').count(), 1);
     await page.keyboard.press('Escape');

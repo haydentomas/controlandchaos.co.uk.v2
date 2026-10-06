@@ -6,10 +6,11 @@ import { PGlite } from '@electric-sql/pglite';
 import { validateRateCategories, renderPublicRateCards } from '../src/modules/rate-cards.js';
 import { initRateCardEditor } from '../src/modules/rate-card-editor.js';
 import { validateBookingHours, bookingLocalTime, renderBookingHours, initBookingHoursEditor } from '../src/modules/booking-hours.js';
-import { validateGalleryPhotos, galleryImageUrl, renderProfileGallery } from '../src/modules/profile-gallery.js';
+import { validateGalleryPhotos, galleryImageUrl, fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from '../src/modules/profile-gallery.js';
 import { initProfileGalleryEditor } from '../src/modules/profile-gallery-editor.js';
+import { validateHardwareItems, validateWishlistItems, renderHardwareItems, renderWishlistItems, initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, createHardwareItem, createWishlistItem } from '../src/modules/profile-collections.js';
 import { initAccountDirectory } from '../src/modules/account-directory.js';
-import { myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
+import { CREATOR_PROFILE_COLUMNS, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
 
 const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
@@ -43,7 +44,9 @@ test('booking timezone rules handle DST and public notes render as text rather t
   globalThis.document = document;
   try {
     renderBookingHours(document.getElementById('hours'), { ...hours, end_time: '02:00', notes: '<script>unsafe()</script>' });
-    assert.match(document.getElementById('hours').textContent, /following day/);
+    assert.match(document.querySelector('.public-booking-hours-time').textContent, /next day/);
+    assert.deepEqual([...document.querySelectorAll('.public-booking-hours-days li')].map(day => day.textContent), ['Saturday', 'Sunday']);
+    assert.match(document.querySelector('.public-booking-hours-interval').textContent, /60 minutes/);
     assert.equal(document.querySelectorAll('script').length, 0);
     renderBookingHours(document.getElementById('hours'), null);
     assert.equal(document.getElementById('hours').children.length, 0);
@@ -60,13 +63,34 @@ test('rate cards preserve order and flexible prices while rejecting malformed or
 });
 
 test('public rate cards render untrusted content as text and omit empty categories', () => {
-  const { document } = parseHTML('<div id="rates"></div>');
+  const { document, window } = parseHTML('<div id="rates"></div>');
   const previous = globalThis.document;
   globalThis.document = document;
+  let selectedServices = [];
   try {
-    renderPublicRateCards(document.getElementById('rates'), [{ ...rates[0], title: '<img src=x onerror=alert(1)>', items: [{ ...rates[0].items[0], description: '<script>unsafe()</script>' }] }]);
+    renderPublicRateCards(document.getElementById('rates'), [{ ...rates[0], title: '<img src=x onerror=alert(1)>', items: [{ ...rates[0].items[0], description: '<script>unsafe()</script>\n\n[Details](https://example.test)' }] }], { bookingEnabled: true, onSelectionChange: services => { selectedServices = services; } });
     assert.equal(document.querySelectorAll('img,script').length, 0);
     assert.match(document.getElementById('rates').textContent, /<script>/);
+    const service = document.querySelector('.service-select-toggle');
+    const copy = document.querySelector('.service-select-copy');
+    const details = document.querySelector('.service-select-details');
+    assert.ok(service);
+    assert.ok(copy.contains(service));
+    assert.ok(copy.contains(details));
+    assert.equal(service.contains(details), false);
+    assert.equal(service.getAttribute('aria-pressed'), 'false');
+    document.querySelector('.service-select-details a').dispatchEvent(new window.Event('click', { bubbles: true }));
+    assert.equal(service.getAttribute('aria-pressed'), 'false');
+    service.click();
+    assert.equal(service.getAttribute('aria-pressed'), 'true');
+    assert.equal(document.querySelector('.public-profile-rate-quote-total').textContent, 'L1,000');
+    assert.equal(document.querySelector('.public-profile-rate-quote-count').textContent, '(1 selected)');
+    assert.deepEqual(selectedServices, [{ id: rates[0].items[0].id, name: rates[0].items[0].name, category: '<img src=x onerror=alert(1)>', amount: 1000 }]);
+    assert.equal(document.querySelector('.public-profile-rate-quote-action').getAttribute('href'), '#booking-enquiry-section');
+    assert.equal(document.querySelector('.public-profile-rate-quote').hidden, false);
+    service.click();
+    assert.equal(service.getAttribute('aria-pressed'), 'false');
+    assert.equal(document.querySelector('.public-profile-rate-quote').hidden, true);
     renderPublicRateCards(document.getElementById('rates'), [{ ...rates[0], items: [] }]);
     assert.equal(document.getElementById('rates').children.length, 0);
   } finally {
@@ -144,6 +168,13 @@ test('creator profile updates allow content only, never ownership, approval or s
   assert.throws(() => profileChanges({ ...values, avatar_image: 'javascript:alert(1)' }), /image URL/);
   assert.throws(() => profileChanges({ ...values, tags: Array(21).fill('tag') }), /20/);
   assert.throws(() => profileChanges({ ...values, display_name: ' ' }), /display name/);
+  assert.equal(profileChanges({ ...values, booking_email: '  bookings@example.test ' }).booking_email, 'bookings@example.test');
+  for (const booking_email of ['not-an-email', 'x'.repeat(255) + '@example.test', null, 123]) assert.throws(() => profileChanges({ ...values, booking_email }), /booking contact email/);
+  const toys = [{ name: 'Lovense Gush', desc: 'Remote control', icon: '\u{1F4A0}', badge_text: 'Ready' }];
+  const wishlist = [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts' }];
+  assert.deepEqual(profileChanges({ ...values, hardware_title: ' My Toys ', hardware_compat: toys, wishlist_title: ' Wishlist ', wishlist }).hardware_compat, toys);
+  assert.throws(() => profileChanges({ ...values, hardware_compat: [{ name: 'Gush', extra: 'not allowed' }] }), /Invalid/);
+  assert.throws(() => profileChanges({ ...values, wishlist: [{ ...wishlist[0], url: 'javascript:alert(1)' }] }), /safe HTTPS/);
 });
 
 test('profile protocol validates exact text limits, trims values and preserves omitted fields', () => {
@@ -264,28 +295,33 @@ test('owner API selects protocol fields and saves them with existing gallery, ra
   let selected;
   let saved;
   let failed = false;
-  const updated = { id: profileId, ...values, boundaries: 'Respect limits.', booking_instructions: 'Contact me.', rate_categories: rates, booking_hours: hours };
+  const updated = { id: profileId, ...values, boundaries: 'Respect limits.', booking_instructions: 'Contact me.', rate_categories: rates, booking_hours: hours, booking_email: 'bookings@example.test' };
   const client = {
-    from: () => {
-      const chain = { select: columns => { selected = columns; return chain; }, eq: () => chain, maybeSingle: async () => ({ data: updated }) };
+    from: name => {
+      assert.equal(name, 'directory_profiles');
+      const chain = { select: columns => { selected = { name, columns }; return chain; }, eq: () => chain, maybeSingle: async () => ({ data: updated }) };
       return chain;
     },
     rpc: (name, args) => {
       if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: profileId, is_active: true }] });
-      assert.equal(name, 'save_directory_profile_media');
+      if (name === 'my_directory_booking_contact') return Promise.resolve({ data: updated.booking_email, error: null });
+      assert.equal(name, 'save_directory_profile_booking');
       saved = args;
       return { maybeSingle: async () => failed ? { error: { message: 'private' } } : { data: updated } };
     }
   };
   assert.equal((await loadCreatorProfile(client, profileId)).boundaries, updated.boundaries);
-  assert.match(selected, /boundaries,booking_instructions/);
-  const input = { ...values, boundaries: ' Respect limits. ', booking_instructions: ' Contact me. ', rate_categories: rates, booking_hours: hours };
+  assert.equal((await loadCreatorProfile(client, profileId)).booking_email, updated.booking_email);
+  assert.deepEqual(selected, { name: 'directory_profiles', columns: CREATOR_PROFILE_COLUMNS });
+  const input = { ...values, boundaries: ' Respect limits. ', booking_instructions: ' Contact me. ', booking_email: ' bookings@example.test ', rate_categories: rates, booking_hours: hours };
   assert.deepEqual(await saveCreatorProfile(client, profileId, input, photos), updated);
   assert.equal(saved.target_profile, profileId);
   assert.equal(saved.profile_changes.boundaries, updated.boundaries);
   assert.equal(saved.profile_changes.booking_instructions, updated.booking_instructions);
   assert.deepEqual(saved.profile_changes.rate_categories, rates);
   assert.deepEqual(saved.profile_changes.booking_hours, hours);
+  assert.equal(saved.profile_changes.booking_email, undefined);
+  assert.equal(saved.contact_email, updated.booking_email);
   assert.deepEqual(saved.photos, photos);
   failed = true;
   await assert.rejects(saveCreatorProfile(client, profileId, input, photos), /not saved/);
@@ -369,8 +405,14 @@ test('gallery editor reorders and removes photos while public rendering excludes
   try {
     const editor = initProfileGalleryEditor(document.getElementById('editor'), document.getElementById('add'));
     editor.load(photos);
+    const sidebarChoice = document.querySelectorAll('[data-gallery-editor-photo] .profile-feature-switch input[type="checkbox"]')[1];
+    assert.equal(sidebarChoice.checked, true);
+    sidebarChoice.checked = false;
+    sidebarChoice.dispatchEvent(new document.defaultView.Event('change'));
+    assert.equal(editor.value()[0].show_in_sidebar, false);
     document.querySelector('[aria-label="Move photo down"]').click();
     assert.equal(editor.value()[1].id, photos[0].id);
+    assert.equal(editor.value()[1].show_in_sidebar, false);
     document.querySelector('[aria-label="Remove photo"]').click();
     assert.equal(editor.value().length, 1);
     renderProfileGallery(document.getElementById('grid'), document.getElementById('filters'), [{ ...photos[0], title: '<script>unsafe()</script>' }, photos[1]]);
@@ -389,7 +431,141 @@ test('profile and gallery save through one atomic RPC and failed responses never
     return { maybeSingle: async () => failed ? { error: { message: 'private error' } } : { data: { id: profileId, ...values } } };
   } };
   assert.equal((await saveCreatorProfile(client, profileId, values, photos)).id, profileId);
-  assert.deepEqual(request, { name: 'save_directory_profile_media', args: { target_profile: profileId, profile_changes: values, photos } });
+  assert.deepEqual(request, { name: 'save_directory_profile_booking', args: { target_profile: profileId, profile_changes: values, photos, contact_email: '' } });
   failed = true;
   await assert.rejects(saveCreatorProfile(client, profileId, values, photos), error => /not saved/.test(error.message) && !error.message.includes('private error'));
+});
+
+test('booking recipient RPC is private and requires an active published booking profile', async () => {
+  const database = new PGlite();
+  const owner = '11111111-1111-4111-8111-111111111111';
+  const stranger = '22222222-2222-4222-8222-222222222222';
+  try {
+    await database.exec(`create role anon; create role authenticated; create role service_role bypassrls;
+      create schema auth; create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz);
+      create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      grant usage on schema public,auth to anon,authenticated,service_role;`);
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql']) {
+      await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
+    }
+    await database.query('insert into auth.users(id,email,email_confirmed_at) values ($1,$2,now()),($3,$4,now())', [owner, 'creator@example.test', stranger, 'stranger@example.test']);
+    await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [rates[0].id, owner, 'test.resident']);
+    await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'");
+    const profile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', [profileId, rates[0].id, 'basic_monthly', 100])).rows[0].id;
+    await database.query('select set_config(\'request.jwt.claim.sub\',$1,false)', [owner]);
+    await database.exec('set role authenticated');
+    await database.query('update public.directory_profiles set is_published=true,rate_categories=$1::jsonb,booking_hours=$2::jsonb where id=$3', [JSON.stringify(rates), JSON.stringify(hours), profile]);
+    const sidebarPhotos = [{ ...photos[0], show_in_sidebar: false }, { ...photos[1], show_in_sidebar: true }];
+    const toys = [{ name: 'Lovense Gush', desc: 'Remote control', icon: '\u{1F4A0}', badge_text: 'Ready' }];
+    const wishlist = [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts' }];
+    const collectionChanges = { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist };
+    const saved = (await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, JSON.stringify(collectionChanges), JSON.stringify(sidebarPhotos), 'bookings@example.test'])).rows[0];
+    assert.equal(saved.hardware_title, 'My Toys');
+    assert.deepEqual(saved.hardware_compat, toys);
+    assert.equal(saved.wishlist_title, 'Wishlist & Tributes');
+    assert.deepEqual(saved.wishlist, wishlist);
+    const profileCollections = (await database.query('select hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
+    assert.deepEqual(profileCollections, { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
+    assert.deepEqual((await database.query('select show_in_sidebar from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, [{ show_in_sidebar: false }, { show_in_sidebar: true }]);
+    assert.equal((await database.query('select public.my_directory_booking_contact($1)', [profile])).rows[0].my_directory_booking_contact, 'bookings@example.test');
+    await database.exec('reset role; set role service_role');
+    for (const invalid of [
+      { column: 'hardware_compat', value: [{ name: 'Gush', extra: true }] },
+      { column: 'wishlist', value: [{ title: 'Unsafe', url: 'javascript:alert(1)' }] }
+    ]) {
+      await assert.rejects(database.query(`update public.directory_profiles set ${invalid.column}=$1::jsonb where id=$2`, [JSON.stringify(invalid.value), profile]), error => error.code === '23514');
+    }
+    const recipient = async () => (await database.query('select * from public.directory_booking_recipient($1)', [profile])).rows;
+    assert.deepEqual(await recipient(), [{ recipient_email: 'bookings@example.test', display_name: 'test.resident', sl_username: 'test.resident', rate_categories: rates, booking_hours: hours }]);
+    await database.exec('reset role; set role anon');
+    const publicCollections = (await database.query('select hardware_title,hardware_compat,wishlist_title,wishlist from public.directory_profiles where id=$1', [profile])).rows[0];
+    assert.deepEqual(publicCollections, { hardware_title: 'My Toys', hardware_compat: toys, wishlist_title: 'Wishlist & Tributes', wishlist });
+    assert.equal(Object.hasOwn(publicCollections, 'contact_email'), false);
+    await assert.rejects(database.query('select contact_email from cc_private.directory_booking_contacts'), error => error.code === '42501');
+    await database.exec('reset role; set role authenticated');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    assert.equal((await database.query('select contact_email from cc_private.directory_booking_contacts')).rows.length, 0);
+    assert.equal((await database.query('select public.my_directory_booking_contact($1)', [profile])).rows[0].my_directory_booking_contact, null);
+    await database.exec('reset role; set role service_role');
+    await database.query('delete from cc_private.directory_booking_contacts where profile_id=$1', [profile]);
+    assert.equal((await recipient())[0].recipient_email, 'creator@example.test');
+    await database.exec('reset role; set role anon');
+    await assert.rejects(recipient(), error => error.code === '42501');
+    await database.exec('reset role; set role service_role');
+    await database.query('update public.directory_profiles set booking_hours=null where id=$1', [profile]);
+    assert.deepEqual(await recipient(), []);
+    await database.query('update public.directory_profiles set booking_hours=$1::jsonb,is_published=false where id=$2', [JSON.stringify(hours), profile]);
+    assert.deepEqual(await recipient(), []);
+    await database.query('update public.directory_profiles set is_published=true where id=$1', [profile]);
+    await database.query("update cc_private.directory_subscriptions set expires_at=now()-interval '1 second' where avatar_uuid=$1", [rates[0].id]);
+    assert.deepEqual(await recipient(), []);
+  } finally { await database.close(); }
+});
+
+test('sidebar gallery preview respects owner choices without changing full-gallery publication', () => {
+  const { document } = parseHTML('<div id="filters"></div><div id="gallery"></div><div id="preview"></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    const choices = [
+      { ...photos[0], show_in_sidebar: true },
+      { ...photos[0], id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', title: 'Not in sidebar', show_in_sidebar: false },
+      { ...photos[1], id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddf', title: 'Unpublished', is_published: false, show_in_sidebar: true }
+    ];
+    renderProfileGallery(document.getElementById('gallery'), document.getElementById('filters'), choices);
+    renderGalleryPreview(document.getElementById('preview'), choices);
+    assert.equal(document.querySelectorAll('#gallery [data-photo]').length, 2);
+    assert.equal(document.querySelectorAll('#preview [data-photo]').length, 1);
+    assert.equal(document.querySelector('#preview [data-photo]').dataset.photoTitle, photos[0].title);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('toy and wishlist repeaters validate fields, safe links and reorderable editor values', () => {
+  const hardware = [{ name: 'Lovense Gush', desc: 'Remote control', icon: '\u{1F4A0}', badge_text: 'Ready' }];
+  const wishlist = [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts and furnishings' }];
+  assert.deepEqual(validateHardwareItems(hardware), hardware);
+  assert.deepEqual(validateWishlistItems(wishlist), wishlist);
+  for (const url of ['javascript:alert(1)', 'http://example.test', '//example.test', 'https://user:pass@example.test']) assert.throws(() => validateWishlistItems([{ ...wishlist[0], url }]), /safe HTTPS/);
+  assert.throws(() => validateHardwareItems([{ name: ' ' }]), /Check repeater/);
+
+  const { document } = parseHTML('<button id="add-toy"></button><button id="add-wishlist"></button><fieldset><div id="toys"></div><div id="wishlist"></div></fieldset><div id="public-toys"></div><div id="public-wishlist"></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    const toys = initProfileCollectionEditor(document.getElementById('toys'), document.getElementById('add-toy'), { kind: 'toys', fields: HARDWARE_FIELDS, validate: validateHardwareItems, createItem: createHardwareItem, limit: 30 });
+    const gifts = initProfileCollectionEditor(document.getElementById('wishlist'), document.getElementById('add-wishlist'), { kind: 'wishlist', fields: WISHLIST_FIELDS, validate: validateWishlistItems, createItem: createWishlistItem, limit: 20 });
+    toys.load([{ ...hardware[0] }, { name: 'RLV', desc: '', icon: '\u{1F512}', badge_text: 'Ready' }]);
+    document.querySelector('[aria-label="Move item down"]').click();
+    assert.deepEqual(toys.value().map(item => item.name), ['RLV', 'Lovense Gush']);
+    document.querySelector('[aria-label="Remove item"]').click();
+    assert.deepEqual(toys.value().map(item => item.name), ['Lovense Gush']);
+    gifts.load(wishlist);
+    renderHardwareItems(document.getElementById('public-toys'), [{ ...hardware[0], name: '<script>unsafe()</script>' }]);
+    renderWishlistItems(document.getElementById('public-wishlist'), wishlist);
+    assert.equal(document.querySelector('#public-toys script'), null);
+    assert.match(document.getElementById('public-toys').textContent, /<script>unsafe\(\)<\/script>/);
+    assert.equal(document.querySelector('#public-wishlist a').getAttribute('href'), wishlist[0].url);
+    assert.equal(document.querySelector('#public-wishlist a').getAttribute('rel'), 'noopener noreferrer nofollow');
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('gallery fetch falls back to legacy columns until sidebar migration is applied', async () => {
+  const selected = [];
+  const client = { from: table => {
+    assert.equal(table, 'directory_gallery_photos');
+    const chain = {
+      select(columns) { selected.push(columns); return chain; },
+      eq() { return chain; },
+      order() { return chain; },
+      then(resolve) {
+        if (selected.at(-1).includes('show_in_sidebar')) return resolve({ data: null, error: { message: 'column show_in_sidebar is missing from schema cache' } });
+        return resolve({ data: [{ ...photos[0], sort_order: 0 }], error: null });
+      }
+    };
+    return chain;
+  } };
+  const result = await fetchGalleryPhotos(client, profileId);
+  assert.equal(selected.length, 2);
+  assert.equal(result[0].id, photos[0].id);
+  assert.equal(result[0].show_in_sidebar, undefined);
 });

@@ -35,32 +35,111 @@ export function validateRateCategories(categories) {
   return result;
 }
 
-export function renderPublicRateCards(container, categories) {
+export function renderPublicRateCards(container, categories, { bookingEnabled = false, onSelectionChange = () => {} } = {}) {
   container.replaceChildren();
+  const selected = new Map();
   for (const category of validateRateCategories(categories)) {
     if (!category.items.length) continue;
     const section = document.createElement('section');
     section.className = 'public-rate-category';
+    const header = document.createElement('div');
+    header.className = 'public-rate-category-header';
+    const heading = document.createElement('div');
     const title = document.createElement('h3');
-    title.className = 'account-subheading';
     title.textContent = category.title;
     const description = document.createElement('div');
-    description.className = 'text-muted';
+    description.className = 'text-muted public-rate-category-description';
     renderRichText(description, category.description);
-    section.append(title, description);
+    heading.append(title);
+    if (category.description) heading.append(description);
+    const instruction = document.createElement('span');
+    instruction.className = 'public-rate-category-instruction';
+    instruction.textContent = 'Click to select';
+    header.append(heading, instruction);
+    section.append(header);
     for (const item of category.items) {
       const row = document.createElement('article');
-      row.className = 'public-rate-item';
-      const heading = document.createElement('h4');
-      heading.textContent = item.name;
-      const price = document.createElement('p');
-      price.className = 'text-gold font-bold';
-      price.textContent = [item.price || 'Contact for rates', item.unit].filter(Boolean).join(' / ');
-      const details = document.createElement('div');
-      renderRichText(details, item.description);
-      row.append(heading, price, details);
+      row.className = 'service-select-card';
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'service-select-toggle';
+      toggle.setAttribute('aria-pressed', 'false');
+      toggle.setAttribute('aria-label', `${item.name}, ${item.price || 'Contact for rates'}, ${item.unit || 'per session'}`);
+      const copy = document.createElement('div');
+      copy.className = 'service-select-copy';
+      const checkbox = document.createElement('span');
+      checkbox.className = 'service-check-box';
+      checkbox.setAttribute('aria-hidden', 'true');
+      const checkmark = document.createElement('span');
+      checkmark.className = 'service-check-mark';
+      checkmark.textContent = '\u2713';
+      checkbox.append(checkmark);
+      const name = document.createElement('span');
+      name.className = 'service-select-name';
+      name.textContent = item.name;
+      toggle.append(checkbox, name);
+      const pricing = document.createElement('span');
+      pricing.className = 'service-select-pricing';
+      const price = document.createElement('span');
+      price.className = 'service-select-price';
+      price.textContent = item.price || 'Contact for rates';
+      const unit = document.createElement('span');
+      unit.className = 'service-select-unit';
+      unit.textContent = item.unit || 'per session';
+      pricing.append(price, unit);
+      copy.append(toggle);
+      if (item.description) {
+        const details = document.createElement('div');
+        details.className = 'service-select-details rich-text-content';
+        renderRichText(details, item.description);
+        copy.append(details);
+      }
+      row.append(copy, pricing);
+      const numericPrice = Number.parseInt(item.price.replace(/\D/g, ''), 10) || 0;
+      row.addEventListener('click', event => {
+        if (event.target.closest('a')) return;
+        if (selected.has(item.id)) selected.delete(item.id);
+        else selected.set(item.id, { id: item.id, name: item.name, category: category.title, amount: numericPrice });
+        const isSelected = selected.has(item.id);
+        toggle.setAttribute('aria-pressed', String(isSelected));
+        row.dataset.selected = String(isSelected);
+        updateQuote();
+      });
       section.append(row);
     }
     container.append(section);
+  }
+
+  if (!container.querySelector('.public-rate-category')) return;
+  const quote = document.createElement('div');
+  quote.className = 'public-profile-rate-quote';
+  quote.hidden = true;
+  quote.setAttribute('aria-live', 'polite');
+  const summary = document.createElement('div');
+  const label = document.createElement('div');
+  label.className = 'public-profile-rate-quote-label';
+  label.textContent = 'Selected Services Quote';
+  const values = document.createElement('div');
+  values.className = 'public-profile-rate-quote-values';
+  const total = document.createElement('span');
+  total.className = 'public-profile-rate-quote-total';
+  const count = document.createElement('span');
+  count.className = 'public-profile-rate-quote-count';
+  values.append(total, count);
+  summary.append(label, values);
+  const action = document.createElement('a');
+  action.className = 'btn btn-gold btn-sm public-profile-rate-quote-action';
+  action.href = '#booking-enquiry-section';
+  action.textContent = 'Book with Selected Services';
+  action.hidden = !bookingEnabled;
+  quote.append(summary, action);
+  container.append(quote);
+
+  function updateQuote() {
+    const values = [...selected.values()];
+    total.textContent = `L${values.reduce((sum, value) => sum + value.amount, 0).toLocaleString('en-US')}`;
+    count.textContent = `(${values.length} selected)`;
+    quote.hidden = values.length === 0 || !bookingEnabled;
+    onSelectionChange(values);
   }
 }

@@ -31,6 +31,9 @@
   .public-booking-hours p { white-space: pre-wrap; overflow-wrap: anywhere; }
   .profile-gallery-editor-item { border-top: 1px solid rgba(212,175,55,0.2); padding: 16px 0 24px; }
   .profile-gallery-editor-item h3 { margin: 0 auto 0 0; }
+  .profile-collection-editor-section { margin-top: 24px; padding-top: 12px; border-top: 1px solid rgba(212,175,55,0.2); }
+  .profile-collection-editor-item { margin: 12px 0; padding: 14px 16px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); }
+  .profile-collection-editor-item .creator-editor-toolbar { padding: 4px 0 12px; }
   @media (max-width: 800px) {
     .creator-editor [data-creator-fields] { grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .creator-editor-nav { position: static; grid-column: 1; grid-row: auto; flex-direction: row; overflow-x: auto; }
@@ -49,11 +52,62 @@
   html[data-template="directory-profile"] .lightbox-content { display: flex; flex-direction: column; align-items: center; position: relative; }
   html[data-template="directory-profile"] .lightbox-img { border-radius: 8px; border: 2px solid rgba(212,175,55,0.3); }
   @media (max-width: 700px) { .public-gallery-grid { grid-template-columns: minmax(0,1fr); } }
-  .public-rate-category { margin-bottom: 32px; }
-  .public-rate-item { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,auto); gap: 8px 16px; padding: 18px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
-  .public-rate-item h4, .public-rate-item p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-  .public-rate-item > .rich-text-content { grid-column: 1 / -1; min-width: 0; }
-  @media (max-width: 700px) { .public-rate-item { grid-template-columns: minmax(0,1fr); } }
+  html[data-template="directory-profile"] .public-rate-category { min-width: 0; padding: 24px 22px; border: 1px solid var(--gold-border); border-radius: 8px; background: linear-gradient(165deg,#221e1a 0%,#171513 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: all var(--transition-normal); display: flex; flex-direction: column; }
+  html[data-template="directory-profile"] .public-rate-category:hover { transform: translateY(-4px); border-color: var(--gold-bright); box-shadow: 0 16px 40px rgba(0,0,0,0.8),0 0 25px var(--gold-glow); }
+  html[data-template="directory-profile"] .public-rate-category-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--gold-border); }
+  html[data-template="directory-profile"] .public-rate-category-header h3 { margin: 0; color: var(--gold-bright); font-family: var(--font-heading); font-size: 20px; font-weight: 800; }
+  html[data-template="directory-profile"] .public-rate-category-description { margin-top: 4px; font-size: 13px; }
+  html[data-template="directory-profile"] .public-rate-category-instruction { color: var(--gold-muted); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; }
+  html[data-template="directory-profile"] .service-select-card { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; border: 1px solid var(--gold-border-subtle); border-radius: 8px; background: rgba(20,18,16,0.85); color: var(--text-primary); cursor: pointer; transition: all 0.2s ease; }
+  html[data-template="directory-profile"] .service-select-card + .service-select-card { margin-top: 10px; }
+  html[data-template="directory-profile"] .service-select-card[data-selected="true"] { border-color: var(--gold-bright); background: rgba(212,175,55,0.12); box-shadow: 0 0 16px rgba(212,175,55,0.2); }
+  html[data-template="directory-profile"] .service-select-copy { display: flex; min-width: 0; flex: 1 1 auto; flex-direction: column; align-items: flex-start; }
+  html[data-template="directory-profile"] .service-select-toggle { display: flex; min-width: 0; align-items: flex-start; gap: 14px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  html[data-template="directory-profile"] .service-select-toggle:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+  html[data-template="directory-profile"] .service-check-box { display: flex; width: 20px; height: 20px; flex: 0 0 20px; align-items: center; justify-content: center; margin-top: 2px; border: 2px solid var(--gold-border-subtle); border-radius: 4px; background: #0e0c0b; transition: all 0.2s ease; }
+  html[data-template="directory-profile"] .service-check-mark { display: none; color: var(--gold-bright); font-size: 13px; font-weight: 900; }
+  html[data-template="directory-profile"] .service-select-card[data-selected="true"] .service-check-box { border-color: var(--gold-bright); background: rgba(212,175,55,0.3); }
+  html[data-template="directory-profile"] .service-select-card[data-selected="true"] .service-check-mark { display: block; }
+  html[data-template="directory-profile"] .service-select-name { color: var(--text-primary); font-family: var(--font-heading); font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .service-select-details { min-width: 0; margin-top: 3px; padding-left: 34px; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .service-select-pricing { flex: 0 0 auto; text-align: right; }
+  html[data-template="directory-profile"] .service-select-price { display: block; color: var(--gold-bright); font-family: var(--font-mono); font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .service-select-unit { display: block; color: var(--gold-muted); font-size: 11px; }
+  html[data-template="directory-profile"] .public-profile-rate-quote { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: -10px 0 30px; padding: 16px 20px; border: 1px solid var(--gold-bright); border-radius: 10px; background: linear-gradient(135deg,#241f1a 0%,#141210 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+  html[data-template="directory-profile"] .public-profile-rate-quote[hidden] { display: none !important; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-label { color: var(--gold-muted); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-values { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-total { color: var(--gold-bright); font-family: var(--font-heading); font-size: 24px; font-weight: 900; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-count { color: #cbd5e1; font-family: var(--font-mono); font-size: 13px; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-action { font-weight: 800; padding: 10px 20px; font-size: 13px; box-shadow: 0 0 14px rgba(212,175,55,0.35); text-align: center; }
+  html[data-template="directory-profile"] .public-profile-rate-quote-action[hidden] { display: none !important; }
+  html[data-template="directory-profile"] .public-profile-booking .public-profile-section-title { margin-bottom: 12px; }
+  html[data-template="directory-profile"] .public-booking-intro { max-width: 68ch; margin: 0 0 20px; line-height: 1.8; }
+  html[data-template="directory-profile"] .public-booking-eyebrow { display: block; margin-bottom: 6px; color: var(--gold-bright); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; }
+  html[data-template="directory-profile"] .public-booking-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px 20px; }
+  html[data-template="directory-profile"] .public-booking-field { min-width: 0; }
+  html[data-template="directory-profile"] .public-booking-field label { display: block; margin-bottom: 8px; color: var(--gold-muted); font-family: var(--font-mono); font-size: 11px; line-height: 1.5; text-transform: uppercase; }
+  html[data-template="directory-profile"] .public-booking-field input, html[data-template="directory-profile"] .public-booking-field select, html[data-template="directory-profile"] .public-booking-field textarea { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: #0e0c0b; color: #fff; font: inherit; font-size: 13.5px; }
+  html[data-template="directory-profile"] .public-booking-field select { color: #ffd700; font-weight: 600; }
+  html[data-template="directory-profile"] .public-booking-field input[type="date"] { color-scheme: dark; }
+  html[data-template="directory-profile"] .public-booking-field textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
+  html[data-template="directory-profile"] .public-booking-schedule { grid-column: 1 / -1; margin: 0 0 20px; padding: 14px 16px; border: 1px solid rgba(212,175,55,0.25); border-radius: 8px; background: rgba(212,175,55,0.08); color: var(--gold-bright); font-size: 13px; line-height: 1.7; }
+  html[data-template="directory-profile"] .public-booking-notes, html[data-template="directory-profile"] .public-booking-submit { grid-column: 1 / -1; }
+  html[data-template="directory-profile"] .public-booking-submit { margin-top: 8px; text-align: center; }
+  html[data-template="directory-profile"] .public-booking-submit button { width: 100%; min-height: 48px; font-weight: 800; }
+  html[data-template="directory-profile"] .public-booking-submit > :last-child { margin: 12px 0 0; }
+  html[data-template="directory-profile"] .public-booking-status { margin: 0 0 10px; color: var(--gold-bright); font-size: 13px; }
+  html[data-template="directory-profile"] .public-booking-honeypot { display: none !important; }
+  html[data-template="directory-profile"] [data-public-profile-rate-section] { display: grid; gap: 30px; }
+  html[data-template="directory-profile"] .public-booking-hours-title { display: flex; align-items: center; gap: 8px; }
+  html[data-template="directory-profile"] .public-booking-hours-title > span { font-size: 15px; }
+  html[data-template="directory-profile"] .public-booking-hours-time-row { display: flex; align-items: center; gap: 8px; }
+  html[data-template="directory-profile"] .public-booking-hours-time { color: var(--gold-bright); font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  html[data-template="directory-profile"] .public-booking-hours-timezone, html[data-template="directory-profile"] .public-booking-hours-interval, html[data-template="directory-profile"] .public-booking-hours-empty { margin: 6px 0 0; color: var(--text-muted); font-size: 12px; }
+  html[data-template="directory-profile"] .public-booking-hours-days { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+  html[data-template="directory-profile"] .public-booking-hours-days li { padding: 3px 8px; border: 1px solid var(--gold-border-subtle); border-radius: 999px; color: var(--text-primary); font-size: 11px; }
+  html[data-template="directory-profile"] .public-booking-hours-notes { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--gold-border-subtle); color: var(--text-muted); font-size: 12px; }
+  @media (max-width: 600px) { html[data-template="directory-profile"] .service-select-card { gap: 8px 10px; padding: 14px; } html[data-template="directory-profile"] .service-select-pricing { max-width: 38%; } html[data-template="directory-profile"] .public-profile-booking { padding: 22px 18px; } }
 }
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);
@@ -128,8 +182,11 @@
   html[data-template="directory-profile"] .public-profile-hero-tagline { max-width: 750px; margin: 10px 0 0; font-size: 18px; font-style: italic; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
   html[data-template="directory-profile"] main.section { padding-top: 40px; }
   html[data-template="directory-profile"] .public-profile-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr); gap: 28px; align-items: start; margin: 0 0 32px; }
-  html[data-template="directory-profile"] .public-profile-main, html[data-template="directory-profile"] .public-profile-sidebar { display: grid; gap: 24px; min-width: 0; }
+  html[data-template="directory-profile"] .public-profile-main { display: grid; gap: 24px; min-width: 0; }
+  html[data-template="directory-profile"] .public-profile-sidebar { display: grid; gap: 16px; min-width: 0; }
   html[data-template="directory-profile"] .public-profile-panel { min-width: 0; padding: 24px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(26,23,20,0.72); }
+  html[data-template="directory-profile"] .public-profile-booking { padding: 30px 28px; background: linear-gradient(175deg,#1a1715 0%,#100f0d 100%); }
+  html[data-template="directory-profile"] [data-public-profile-rates] { display: flex; flex-direction: column; gap: 30px; }
   html[data-template="directory-profile"] .public-profile-section-title { font-family: var(--font-heading); font-size: 20px; color: var(--gold-bright); margin: 0 0 16px; }
   html[data-template="directory-profile"] .public-profile-overview { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
   html[data-template="directory-profile"] .public-profile-overview.has-avatar { grid-template-columns: minmax(0, 112px) minmax(0, 1fr); }
@@ -153,9 +210,23 @@
   html[data-template="directory-profile"] .public-gallery-preview-grid .public-gallery-tile span { padding: 8px; font-size: 12px; font-weight: 700; }
   html[data-template="directory-profile"] .public-gallery-view-all { margin-top: 16px; }
   html[data-template="directory-profile"] .public-gallery-view-all[hidden] { display: none !important; }
-  html[data-template="directory-profile"] .public-profile-protocol-text { overflow-wrap: anywhere; line-height: 1.7; font-size: 14px; }
-  html[data-template="directory-profile"] .public-profile-boundaries { border-color: rgba(139,30,45,0.4); background: rgba(30,15,18,0.4); }
-  html[data-template="directory-profile"] .public-profile-boundaries .public-profile-section-title { color: #ffb8c2; }
+  html[data-template="directory-profile"] .public-profile-protocol-text { overflow-wrap: anywhere; line-height: 1.8; font-size: 14px; }
+  html[data-template="directory-profile"] .public-hardware-list, html[data-template="directory-profile"] .public-wishlist-list { display: grid; gap: 10px; }
+  html[data-template="directory-profile"] .public-hardware-item, html[data-template="directory-profile"] .public-wishlist-item { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.78); }
+  html[data-template="directory-profile"] .public-hardware-icon { flex: 0 0 auto; font-size: 20px; line-height: 1.2; }
+  html[data-template="directory-profile"] .public-hardware-copy, html[data-template="directory-profile"] .public-wishlist-copy { min-width: 0; flex: 1 1 auto; }
+  html[data-template="directory-profile"] .public-hardware-copy h3, html[data-template="directory-profile"] .public-wishlist-copy h3 { margin: 0; color: var(--text-primary); font-family: var(--font-heading); font-size: 14px; font-weight: 800; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .public-hardware-copy p, html[data-template="directory-profile"] .public-wishlist-copy p { margin: 3px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .public-hardware-badge { flex: 0 0 auto; padding: 3px 8px; border: 1px solid rgba(16,185,129,0.3); border-radius: 999px; background: rgba(16,185,129,0.12); color: #6ee7b7; font-family: var(--font-mono); font-size: 10px; }
+  html[data-template="directory-profile"] .public-wishlist-item > a { flex: 0 0 auto; }
+  html[data-template="directory-profile"] .public-profile-boundaries { border-color: rgba(212,175,55,0.42); background: linear-gradient(165deg,rgba(34,30,26,0.9) 0%,rgba(23,21,19,0.84) 100%); }
+  html[data-template="directory-profile"] .public-boundaries-title { display: flex; align-items: center; gap: 8px; }
+  html[data-template="directory-profile"] .public-boundaries-title > span { color: var(--gold-bright); font-size: 16px; }
+  html[data-template="directory-profile"] .public-boundaries-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  html[data-template="directory-profile"] .public-boundaries-list > li { position: relative; min-width: 0; padding: 12px 14px 12px 36px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(212,175,55,0.045); line-height: 1.65; overflow-wrap: anywhere; }
+  html[data-template="directory-profile"] .public-boundaries-list > li::before { position: absolute; top: 1.25em; left: 15px; width: 7px; height: 7px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 8px var(--gold-glow); content: ""; }
+  html[data-template="directory-profile"] .public-boundaries-list > li > :first-child { margin-top: 0; }
+  html[data-template="directory-profile"] .public-boundaries-list > li > :last-child { margin-bottom: 0; }
   .rich-text-content { white-space: normal; overflow-wrap: anywhere; line-height: 1.7; }
   .rich-text-content p, .public-rate-item .rich-text-content p { margin: 0 0 0.8em; white-space: normal; }
   .rich-text-content > :last-child { margin-bottom: 0; }
@@ -186,7 +257,9 @@
     html[data-template="directory-profile"] .public-profile-hero-title h1 { font-size: 29px; }
     html[data-template="directory-profile"] .public-profile-hero-tagline { font-size: 15px; }
     html[data-template="directory-profile"] .public-profile-panel { padding: 18px; }
+    html[data-template="directory-profile"] .public-profile-booking { padding: 22px 18px; }
     html[data-template="directory-profile"] .public-profile-overview.has-avatar { grid-template-columns: minmax(0, 88px) minmax(0, 1fr); }
+    html[data-template="directory-profile"] .public-booking-form-grid { grid-template-columns: minmax(0,1fr); }
   }
   .manual-rich-text { font-size: 14.5px; line-height: 1.7; color: var(--text-primary); overflow-wrap: anywhere; }
   .manual-rich-text p, .manual-rich-text ul, .manual-rich-text ol { margin: 0 0 12px; }

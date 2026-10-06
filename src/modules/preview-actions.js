@@ -11,6 +11,6 @@ export function previewStatus(message = 'Preview only - nothing was published.')
 }
 
 export function initPreviewActions() {
-  for (const form of document.querySelectorAll('form:not([data-live-auth-form])')) form.addEventListener('submit', event => { event.preventDefault(); previewStatus(); });
+  for (const form of document.querySelectorAll('form:not([data-live-auth-form]):not([data-live-booking-form])')) form.addEventListener('submit', event => { event.preventDefault(); previewStatus(); });
   for (const button of document.querySelectorAll('[data-preview-action]')) button.addEventListener('click', () => previewStatus());
 }

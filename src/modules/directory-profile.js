@@ -3,6 +3,8 @@ import { renderPublicRateCards } from './rate-cards.js';
 import { renderBookingHours } from './booking-hours.js';
 import { fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from './profile-gallery.js';
 import { renderRichText } from './profile-rich-text.js';
+import { initBookingEnquiry } from './booking-enquiry.js';
+import { renderHardwareItems, renderWishlistItems } from './profile-collections.js';
 
 function initProfileTabs(hasGallery) {
   const nav = document.querySelector('[data-public-profile-tabs]');
@@ -40,6 +42,21 @@ function initProfileTabs(hasGallery) {
   });
 }
 
+function renderBoundaryList(container, value) {
+  const text = String(value || '').trim();
+  const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const listable = lines.length > 1 && lines.every(line => !/^(#{1,6}\s|>\s|```|\|)/.test(line));
+  if (!listable) { renderRichText(container, text); return; }
+  const list = document.createElement('ul');
+  list.className = 'public-boundaries-list';
+  for (const line of lines) {
+    const item = document.createElement('li');
+    renderRichText(item, line.replace(/^(?:[-*+]\s+|\d+[.)]\s+)/, ''));
+    list.append(item);
+  }
+  container.replaceChildren(list);
+}
+
 export async function initDirectoryProfile(clientOverride) {
   const status = document.querySelector('[data-public-profile-status]');
   const content = document.querySelector('[data-public-profile-content]');
@@ -62,7 +79,9 @@ export async function initDirectoryProfile(clientOverride) {
     for (const [field, selector] of [['boundaries', '[data-public-profile-boundaries]'], ['booking_instructions', '[data-public-profile-instructions]']]) {
       const text = String(profile[field] || '').trim();
       const section = document.querySelector(selector);
-      renderRichText(section.querySelector('[data-profile-protocol-text]'), text);
+      const content = section.querySelector('[data-profile-protocol-text]');
+      if (field === 'boundaries') renderBoundaryList(content, text);
+      else renderRichText(content, text);
       section.classList.toggle('preview-hidden', !text);
     }
     document.title = `${profile.display_name} | Control & Chaos`;
@@ -88,8 +107,31 @@ export async function initDirectoryProfile(clientOverride) {
       badge.textContent = String(tag);
       document.querySelector('[data-public-profile-tags]').appendChild(badge);
     }
+    document.querySelector('[data-public-hardware-title]').textContent = String(profile.hardware_title || 'My Toys').trim() || 'My Toys';
+    renderHardwareItems(document.querySelector('[data-public-hardware-items]'), profile.hardware_compat || []);
+    document.querySelector('[data-public-profile-hardware]').classList.toggle('preview-hidden', !profile.hardware_compat?.length);
+    document.querySelector('[data-public-wishlist-title]').textContent = String(profile.wishlist_title || 'Wishlist & Tributes').trim() || 'Wishlist & Tributes';
+    renderWishlistItems(document.querySelector('[data-public-wishlist-items]'), profile.wishlist || []);
+    document.querySelector('[data-public-profile-wishlist]').classList.toggle('preview-hidden', !profile.wishlist?.length);
+    const summary = document.querySelector('.public-profile-summary');
+    summary.classList.toggle('preview-hidden', !String(profile.starting_rate || '').trim() && !String(profile.availability_note || '').trim() && !(Array.isArray(profile.tags) && profile.tags.length));
     const rates = document.querySelector('[data-public-profile-rates]');
-    renderPublicRateCards(rates, profile.rate_categories || []);
+    const bookingSection = document.querySelector('[data-public-profile-booking-enquiry]');
+    const bookingEnabled = profile.booking_hours !== null;
+    bookingSection.classList.toggle('preview-hidden', !bookingEnabled);
+    initBookingEnquiry(bookingSection, profile);
+    renderPublicRateCards(rates, profile.rate_categories || [], {
+      bookingEnabled,
+      onSelectionChange: services => {
+        bookingSection.querySelector('[name="selected_services"]').value = JSON.stringify(services.map(service => service.id));
+        const message = bookingSection.querySelector('[name="message"]');
+        if (services.length) {
+          const total = services.reduce((sum, service) => sum + service.amount, 0);
+          const breakdown = services.map(service => `  \u2022 ${service.name} (${service.category ? `${service.category} \u2014 ` : ''}L${service.amount.toLocaleString('en-US')})`).join('\n');
+          message.value = `Hello ${profile.display_name},\n\nI would like to request a booking/session for the following services:\n${breakdown}\n\nEstimated Total: L${total.toLocaleString('en-US')} (~${Math.round(total / 250)})\n\nSession Preferences & Notes:\n[Please specify your scenario, preferences, or timing details here]`;
+        } else if (message.value.startsWith(`Hello ${profile.display_name},`)) message.value = '';
+      }
+    });
     document.querySelector('[data-public-profile-rate-section]').classList.toggle('preview-hidden', !rates.children.length);
     const hours = document.querySelector('[data-public-profile-hours]');
     renderBookingHours(hours, profile.booking_hours ?? null);
@@ -109,9 +151,10 @@ export async function initDirectoryProfile(clientOverride) {
       return;
     }
     const published = photos.filter(photo => photo.is_published);
+    const sidebarPhotos = published.filter(photo => photo.show_in_sidebar !== false);
     renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
-    renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), published);
-    previewSection.classList.toggle('preview-hidden', !published.length);
+    renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), sidebarPhotos);
+    previewSection.classList.toggle('preview-hidden', !sidebarPhotos.length);
     document.getElementById('profile-tab-gallery').textContent = `Gallery (${published.length})`;
     document.querySelector('[data-public-gallery-view-all]').textContent = `View all ${published.length} ${published.length === 1 ? 'photo' : 'photos'}`;
     initProfileTabs(published.length > 0);

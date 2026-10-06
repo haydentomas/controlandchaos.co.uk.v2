@@ -4,7 +4,9 @@ Updated: 2026-10-06. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Next action: confirm Netlify publishes the TOAST UI editor replacement included in this commit, then let the user review its native toolbar and links. The user explicitly approved this push and handover update on 2026-10-06. The custom Tiptap toolbar was deployed as `db58520`; the user reported links not applying and disliked its nonstandard UI. Boundaries / How to Book is deployed as `70a154c` and user-confirmed working. Migrations 1-10 are already applied. Do not rerun them. No additional migration is needed for either editor.**
+**The user has tested the hosted TOAST UI editor and has now requested the next deployment so they can test profile parity with an Alt. Local profile polish includes V1-ordered Gallery/My Toys/Boundaries/Booking Hours/How to Book/Wishlist cards, owner-managed toy/wishlist repeaters, selected sidebar-gallery photos, gold list-style boundaries, and a roomier booking form. Nothing is committed, pushed, or deployed. Public profile/gallery reads fall back to legacy columns until migration 11 is applied, so existing profiles remain visible. Migration 11 adds gallery, toy/wishlist and private booking-contact schema and is still unapplied. First apply it in the V2 development Supabase project and verify the grants below; then commit/push the requested Alt-test build. No live writes or emails were sent.**
+
+Validation passed: full suite 150/150 after repeater implementation and legacy-schema fallbacks, production build and edited-module diagnostics. Shared-browser checks verified populated toy/wishlist cards, restored existing testpress profile rendering and responsive layout with no horizontal overflow. The separate headless rich-text browser suite could not launch because Playwright Chromium is not installed. No real booking was sent.
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -38,13 +40,13 @@ The user likes the simpler design but wants real paragraphs/lists and an editor 
 - Tiptap dependencies were removed and replaced with pinned `@toast-ui/editor` 3.2.2. Its older DOMPurify dependency is overridden to the repository's current DOMPurify version, exercised in preview tests. `npm audit --omit=dev` reports zero vulnerabilities; two existing low-severity development advisories remain. Usage statistics are disabled, images/uploads are blocked, and all editor assets are local bundles. No schema, RLS, terminal or live data changes.
 - [standard-editor.css](src/standard-editor.css) contains narrowly scoped native-editor layout overrides outside Tailwind layers, since the vendor CSS is unlayered. Existing Studio grids now use zero-minimum tracks so long editor content cannot force mobile overflow. Native responsive toolbar overflow menus are retained.
 - `npm run test:rich-text` runs semantic-rendering tests and an isolated real-browser studio/public workflow using mocked clients only. It specifically applies native links in About, How to Book and booking notes, rejects unsafe links, inserts links in Markdown mode, saves/reloads and verifies public hrefs. It also covers real mouse text selection, keyboard undo/redo, unchanged mode switches, exact limits, unsupported-source preservation, nested disabled booking fields, dynamic rate/gallery edits, native preview, mobile link dialogs/overflow, sign-out and explicit loading-failure fallback. No live writes; editor telemetry and image requests are checked absent.
-- Validation: 70 combined directory/profile/template/rich-text tests and production build passed for the replacement; edited-module diagnostics are clear. The build warns that the lazy vendor editor chunk exceeds 500 kB; public pages do not import the visual editor. Hosted replacement behavior remains unverified until an approved push and user review.
+- Validation: 70 combined directory/profile/template/rich-text tests and production build passed for the replacement; edited-module diagnostics are clear. The build warns that the lazy vendor editor chunk exceeds 500 kB; public pages do not import the visual editor. The user has since confirmed testing the hosted replacement; specific hosted test results were not stated.
 
-After deployment, verify the standard toolbar is present without changing live profile data. The user should then review native link insertion, save/reload and public rendering with their own content. Hosted owner-save behavior is not yet verified for this replacement. No new SQL or terminal setup is needed. Further feature pushes require fresh approval.
+No new SQL or terminal setup is needed. Choose the next feature with the user before implementation; further feature pushes require fresh approval.
 
-### Next feature work after editor review
+### Next Work After Booking Test
 
-Continue incremental V1 parity while retaining the simpler V2 design the user now likes. Choose the next connected feature with the user before implementation: remaining V1 socials, toys, VIP feed/blog and booking-request controls are references, not live features. Do not invent plan restrictions, prices, reservations or payment behavior. Gallery uploads/storage remain separate work; current galleries use image URLs.
+Have the user compare populated V2 rate categories and booking requests against V1 after the migration and approved deployment. Then continue the V1 inventory with public creator blogs and VIP subscriber posts. Define private-post entitlement and access rules before wiring paid content; do not invent prices or tier restrictions. Socials, toys, wishlist/reviews and uploads/storage remain separate work; current galleries use image URLs.
 
 ## Product Direction
 

@@ -34,17 +34,43 @@ export function renderBookingHours(container, value) {
   container.replaceChildren();
   const hours = validateBookingHours(value);
   if (!hours) return;
-  const add = text => { const row = document.createElement('p'); row.textContent = text; container.append(row); };
-  add(`${BOOKING_TIMEZONES.find(([zone]) => zone === hours.timezone)[1]} (${hours.timezone})`);
-  if (!hours.days.length) add('No regular booking days currently available.');
-  else {
-    add(hours.days.map(day => BOOKING_DAYS.find(([value]) => value === day)[1]).join(', '));
-    const overnight = minutes(hours.end_time) < minutes(hours.start_time);
-    add(`${hours.start_time} - ${hours.end_time}${overnight ? ' (ends the following day)' : ''}`);
-    add(`Appointment interval: ${hours.slot_minutes} minutes`);
+  const timeRow = document.createElement('div');
+  timeRow.className = 'public-booking-hours-time-row';
+  const time = document.createElement('span');
+  time.className = 'public-booking-hours-time';
+  const overnight = minutes(hours.end_time) < minutes(hours.start_time);
+  time.textContent = `${hours.start_time} - ${hours.end_time}${overnight ? ' (next day)' : ''}`;
+  timeRow.append(time);
+  container.append(timeRow);
+
+  const timezone = document.createElement('p');
+  timezone.className = 'public-booking-hours-timezone';
+  timezone.textContent = `${BOOKING_TIMEZONES.find(([zone]) => zone === hours.timezone)[1]} (${hours.timezone})`;
+  container.append(timezone);
+
+  if (!hours.days.length) {
+    const unavailable = document.createElement('p');
+    unavailable.className = 'public-booking-hours-empty';
+    unavailable.textContent = 'No regular booking days currently available.';
+    container.append(unavailable);
+  } else {
+    const days = document.createElement('ul');
+    days.className = 'public-booking-hours-days';
+    days.setAttribute('aria-label', 'Available booking days');
+    for (const day of hours.days) {
+      const item = document.createElement('li');
+      item.textContent = BOOKING_DAYS.find(([value]) => value === day)[1];
+      days.append(item);
+    }
+    container.append(days);
+    const interval = document.createElement('p');
+    interval.className = 'public-booking-hours-interval';
+    interval.textContent = `Appointments every ${hours.slot_minutes} minutes`;
+    container.append(interval);
   }
   if (hours.notes) {
     const notes = document.createElement('div');
+    notes.className = 'public-booking-hours-notes';
     renderRichText(notes, hours.notes);
     container.append(notes);
   }

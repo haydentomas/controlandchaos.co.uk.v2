@@ -90,12 +90,57 @@
               <h2 class="public-profile-section-title">About</h2>
               <div class="public-profile-about" data-public-profile-about></div>
             </section>
-            <section class="public-profile-panel preview-hidden" data-public-profile-rate-section>
-              <h2 class="public-profile-section-title">Rate Cards &amp; Menus</h2>
+            <section class="preview-hidden" data-public-profile-rate-section>
               <div data-public-profile-rates></div>
+            </section>
+            <section id="booking-enquiry-section" class="public-profile-panel public-profile-booking preview-hidden" data-public-profile-booking-enquiry>
+              <span class="public-booking-eyebrow">Direct Enquiry</span>
+              <h2 class="public-profile-section-title">Request a Session or Booking</h2>
+              <p class="text-muted public-booking-intro">Send a booking request with your preferred time and session details. Payment is arranged directly in-world after the creator confirms.</p>
+              <p class="public-booking-schedule" data-booking-schedule></p>
+              <form name="directory-booking" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" data-live-booking-form>
+                <input type="hidden" name="form-name" value="directory-booking">
+                <input type="hidden" name="profile_id" value="">
+                <input type="hidden" name="selected_services" value="[]">
+                <div class="public-booking-honeypot"><label>Leave this field empty<input name="bot-field" tabindex="-1" autocomplete="off"></label></div>
+                <div class="public-booking-form-grid">
+                  <div class="public-booking-field"><label for="booking-client-name">Your Name / SL Username *</label><input id="booking-client-name" name="client_name" maxlength="100" autocomplete="name" required placeholder="e.g. Master Orion Resident"></div>
+                  <div class="public-booking-field"><label for="booking-client-contact">Your Contact (Discord / Email / SL) *</label><input id="booking-client-contact" name="client_contact" maxlength="254" autocomplete="email" required placeholder="How the creator can reach you"></div>
+                  <div class="public-booking-field"><label for="booking-date">Preferred Date</label><input id="booking-date" name="preferred_date" type="date" data-booking-date></div>
+                  <div class="public-booking-field"><label for="booking-time">Available Time Slot</label><select id="booking-time" name="preferred_time" data-booking-time required><option value="">Select a date first...</option></select><label class="preview-hidden" data-booking-flexible-label for="booking-time-flexible">Preferred time (optional)</label><input id="booking-time-flexible" class="preview-hidden" type="time" data-booking-time-flexible disabled></div>
+                  <div class="public-booking-field public-booking-notes"><label for="booking-message">Session Notes &amp; Details</label><textarea id="booking-message" name="message" rows="5" maxlength="4000" placeholder="Describe your scenario, preferences, or timing details..."></textarea></div>
+                  <div class="public-booking-submit"><p class="public-booking-status" data-booking-status role="status" aria-live="polite"></p><button class="btn btn-gold" type="submit" data-booking-submit>Submit Booking Enquiry</button><p class="text-muted">No upfront payment is required. Session fees are settled in-world after the date and time are confirmed.</p></div>
+                </div>
+              </form>
             </section>
           </div>
           <aside class="public-profile-sidebar">
+            <section class="public-profile-panel preview-hidden" data-public-gallery-preview-section aria-labelledby="gallery-preview-title">
+              <h2 class="public-profile-section-title" id="gallery-preview-title">Gallery</h2>
+              <p class="text-muted" data-public-gallery-preview-status role="status"></p>
+              <div class="public-gallery-preview-grid" data-public-gallery-preview></div>
+              <button type="button" class="btn btn-secondary btn-sm public-gallery-view-all" data-public-gallery-view-all>View full gallery</button>
+            </section>
+            <section class="public-profile-panel preview-hidden public-profile-toys" data-public-profile-hardware>
+              <h2 class="public-profile-section-title"><span aria-hidden="true">&#9889;</span> <span data-public-hardware-title>My Toys</span></h2>
+              <div class="public-hardware-list" data-public-hardware-items></div>
+            </section>
+            <section class="public-profile-panel public-profile-boundaries preview-hidden" data-public-profile-boundaries>
+              <h2 class="public-profile-section-title public-boundaries-title"><span aria-hidden="true">&#128737;</span> Hard Limits &amp; Boundaries</h2>
+              <div class="public-profile-protocol-text" data-profile-protocol-text></div>
+            </section>
+            <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
+              <h2 class="public-profile-section-title public-booking-hours-title"><span aria-hidden="true">&#128338;</span> Booking Hours</h2>
+              <div class="public-booking-hours" data-public-profile-hours></div>
+            </section>
+            <section class="public-profile-panel preview-hidden" data-public-profile-instructions>
+              <h2 class="public-profile-section-title">How to Book</h2>
+              <div class="public-profile-protocol-text" data-profile-protocol-text></div>
+            </section>
+            <section class="public-profile-panel preview-hidden public-profile-wishlist" data-public-profile-wishlist>
+              <h2 class="public-profile-section-title"><span aria-hidden="true">&#127873;</span> <span data-public-wishlist-title>Wishlist &amp; Tributes</span></h2>
+              <div class="public-wishlist-list" data-public-wishlist-items></div>
+            </section>
             <section class="public-profile-panel public-profile-summary">
               <div class="public-profile-overview">
                 <div class="public-profile-identity">
@@ -104,24 +149,6 @@
                   <div class="flex-row flex-wrap gap-8" data-public-profile-tags></div>
                 </div>
               </div>
-            </section>
-            <section class="public-profile-panel preview-hidden" data-public-gallery-preview-section aria-labelledby="gallery-preview-title">
-              <h2 class="public-profile-section-title" id="gallery-preview-title">Gallery</h2>
-              <p class="text-muted" data-public-gallery-preview-status role="status"></p>
-              <div class="public-gallery-preview-grid" data-public-gallery-preview></div>
-              <button type="button" class="btn btn-secondary btn-sm public-gallery-view-all" data-public-gallery-view-all>View full gallery</button>
-            </section>
-            <section class="public-profile-panel preview-hidden" data-public-profile-booking-section>
-              <h2 class="public-profile-section-title">Booking Hours</h2>
-              <div class="public-booking-hours" data-public-profile-hours></div>
-            </section>
-            <section class="public-profile-panel public-profile-boundaries preview-hidden" data-public-profile-boundaries>
-              <h2 class="public-profile-section-title">Hard Limits &amp; Boundaries</h2>
-              <div class="public-profile-protocol-text" data-profile-protocol-text></div>
-            </section>
-            <section class="public-profile-panel preview-hidden" data-public-profile-instructions>
-              <h2 class="public-profile-section-title">How to Book</h2>
-              <div class="public-profile-protocol-text" data-profile-protocol-text></div>
             </section>
           </aside>
         </div>

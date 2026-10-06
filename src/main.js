@@ -14,4 +14,4 @@ if (document.getElementById('gallery-lightbox')) import('./modules/gallery.js').
 if (page === 'directory-editor') import('./modules/creator-editor.js').then(module => module.initCreatorEditor());
 if (page === 'events') import('./modules/events.js').then(module => module.initEvents());
 if (page === 'blog' || page.startsWith('blog-')) import('./modules/blog.js').then(module => module.initBlog());
-if (!['auth', 'directory-editor'].includes(page) && document.querySelector('form, [data-preview-action]')) import('./modules/preview-actions.js').then(module => module.initPreviewActions());
+if (!['auth', 'directory-editor'].includes(page) && document.querySelector('form:not([data-live-auth-form]):not([data-live-booking-form]), [data-preview-action]')) import('./modules/preview-actions.js').then(module => module.initPreviewActions());

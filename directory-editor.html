@@ -72,6 +72,7 @@
           <a href="#creator-images">Photos &amp; Visuals</a>
           <a href="#creator-gallery">Gallery</a>
           <a href="#creator-rates">Rate Cards</a>
+          <a href="#creator-toys-wishlist">Toys &amp; Wishlist</a>
         </nav>
         <section class="creator-editor-section" id="creator-identity" aria-labelledby="creator-identity-title">
           <h2 id="creator-identity-title" class="account-subheading">Identity &amp; Availability</h2>
@@ -104,6 +105,8 @@
               <label><input type="checkbox" data-booking-day="sat"><span>Saturday</span></label>
               <label><input type="checkbox" data-booking-day="sun"><span>Sunday</span></label>
             </fieldset>
+            <label class="form-label" for="booking-contact-email">Booking contact email (private)</label>
+            <input id="booking-contact-email" class="form-input" type="email" name="booking_email" maxlength="254" autocomplete="email" placeholder="Leave blank to use your confirmed account email">
             <label class="form-label" for="booking-notes">Booking notice / lead-time note</label><textarea id="booking-notes" class="form-textarea" rows="3" maxlength="1000" data-booking-notes></textarea>
           </fieldset>
         </section>
@@ -128,11 +131,27 @@
         </section>
         <section class="creator-editor-section" id="creator-gallery" aria-labelledby="creator-gallery-title">
           <div class="creator-editor-toolbar"><h2 id="creator-gallery-title" class="account-subheading">Gallery Library</h2><button class="btn btn-secondary" type="button" data-gallery-add-photo>Add photo</button></div>
+          <p class="text-muted">Choose which published photos appear in the public profile sidebar. Up to four are shown, in the order set here. The Gallery tab keeps all published photos.</p>
           <div data-gallery-editor></div>
         </section>
         <section class="creator-editor-section" id="creator-rates" aria-labelledby="creator-rates-title">
           <div class="creator-editor-toolbar"><h2 id="creator-rates-title" class="account-subheading">Rate Cards &amp; Menus</h2><button class="btn btn-secondary" type="button" data-rate-add-category>Add rate category</button></div>
           <div data-rate-editor></div>
+        </section>
+        <section class="creator-editor-section" id="creator-toys-wishlist" aria-labelledby="creator-toys-wishlist-title">
+          <h2 id="creator-toys-wishlist-title" class="account-subheading">My Toys &amp; Wishlist</h2>
+          <div class="profile-collection-editor-section">
+            <div class="creator-editor-toolbar"><h3 class="account-subheading">My Toys</h3><button class="btn btn-secondary btn-sm" type="button" data-hardware-add>Add toy / feature</button></div>
+            <label class="form-label" for="hardware-title">Card title</label>
+            <input id="hardware-title" class="form-input" name="hardware_title" maxlength="100">
+            <div data-hardware-editor></div>
+          </div>
+          <div class="profile-collection-editor-section">
+            <div class="creator-editor-toolbar"><h3 class="account-subheading">Wishlist &amp; Tributes</h3><button class="btn btn-secondary btn-sm" type="button" data-wishlist-add>Add wishlist link</button></div>
+            <label class="form-label" for="wishlist-title">Card title</label>
+            <input id="wishlist-title" class="form-input" name="wishlist_title" maxlength="100">
+            <div data-wishlist-editor></div>
+          </div>
         </section>
         <div class="creator-editor-toolbar creator-editor-savebar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><p class="text-muted" data-creator-publication></p></div>
       </fieldset>

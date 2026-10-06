@@ -4,6 +4,7 @@ import { publicImageUrl } from './directory-api.js';
 import { initRateCardEditor } from './rate-card-editor.js';
 import { initBookingHoursEditor } from './booking-hours.js';
 import { initProfileGalleryEditor } from './profile-gallery-editor.js';
+import { initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, validateHardwareItems, validateWishlistItems, createHardwareItem, createWishlistItem } from './profile-collections.js';
 import { fetchGalleryPhotos } from './profile-gallery.js';
 import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
 
@@ -18,13 +19,15 @@ export async function initCreatorEditor(clientOverride) {
   const rateEditor = initRateCardEditor(form.querySelector('[data-rate-editor]'), form.querySelector('[data-rate-add-category]'));
   const bookingEditor = initBookingHoursEditor(form.querySelector('[data-booking-editor]'));
   const galleryEditor = initProfileGalleryEditor(form.querySelector('[data-gallery-editor]'), form.querySelector('[data-gallery-add-photo]'));
+  const hardwareEditor = initProfileCollectionEditor(form.querySelector('[data-hardware-editor]'), form.querySelector('[data-hardware-add]'), { kind: 'toys', fields: HARDWARE_FIELDS, validate: validateHardwareItems, createItem: createHardwareItem, limit: 30 });
+  const wishlistEditor = initProfileCollectionEditor(form.querySelector('[data-wishlist-editor]'), form.querySelector('[data-wishlist-add]'), { kind: 'wishlist', fields: WISHLIST_FIELDS, validate: validateWishlistItems, createItem: createWishlistItem, limit: 20 });
   let client;
   let generation = 0;
   let saving = false;
   let profile;
   let timer;
   let subscriptions = [];
-  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note', 'boundaries', 'booking_instructions'];
+  const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note', 'boundaries', 'booking_instructions', 'booking_email', 'hardware_title', 'wishlist_title'];
   const lock = message => {
     generation++;
     profile = null;
@@ -35,6 +38,8 @@ export async function initCreatorEditor(clientOverride) {
     rateEditor.clear();
     bookingEditor.load(null);
     galleryEditor.clear();
+    hardwareEditor.clear();
+    wishlistEditor.clear();
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -49,6 +54,8 @@ export async function initCreatorEditor(clientOverride) {
   const paint = row => {
     rateEditor.load(row.rate_categories);
     bookingEditor.load(row.booking_hours);
+    hardwareEditor.load(row.hardware_compat);
+    wishlistEditor.load(row.wishlist);
     profile = row;
     for (const name of fieldNames) form.elements[name].value = row[name] || '';
     for (const [name, editor] of Object.entries(textEditors)) editor.load(row[name]);
@@ -125,7 +132,7 @@ export async function initCreatorEditor(clientOverride) {
     values.tags = form.elements.tags.value.split(',').map(tag => tag.trim()).filter(Boolean);
     values.is_published = form.elements.is_published.checked;
     let photos;
-    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); photos = galleryEditor.value(); }
+    try { values.rate_categories = rateEditor.value(); values.booking_hours = bookingEditor.value(); values.hardware_compat = hardwareEditor.value(); values.wishlist = wishlistEditor.value(); photos = galleryEditor.value(); }
     catch (error) { status.textContent = error.message; return; }
     saving = true;
     fields.disabled = picker.disabled = reload.disabled = true;

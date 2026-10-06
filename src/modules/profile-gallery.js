@@ -1,5 +1,6 @@
 export const GALLERY_PHOTO_LIMIT = 100;
-export const GALLERY_COLUMNS = 'id,title,category,description,image_url,is_published,sort_order';
+export const GALLERY_COLUMNS = 'id,title,category,description,image_url,is_published,show_in_sidebar,sort_order';
+const LEGACY_GALLERY_COLUMNS = 'id,title,category,description,image_url,is_published,sort_order';
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
 export function galleryImageUrl(value) {
@@ -14,22 +15,29 @@ export function validateGalleryPhotos(photos) {
   if (!Array.isArray(photos) || photos.length > GALLERY_PHOTO_LIMIT) throw new Error('Use up to 100 gallery photos.');
   const identifiers = new Set();
   return photos.map(photo => {
-    if (!photo || Array.isArray(photo) || typeof photo !== 'object' || Object.keys(photo).some(name => !['id','title','category','description','image_url','is_published'].includes(name))) throw new Error('Invalid gallery fields.');
+    if (!photo || Array.isArray(photo) || typeof photo !== 'object' || Object.keys(photo).some(name => !['id','title','category','description','image_url','is_published','show_in_sidebar'].includes(name))) throw new Error('Invalid gallery fields.');
     if (!uuid.test(photo.id || '') || identifiers.has(photo.id)) throw new Error('Invalid or duplicate photo identifier.');
     identifiers.add(photo.id);
     for (const [field, maximum] of [['title',100],['category',100],['description',2000]]) {
       if (typeof photo[field] !== 'string' || photo[field].length > maximum || (field === 'title' && !photo[field].trim())) throw new Error('Check photo titles, categories and descriptions.');
     }
-    if (!galleryImageUrl(photo.image_url) || typeof photo.is_published !== 'boolean') throw new Error('Use a valid HTTPS image URL or site image path.');
-    return { id: photo.id, title: photo.title.trim(), category: photo.category.trim(), description: photo.description.trim(), image_url: photo.image_url, is_published: photo.is_published };
+    if (!galleryImageUrl(photo.image_url) || typeof photo.is_published !== 'boolean' || (photo.show_in_sidebar !== undefined && typeof photo.show_in_sidebar !== 'boolean')) throw new Error('Use a valid HTTPS image URL or site image path.');
+    const result = { id: photo.id, title: photo.title.trim(), category: photo.category.trim(), description: photo.description.trim(), image_url: photo.image_url, is_published: photo.is_published };
+    if (photo.show_in_sidebar !== undefined) result.show_in_sidebar = photo.show_in_sidebar;
+    return result;
   });
 }
 
 export async function fetchGalleryPhotos(client, profileId, { publishedOnly = false } = {}) {
   if (!uuid.test(profileId || '')) throw new Error('Invalid gallery profile.');
-  let query = client.from('directory_gallery_photos').select(GALLERY_COLUMNS).eq('profile_id', profileId).order('sort_order').order('id');
-  if (publishedOnly) query = query.eq('is_published', true);
-  const { data, error } = await query;
+  const query = columns => {
+    let request = client.from('directory_gallery_photos').select(columns).eq('profile_id', profileId).order('sort_order').order('id');
+    if (publishedOnly) request = request.eq('is_published', true);
+    return request;
+  };
+  let { data, error } = await query(GALLERY_COLUMNS);
+  const errorText = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`;
+  if (error && errorText.includes('show_in_sidebar')) ({ data, error } = await query(LEGACY_GALLERY_COLUMNS));
   if (error || !Array.isArray(data)) throw new Error('Gallery could not be loaded.');
   return validateGalleryPhotos(data.map(({ sort_order, ...photo }) => photo));
 }
@@ -50,7 +58,7 @@ export function renderProfileGallery(container, filters, photos) {
 }
 
 export function renderGalleryPreview(container, photos) {
-  const visible = validateGalleryPhotos(photos).filter(photo => photo.is_published);
+  const visible = validateGalleryPhotos(photos).filter(photo => photo.is_published && photo.show_in_sidebar !== false);
   renderGalleryTiles(container, visible.slice(0, 4));
 }
 

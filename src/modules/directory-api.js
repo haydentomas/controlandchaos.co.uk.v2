@@ -45,8 +45,19 @@ export async function fetchDirectory(client, { page = 0, search = '', role = 'al
 
 export async function fetchPublicProfile(client, slug) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug || '') || slug.length > 80) return null;
-  const { data, error } = await client.from('directory_profiles').select(`${PUBLIC_PROFILE_COLUMNS},rate_categories,availability_note,booking_hours,boundaries,booking_instructions`)
+  const legacyColumns = `${PUBLIC_PROFILE_COLUMNS},rate_categories,availability_note,booking_hours,boundaries,booking_instructions`;
+  const collectionColumns = `${legacyColumns},hardware_title,hardware_compat,wishlist_title,wishlist`;
+  const lookup = columns => client.from('directory_profiles').select(columns)
     .eq('is_approved', true).eq('is_published', true).eq('slug', slug).maybeSingle();
+  let { data, error } = await lookup(collectionColumns);
+  const errorText = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`;
+  const missingCollectionColumn = ['hardware_title', 'hardware_compat', 'wishlist_title', 'wishlist'].some(column => errorText.includes(column));
+  if (error && missingCollectionColumn) {
+    const legacyResult = await lookup(legacyColumns);
+    data = legacyResult.data;
+    error = legacyResult.error;
+    if (!error && data) Object.assign(data, { hardware_title: 'My Toys', hardware_compat: [], wishlist_title: 'Wishlist & Tributes', wishlist: [] });
+  }
   if (error) throw new Error('Profile request failed.');
   return data;
 }

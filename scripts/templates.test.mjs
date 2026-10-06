@@ -48,6 +48,58 @@ test('directory profile tabs expose only supported views with accessible panel r
   assert.equal(document.getElementById(tabs[1].getAttribute('aria-controls')).classList.contains('preview-hidden'), true);
 });
 
+test('public profile sidebar follows Gallery, toys, protocol, hours, booking and wishlist order', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  const sections = [...document.querySelectorAll('.public-profile-sidebar > section')];
+  assert.equal(sections[0].hasAttribute('data-public-gallery-preview-section'), true);
+  assert.deepEqual(sections.slice(1, 6).map(section => section.querySelector('h2').textContent.trim()), [
+    `${String.fromCodePoint(0x26a1)} My Toys`,
+    `${String.fromCodePoint(0x1f6e1)} Hard Limits & Boundaries`,
+    `${String.fromCodePoint(0x1f552)} Booking Hours`,
+    'How to Book',
+    `${String.fromCodePoint(0x1f381)} Wishlist & Tributes`
+  ]);
+});
+
+test('public profile rate categories are not nested inside a shared panel', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  const section = document.querySelector('[data-public-profile-rate-section]');
+  assert.ok(section);
+  assert.equal(section.classList.contains('public-profile-panel'), false);
+  assert.ok(section.querySelector('[data-public-profile-rates]'));
+});
+
+test('live booking form is a Netlify form and is excluded from preview-only handling', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  const form = document.querySelector('[data-live-booking-form]');
+  assert.ok(form);
+  assert.equal(form.getAttribute('name'), 'directory-booking');
+  assert.equal(form.getAttribute('data-netlify'), 'true');
+  assert.equal(form.getAttribute('data-netlify-honeypot'), 'bot-field');
+  assert.ok(form.querySelector('[name="profile_id"]'));
+  assert.ok(form.querySelector('[name="selected_services"]'));
+  const previewActions = await fs.readFile(path.join(root, 'src/modules/preview-actions.js'), 'utf8');
+  assert.match(previewActions, /form:not\(\[data-live-auth-form\]\):not\(\[data-live-booking-form\]\)/);
+});
+
+test('creator Studio keeps the booking notification email owner-only', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-editor.html'), 'utf8'));
+  const email = document.querySelector('[name="booking_email"]');
+  assert.ok(email);
+  assert.equal(email.type, 'email');
+  assert.equal(email.getAttribute('maxlength'), '254');
+  assert.ok(email.closest('[data-booking-fields]'));
+  const { document: profile } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  assert.equal(profile.querySelector('[name="booking_email"]'), null);
+});
+
+test('creator Studio exposes owner repeaters for My Toys and Wishlist', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-editor.html'), 'utf8'));
+  for (const selector of ['[name="hardware_title"]', '[data-hardware-editor]', '[data-hardware-add]', '[name="wishlist_title"]', '[data-wishlist-editor]', '[data-wishlist-add]']) assert.ok(document.querySelector(selector), selector);
+  const { document: profile } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
+  for (const selector of ['[data-public-profile-hardware]', '[data-public-profile-wishlist]']) assert.ok(profile.querySelector(selector));
+});
+
 for (const template of manifest) test(`${template.page}: flat, styled, and isolated from the backend`, async () => {
   const html = await fs.readFile(path.join(root, template.page), 'utf8');
   const { document } = parseHTML(html);

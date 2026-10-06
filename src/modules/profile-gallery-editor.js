@@ -78,14 +78,22 @@ export function initProfileGalleryEditor(container, addPhoto) {
       const text = create('span');
       text.textContent = 'Publish photo';
       publication.append(published, text);
-      row.append(grid, image, imageStatus, publication);
+      const sidebarChoice = create('label', 'profile-feature-switch');
+      const showInSidebar = create('input');
+      showInSidebar.type = 'checkbox';
+      showInSidebar.checked = photo.show_in_sidebar !== false;
+      showInSidebar.addEventListener('change', () => { photo.show_in_sidebar = showInSidebar.checked; });
+      const sidebarText = create('span');
+      sidebarText.textContent = 'Show in sidebar preview';
+      sidebarChoice.append(showInSidebar, sidebarText);
+      row.append(grid, image, imageStatus, publication, sidebarChoice);
       preview();
       container.append(row);
     });
   };
   addPhoto.addEventListener('click', () => {
     if (container.closest('fieldset')?.disabled || photos.length >= GALLERY_PHOTO_LIMIT) return;
-    photos.push({ id: crypto.randomUUID(), title: '', category: '', description: '', image_url: '', is_published: false });
+    photos.push({ id: crypto.randomUUID(), title: '', category: '', description: '', image_url: '', is_published: false, show_in_sidebar: true });
     paint();
     document.getElementById(`photo-${photos.at(-1).id}-title`)?.focus();
   });

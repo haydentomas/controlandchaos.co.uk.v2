@@ -139,6 +139,14 @@ Before deploying the new protocol editor/public-reader code:
 
 The two fields are optional plain text, at most 4,000 characters each, with no rich HTML. Existing profiles gain empty values. Paid-owner rules and anonymous publication/expiry rules remain unchanged; the atomic gallery RPC retains omitted fields for older clients. This is informational protocol only, not a booking/payment system. Migration 10 has local database coverage but has not been applied remotely by the assistant.
 
+### Booking recipient resolver (migration 11; local code only)
+
+The local booking-enquiry, gallery-preview, My Toys and Wishlist implementation adds [202610060011_directory_booking_recipient.sql](supabase/migrations/202610060011_directory_booking_recipient.sql). It adds `show_in_sidebar` (existing photos default to included), validated public toy/wishlist collections, and private booking-contact storage. Public reads fall back to the previous column list until the migration is applied. It is not applied remotely. Do not rerun migrations 1-10.
+
+When preparing an approved hosted test, run migration 11 in the V2 development project's SQL Editor, then run [verify-directory-booking-recipient.sql](supabase/verify-directory-booking-recipient.sql). Expected results: recipient lookup `false, false, true`; owner contact read `false, true`; profile save `false, true`; direct sidebar-flag updates `false, false`; toy/wishlist column grants are false for anon and true for authenticated (RLS still limits rows to the verified owner). Do not paste credentials into chat.
+
+V2 Studio can store an owner-managed booking contact email in a private RLS-protected table; leaving it blank falls back to the confirmed V2 Auth email. The address is never present in public profile data or the browser form. The form submits through Netlify Forms, and the submission function sends through Resend using server-side `RESEND_API_KEY` and optional `RESEND_FROM_EMAIL`. The recipient is resolved only by the service-role RPC, not from a form field. The assistant did not apply SQL, change Netlify settings, or send a real email.
+
 User: create the development project, retain credentials privately, enter requested settings directly, and run reviewed migrations through the authenticated dashboard when instructed.
 
 Assistant: prepare versioned SQL migrations and permission tests, public-directory queries and pagination, safe frontend configuration, real creator sessions and verified avatar ownership. Give one dashboard/setup step at a time.

@@ -53,7 +53,26 @@ test('public profile lookup rejects invalid slugs and cannot read unapproved rec
   assert.equal(request.searchParams.get('is_approved'), 'eq.true');
   assert.equal(request.searchParams.get('is_published'), 'eq.true');
   assert.equal(request.searchParams.get('slug'), 'eq.sample-profile');
-  assert.match(request.searchParams.get('select'), /boundaries,booking_instructions/);
+  assert.match(request.searchParams.get('select'), /boundaries,booking_instructions,hardware_title,hardware_compat,wishlist_title,wishlist/);
+});
+
+test('public profile falls back to legacy columns until migration 11 is applied', async () => {
+  const requests = [];
+  const row = { id: '33333333-3333-4333-8333-333333333333', slug: 'sample-profile', display_name: 'Existing Creator', is_approved: true, is_published: true };
+  const client = createPublicDirectoryClient(config, async url => {
+    const request = new URL(url);
+    requests.push(request);
+    if (request.searchParams.get('select').includes('hardware_title')) {
+      return new Response(JSON.stringify({ message: "Could not find the 'hardware_title' column in the schema cache" }), { status: 400, headers: { 'content-type': 'application/json' } });
+    }
+    return new Response(JSON.stringify([row]), { status: 200, headers: { 'content-type': 'application/json' } });
+  });
+  const result = await fetchPublicProfile(client, 'sample-profile');
+  assert.equal(requests.length, 2);
+  assert.doesNotMatch(requests[1].searchParams.get('select'), /hardware_title|wishlist_title/);
+  assert.equal(result.display_name, 'Existing Creator');
+  assert.deepEqual(result.hardware_compat, []);
+  assert.deepEqual(result.wishlist, []);
 });
 
 test('directory cards render untrusted text safely and link only to the public reader', async () => {
@@ -94,6 +113,10 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
       id: '33333333-3333-4333-8333-333333333333', slug: 'sample-profile',
       display_name: 'Sample Creator', sl_username: 'sample.resident', role_type: 'switch',
       about: 'About this creator', availability: 'away', tags: [], rate_categories: [], booking_hours: null,
+      hardware_title: 'My Toys',
+      hardware_compat: mode === 'published' ? [{ name: '<script>Gush</script>', desc: 'Remote control', icon: '💎', badge_text: 'Ready' }] : [],
+      wishlist_title: 'Wishlist & Tributes',
+      wishlist: mode === 'published' ? [{ title: 'Throne Wishlist', url: 'https://throne.com/example', note: 'Gifts' }] : [],
       boundaries: mode === 'empty' ? '  ' : '<script>Respect limits</script>\nSecond line',
       booking_instructions: mode === 'empty' ? '' : 'Contact me in-world.\nConfirm a time.'
     }]), { headers: { 'content-type': 'application/json' } });
@@ -105,12 +128,23 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
     await initDirectoryProfile(client);
     assert.equal(document.querySelector('[data-public-profile-status]').textContent, '');
     assert.equal(document.querySelector('[data-public-profile-name]').textContent, 'Sample Creator');
+    assert.equal(document.querySelector('.public-profile-summary').classList.contains('preview-hidden'), true);
     const boundaries = document.querySelector('[data-public-profile-boundaries]');
     const instructions = document.querySelector('[data-public-profile-instructions]');
+    const toys = document.querySelector('[data-public-profile-hardware]');
+    const wishlist = document.querySelector('[data-public-profile-wishlist]');
     assert.equal(boundaries.classList.contains('preview-hidden'), mode === 'empty');
     assert.equal(instructions.classList.contains('preview-hidden'), mode === 'empty');
+    assert.equal(toys.classList.contains('preview-hidden'), mode !== 'published');
+    assert.equal(wishlist.classList.contains('preview-hidden'), mode !== 'published');
+    if (mode === 'published') {
+      assert.equal(toys.querySelector('.public-hardware-copy h3').textContent, '<script>Gush</script>');
+      assert.equal(toys.querySelector('script'), null);
+      assert.equal(wishlist.querySelector('.public-wishlist-copy h3').textContent, 'Throne Wishlist');
+      assert.equal(wishlist.querySelector('a').getAttribute('href'), 'https://throne.com/example');
+    }
     if (mode !== 'empty') {
-      assert.equal(boundaries.querySelector('[data-profile-protocol-text]').textContent, '<script>Respect limits</script>\nSecond line');
+      assert.deepEqual([...boundaries.querySelectorAll('.public-boundaries-list li')].map(item => item.textContent), ['<script>Respect limits</script>', 'Second line']);
       assert.equal(boundaries.querySelector('script'), null);
       assert.equal(instructions.querySelector('[data-profile-protocol-text] p').textContent, 'Contact me in-world.Confirm a time.');
       assert.equal(instructions.querySelectorAll('[data-profile-protocol-text] br').length, 1);
