@@ -32,6 +32,9 @@ test('profile protocol controls are labelled and bounded, and public cards start
   assert.ok(sidebar.contains(editor.querySelector('.creator-editor-savebar')));
   assert.ok(sidebar.querySelector('[data-creator-save]'));
   assert.ok(sidebar.querySelector('input[name="is_published"]'));
+  const publicProfileLink = sidebar.querySelector('[data-creator-public]');
+  assert.equal(sidebar.querySelector('[data-creator-save]').nextElementSibling, publicProfileLink);
+  assert.equal(publicProfileLink.textContent, 'View public profile');
   const { document: profile } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
   for (const selector of ['[data-public-profile-boundaries]', '[data-public-profile-instructions]']) {
     const card = profile.querySelector(selector);
