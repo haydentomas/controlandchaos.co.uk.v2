@@ -486,8 +486,12 @@ test('gallery editor stages optimized WebP uploads and rolls back failed profile
     assert.equal(rows[0].querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'false');
     assert.equal(rows[0].querySelector('.gallery-photo-summary-title').textContent, 'Portrait');
     assert.match(rows[0].querySelector('.gallery-photo-summary-meta').textContent, /Published/);
+    assert.equal(rows[0].querySelector('.gallery-photo-thumbnail-placeholder').hidden, false);
     assert.equal(rows[1].querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'false');
     assert.match(rows[1].querySelector('.gallery-photo-summary-meta').textContent, /Draft/);
+    assert.equal(rows[1].querySelector('.gallery-photo-thumbnail').hidden, false);
+    assert.equal(rows[1].querySelector('.gallery-photo-thumbnail-placeholder').hidden, true);
+    assert.equal(rows[1].querySelector('.gallery-photo-preview-button').hidden, false);
     assert.equal(document.querySelectorAll('[data-rich-text-source]').length, 0);
     rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').click();
     assert.equal(rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'true');
@@ -499,6 +503,9 @@ test('gallery editor stages optimized WebP uploads and rolls back failed profile
     rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').click();
     const input = document.querySelector('input[type="file"]');
     assert.equal(document.querySelector('[data-gallery-editor-photo]').children[1].querySelector('input[type="file"]'), input);
+    const mediaRow = rowFor(photos[0].id).querySelector('.gallery-photo-media-row');
+    assert.equal(mediaRow.children[0].classList.contains('gallery-photo-preview-button'), true);
+    assert.equal(mediaRow.children[1].querySelector('input[type="file"]'), input);
     const file = new Blob(['jpeg'], { type: 'image/jpeg' });
     Object.defineProperty(file, 'name', { value: 'portrait.jpg' });
     Object.defineProperty(input, 'files', { configurable: true, value: [file] });

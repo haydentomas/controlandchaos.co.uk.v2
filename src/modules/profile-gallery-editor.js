@@ -126,6 +126,8 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
         const url = photo.previewObjectUrl || galleryImageUrl(photo.image_url);
         imageStatus.textContent = '';
         image.classList.toggle('preview-hidden', !url);
+        previewButton.hidden = !url;
+        mediaRow.classList.toggle('no-preview', !url);
         if (url) image.src = url;
         else image.removeAttribute('src');
         updateSummary();
@@ -140,6 +142,8 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
         if (!image.src || image.classList.contains('preview-hidden')) return;
         showPreview(image.src, photo.title || `Photo ${index + 1}`);
       });
+      const mediaRow = create('div', 'gallery-photo-media-row');
+      mediaRow.append(previewButton);
       const grid = create('div', 'form-grid-2');
       for (const [name, labelText, maximum] of [['title','Photo title',100],['category','Category tag',100],['image_url','Image URL (optional)',2048],['description','Photo description',2000]]) {
         const group = create('div');
@@ -202,6 +206,7 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
         }
       });
       uploadGroup.append(uploadLabel, uploadInput, uploadNote);
+      mediaRow.append(uploadGroup);
       const publication = create('label', 'profile-feature-switch');
       const published = create('input');
       published.type = 'checkbox';
@@ -218,7 +223,7 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
       const sidebarText = create('span');
       sidebarText.textContent = 'Show in sidebar preview';
       sidebarChoice.append(showInSidebar, sidebarText);
-      details.append(uploadGroup, grid, previewButton, imageStatus, publication, sidebarChoice);
+      details.append(mediaRow, grid, imageStatus, publication, sidebarChoice);
       preview();
     });
   };
