@@ -688,13 +688,17 @@ test('toy and wishlist repeaters validate fields, safe links and reorderable edi
   for (const url of ['javascript:alert(1)', 'http://example.test', '//example.test', 'https://user:pass@example.test']) assert.throws(() => validateWishlistItems([{ ...wishlist[0], url }]), /safe HTTPS/);
   assert.throws(() => validateHardwareItems([{ name: ' ' }]), /Check repeater/);
 
-  const { document } = parseHTML('<button id="add-toy"></button><button id="add-wishlist"></button><fieldset><div id="toys"></div><div id="wishlist"></div></fieldset><div id="public-toys"></div><div id="public-wishlist"></div>');
+  const { document } = parseHTML('<fieldset><section data-collection-section="toys"><div><button id="add-toy"></button><button data-collection-section-toggle aria-expanded="false"><span>My Toys</span><span data-collection-section-count></span><span data-collection-section-action>Show</span></button></div><div data-collection-section-details><div id="toys"></div></div></section><section data-collection-section="wishlist"><div><button id="add-wishlist"></button><button data-collection-section-toggle aria-expanded="false"><span>Wishlist &amp; Tributes</span><span data-collection-section-count></span><span data-collection-section-action>Show</span></button></div><div data-collection-section-details><div id="wishlist"></div></div></section></fieldset><div id="public-toys"></div><div id="public-wishlist"></div>');
   const previous = globalThis.document;
   globalThis.document = document;
   try {
     const toys = initProfileCollectionEditor(document.getElementById('toys'), document.getElementById('add-toy'), { kind: 'toys', fields: HARDWARE_FIELDS, validate: validateHardwareItems, createItem: createHardwareItem, limit: 30 });
     const gifts = initProfileCollectionEditor(document.getElementById('wishlist'), document.getElementById('add-wishlist'), { kind: 'wishlist', fields: WISHLIST_FIELDS, validate: validateWishlistItems, createItem: createWishlistItem, limit: 20 });
     toys.load([{ ...hardware[0] }, { name: 'RLV', desc: '', icon: '\u{1F512}', badge_text: 'Ready' }]);
+    assert.equal(document.querySelector('[data-collection-section="toys"] [data-collection-section-details]').hidden, true);
+    assert.equal(document.querySelector('[data-collection-section="toys"] [data-collection-section-count]').textContent, '2 items');
+    document.querySelector('[data-collection-section="toys"] [data-collection-section-toggle]').click();
+    assert.equal(document.querySelector('[data-collection-section="toys"] [data-collection-section-details]').hidden, false);
     const toyRow = index => document.querySelector(`[data-collection-item="toys-${index}"]`);
     assert.equal(toyRow(0).querySelector('[data-collection-toggle]').getAttribute('aria-expanded'), 'false');
     assert.equal(toyRow(0).querySelector('.profile-collection-summary-title').textContent, 'Lovense Gush');
@@ -708,9 +712,12 @@ test('toy and wishlist repeaters validate fields, safe links and reorderable edi
     document.querySelector('[aria-label="Remove item"]').click();
     assert.deepEqual(toys.value().map(item => item.name), ['Lovense Gush']);
     gifts.load(wishlist);
+    assert.equal(document.querySelector('[data-collection-section="wishlist"] [data-collection-section-details]').hidden, true);
+    assert.equal(document.querySelector('[data-collection-section="wishlist"] [data-collection-section-count]').textContent, '1 link');
     assert.equal(document.querySelector('#wishlist [data-collection-toggle]').getAttribute('aria-expanded'), 'false');
     assert.equal(document.querySelector('#wishlist .profile-collection-summary-title').textContent, wishlist[0].title);
     document.getElementById('add-wishlist').click();
+    assert.equal(document.querySelector('[data-collection-section="wishlist"] [data-collection-section-details]').hidden, false);
     assert.equal(document.querySelectorAll('#wishlist [data-collection-toggle][aria-expanded="true"]').length, 1);
     assert.equal(document.querySelector('#wishlist [aria-expanded="true"]').id, `wishlist-1-toggle`);
     renderHardwareItems(document.getElementById('public-toys'), [{ ...hardware[0], name: '<script>unsafe()</script>' }]);

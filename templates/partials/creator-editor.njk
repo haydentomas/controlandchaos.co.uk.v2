@@ -88,17 +88,27 @@
         </section>
         <section class="creator-editor-section" id="creator-toys-wishlist" aria-labelledby="creator-toys-wishlist-title">
           <h2 id="creator-toys-wishlist-title" class="account-subheading">My Toys &amp; Wishlist</h2>
-          <div class="profile-collection-editor-section">
-            <div class="creator-editor-toolbar"><h3 class="account-subheading">My Toys</h3><button class="btn btn-secondary btn-sm" type="button" data-hardware-add>Add toy / feature</button></div>
-            <label class="form-label" for="hardware-title">Card title</label>
-            <input id="hardware-title" class="form-input" name="hardware_title" maxlength="100">
-            <div data-hardware-editor></div>
+          <div class="profile-collection-editor-section" data-collection-section="toys">
+            <div class="profile-collection-section-header">
+              <button class="profile-collection-section-toggle" type="button" data-collection-section-toggle aria-expanded="false" aria-controls="hardware-section-details"><span>My Toys</span><span data-collection-section-count>0 items</span><span data-collection-section-action>Show</span></button>
+              <button class="btn btn-secondary btn-sm" type="button" data-hardware-add>Add toy / feature</button>
+            </div>
+            <div id="hardware-section-details" data-collection-section-details hidden>
+              <label class="form-label" for="hardware-title">Card title</label>
+              <input id="hardware-title" class="form-input" name="hardware_title" maxlength="100">
+              <div data-hardware-editor></div>
+            </div>
           </div>
-          <div class="profile-collection-editor-section">
-            <div class="creator-editor-toolbar"><h3 class="account-subheading">Wishlist &amp; Tributes</h3><button class="btn btn-secondary btn-sm" type="button" data-wishlist-add>Add wishlist link</button></div>
-            <label class="form-label" for="wishlist-title">Card title</label>
-            <input id="wishlist-title" class="form-input" name="wishlist_title" maxlength="100">
-            <div data-wishlist-editor></div>
+          <div class="profile-collection-editor-section" data-collection-section="wishlist">
+            <div class="profile-collection-section-header">
+              <button class="profile-collection-section-toggle" type="button" data-collection-section-toggle aria-expanded="false" aria-controls="wishlist-section-details"><span>Wishlist &amp; Tributes</span><span data-collection-section-count>0 links</span><span data-collection-section-action>Show</span></button>
+              <button class="btn btn-secondary btn-sm" type="button" data-wishlist-add>Add wishlist link</button>
+            </div>
+            <div id="wishlist-section-details" data-collection-section-details hidden>
+              <label class="form-label" for="wishlist-title">Card title</label>
+              <input id="wishlist-title" class="form-input" name="wishlist_title" maxlength="100">
+              <div data-wishlist-editor></div>
+            </div>
           </div>
         </section>
           </div>

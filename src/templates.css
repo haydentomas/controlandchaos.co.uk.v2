@@ -81,6 +81,13 @@
   .gallery-photo-preview-header h2 { min-width: 0; margin: 0; overflow-wrap: anywhere; }
   .gallery-photo-preview-image { display: block; max-width: 100%; max-height: 75vh; margin: 0 auto; object-fit: contain; }
   .profile-collection-editor-section { margin-top: 24px; padding-top: 12px; border-top: 1px solid rgba(212,175,55,0.2); }
+  .profile-collection-section-header { display: flex; min-width: 0; align-items: center; gap: 12px; }
+  .profile-collection-section-toggle { display: flex; min-width: 0; min-height: 56px; flex: 1 1 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.48); color: inherit; cursor: pointer; text-align: left; }
+  .profile-collection-section-toggle:hover, .profile-collection-section-toggle:focus-visible { border-color: var(--gold-bright); outline: none; }
+  .profile-collection-section-toggle > span:first-child { min-width: 0; overflow-wrap: anywhere; font-weight: 700; }
+  .profile-collection-section-toggle [data-collection-section-count] { color: var(--text-muted); font-size: 12px; }
+  .profile-collection-section-toggle [data-collection-section-action] { flex: 0 0 auto; color: var(--gold-bright); font-size: 12px; font-weight: 700; }
+  .profile-collection-section-details { padding-top: 12px; }
   .profile-collection-editor-item { margin: 8px 0; padding: 8px 0; border-top: 1px solid var(--gold-border-subtle); }
   .profile-collection-header { display: flex; min-width: 0; align-items: center; gap: 12px; }
   .profile-collection-toggle { display: flex; min-width: 0; min-height: 58px; flex: 1 1 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); color: inherit; cursor: pointer; text-align: left; }
@@ -109,6 +116,9 @@
   }
   @media (max-width: 600px) { .creator-editor-section { padding: 18px; } }
   @media (max-width: 480px) {
+    .profile-collection-section-header { flex-wrap: wrap; }
+    .profile-collection-section-toggle { flex-basis: 100%; }
+    .profile-collection-section-header > .btn { margin-left: auto; }
     .rate-service-header { flex-wrap: wrap; }
     .rate-service-toggle { flex-basis: 100%; }
     .rate-service-header .creator-editor-toolbar { margin-left: auto; }

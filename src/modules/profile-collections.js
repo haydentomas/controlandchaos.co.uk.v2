@@ -46,6 +46,25 @@ export function validateWishlistItems(items) {
 export function initProfileCollectionEditor(container, addButton, { kind, fields, validate, createItem, limit }) {
   let items = [];
   let expandedItem = null;
+  let sectionExpanded = false;
+  const section = container.closest('[data-collection-section]');
+  const sectionToggle = section?.querySelector('[data-collection-section-toggle]');
+  const sectionDetails = section?.querySelector('[data-collection-section-details]');
+  const updateSection = () => {
+    if (sectionDetails) sectionDetails.hidden = !sectionExpanded;
+    if (!sectionToggle) return;
+    sectionToggle.setAttribute('aria-expanded', String(sectionExpanded));
+    sectionToggle.setAttribute('aria-label', `${sectionExpanded ? 'Hide' : 'Show'} ${kind === 'toys' ? 'My Toys' : 'Wishlist & Tributes'}`);
+    const count = section.querySelector('[data-collection-section-count]');
+    if (count) count.textContent = `${items.length} ${kind === 'toys' ? items.length === 1 ? 'item' : 'items' : items.length === 1 ? 'link' : 'links'}`;
+    const action = sectionToggle.querySelector('[data-collection-section-action]');
+    if (action) action.textContent = sectionExpanded ? 'Hide' : 'Show';
+  };
+  sectionToggle?.addEventListener('click', () => {
+    if (container.closest('fieldset')?.disabled) return;
+    sectionExpanded = !sectionExpanded;
+    updateSection();
+  });
   const element = (tag, className = '') => {
     const node = document.createElement(tag);
     node.className = className;
@@ -148,18 +167,20 @@ export function initProfileCollectionEditor(container, addButton, { kind, fields
       details.append(grid);
       container.append(card);
     });
+    updateSection();
   };
   addButton.addEventListener('click', () => {
     if (container.closest('fieldset')?.disabled || items.length >= limit) return;
     const item = createItem();
     items.push(item);
     expandedItem = item;
+    sectionExpanded = true;
     paint();
     focusItem(items.length - 1);
   });
   return {
-    load(value) { items = validate(value ?? []); expandedItem = null; paint(); },
-    clear() { items = []; expandedItem = null; paint(); },
+    load(value) { items = validate(value ?? []); expandedItem = null; sectionExpanded = false; paint(); },
+    clear() { items = []; expandedItem = null; sectionExpanded = false; paint(); },
     value() { return validate(items); }
   };
 }

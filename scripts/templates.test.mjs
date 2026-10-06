@@ -108,6 +108,11 @@ test('creator Studio keeps the booking notification email owner-only', async () 
 test('creator Studio exposes owner repeaters for My Toys and Wishlist', async () => {
   const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-editor.html'), 'utf8'));
   for (const selector of ['[name="hardware_title"]', '[data-hardware-editor]', '[data-hardware-add]', '[name="wishlist_title"]', '[data-wishlist-editor]', '[data-wishlist-add]']) assert.ok(document.querySelector(selector), selector);
+  for (const kind of ['toys', 'wishlist']) {
+    const section = document.querySelector(`[data-collection-section="${kind}"]`);
+    assert.ok(section.querySelector('[data-collection-section-toggle]'));
+    assert.equal(section.querySelector('[data-collection-section-details]').hidden, true);
+  }
   const { document: profile } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
   for (const selector of ['[data-public-profile-hardware]', '[data-public-profile-wishlist]']) assert.ok(profile.querySelector(selector));
 });
