@@ -458,7 +458,7 @@ test('gallery editor reorders and removes photos while public rendering excludes
 });
 
 test('gallery editor stages optimized WebP uploads and rolls back failed profile saves', async () => {
-  const { document } = parseHTML('<button id="add"></button><fieldset><div id="editor"></div></fieldset>');
+  const { document } = parseHTML('<button id="add"></button><fieldset disabled><div id="editor"></div></fieldset>');
   const previousDocument = globalThis.document;
   const previousCreateObjectUrl = URL.createObjectURL;
   const previousRevokeObjectUrl = URL.revokeObjectURL;
@@ -479,7 +479,24 @@ test('gallery editor stages optimized WebP uploads and rolls back failed profile
   try {
     const editor = initProfileGalleryEditor(document.getElementById('editor'), document.getElementById('add'), { optimizeImage: async file => { assert.equal(file.type, 'image/jpeg'); return optimized; } });
     const original = { ...photos[0], storage_path: `${profileId}/${photos[0].id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, image_url: '' };
-    editor.load([original]);
+    editor.load([original, photos[1]]);
+    const rows = document.querySelectorAll('[data-gallery-editor-photo]');
+    const rowFor = id => document.querySelector(`[data-gallery-editor-photo="${id}"]`);
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'false');
+    assert.equal(rows[0].querySelector('.gallery-photo-summary-title').textContent, 'Portrait');
+    assert.match(rows[0].querySelector('.gallery-photo-summary-meta').textContent, /Published/);
+    assert.equal(rows[1].querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'false');
+    assert.match(rows[1].querySelector('.gallery-photo-summary-meta').textContent, /Draft/);
+    assert.equal(document.querySelectorAll('[data-rich-text-source]').length, 0);
+    rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').click();
+    assert.equal(rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').getAttribute('aria-expanded'), 'true');
+    assert.equal(rowFor(photos[0].id).querySelector('.gallery-photo-details').hidden, false);
+    assert.equal(document.querySelectorAll('[data-rich-text-source]').length, 1);
+    rowFor(photos[1].id).querySelector('[data-gallery-photo-toggle]').click();
+    assert.equal(document.querySelectorAll('[data-gallery-photo-toggle][aria-expanded="true"]').length, 1);
+    assert.equal(document.querySelectorAll('[data-rich-text-source]').length, 1);
+    rowFor(photos[0].id).querySelector('[data-gallery-photo-toggle]').click();
     const input = document.querySelector('input[type="file"]');
     assert.equal(document.querySelector('[data-gallery-editor-photo]').children[1].querySelector('input[type="file"]'), input);
     const file = new Blob(['jpeg'], { type: 'image/jpeg' });

@@ -29,8 +29,27 @@
   .booking-day-list label { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; }
   .booking-day-list input { width: 18px; height: 18px; accent-color: #d4af37; }
   .public-booking-hours p { white-space: pre-wrap; overflow-wrap: anywhere; }
-  .profile-gallery-editor-item { border-top: 1px solid rgba(212,175,55,0.2); padding: 16px 0 24px; }
-  .profile-gallery-editor-item h3 { margin: 0 auto 0 0; }
+  .profile-gallery-editor-item { border-top: 1px solid rgba(212,175,55,0.2); padding: 12px 0; }
+  .gallery-photo-header { display: flex; align-items: center; gap: 12px; }
+  .gallery-photo-toggle { display: flex; min-width: 0; min-height: 72px; flex: 1 1 auto; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); color: inherit; cursor: pointer; text-align: left; }
+  .gallery-photo-toggle:hover, .gallery-photo-toggle:focus-visible { border-color: var(--gold-bright); outline: none; }
+  .gallery-photo-thumbnail-button { display: block; width: 56px; height: 56px; flex: 0 0 56px; padding: 0; border: 0; border-radius: 4px; background: transparent; cursor: zoom-in; }
+  .gallery-photo-thumbnail-button:disabled { cursor: default; }
+  .gallery-photo-thumbnail, .gallery-photo-thumbnail-placeholder { display: block; width: 56px; height: 56px; flex: 0 0 56px; border-radius: 4px; background: #09080c; object-fit: cover; }
+  .gallery-photo-thumbnail-placeholder { display: grid; place-items: center; color: var(--text-muted); font-size: 11px; }
+  .gallery-photo-summary-copy { display: flex; min-width: 0; flex: 1 1 auto; flex-direction: column; gap: 5px; }
+  .gallery-photo-summary-title { overflow-wrap: anywhere; font-weight: 700; }
+  .gallery-photo-summary-meta { color: var(--text-muted); font-size: 12px; overflow-wrap: anywhere; }
+  .gallery-photo-toggle-text { flex: 0 0 auto; color: var(--gold-bright); font-size: 12px; font-weight: 700; }
+  .gallery-photo-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }
+  .gallery-photo-actions .btn { min-width: 36px; min-height: 36px; }
+  .gallery-photo-details { padding-top: 16px; }
+  .gallery-photo-preview-button { display: block; max-width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+  .gallery-photo-preview-dialog { width: min(800px,92vw); max-width: 92vw; max-height: 90vh; margin: auto; padding: 16px; border: 1px solid var(--gold-border); border-radius: 8px; background: #171411; color: var(--text-primary); }
+  .gallery-photo-preview-dialog::backdrop { background: rgba(0,0,0,0.82); }
+  .gallery-photo-preview-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .gallery-photo-preview-header h2 { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+  .gallery-photo-preview-image { display: block; max-width: 100%; max-height: 75vh; margin: 0 auto; object-fit: contain; }
   .profile-collection-editor-section { margin-top: 24px; padding-top: 12px; border-top: 1px solid rgba(212,175,55,0.2); }
   .profile-collection-editor-item { margin: 12px 0; padding: 14px 16px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); }
   .profile-collection-editor-item .creator-editor-toolbar { padding: 4px 0 12px; }
@@ -41,6 +60,12 @@
     .creator-editor-section, .creator-editor-savebar { grid-column: 1; }
   }
   @media (max-width: 600px) { .creator-editor-section { padding: 18px; } }
+  @media (max-width: 480px) {
+    .gallery-photo-header { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 8px; }
+    .gallery-photo-thumbnail-button { grid-column: 1; grid-row: 1; }
+    .gallery-photo-toggle { grid-column: 2; grid-row: 1; }
+    .gallery-photo-actions { grid-column: 1 / -1; justify-self: end; }
+  }
   .public-profile-banner { display: block; width: 100%; max-height: 320px; object-fit: contain; margin-top: 24px; }
   .public-gallery-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
   .public-gallery-tile { background: transparent; border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; padding: 0; color: inherit; cursor: pointer; text-align: left; min-width: 0; }
