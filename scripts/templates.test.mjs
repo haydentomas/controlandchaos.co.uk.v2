@@ -47,9 +47,10 @@ test('profile protocol controls are labelled and bounded, and public cards start
 test('directory profile tabs expose only supported views with accessible panel relationships', async () => {
   const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
   const tabs = [...document.querySelectorAll('[data-public-profile-tabs] [role="tab"]')];
-  assert.deepEqual(tabs.map(tab => tab.textContent.trim()), ['Rate Card & Bio', 'Gallery']);
+  assert.deepEqual(tabs.map(tab => tab.textContent.trim()), ['Rate Card & Bio', 'Gallery', 'Blog']);
   assert.equal(document.querySelector('[data-public-profile-tabs]').hasAttribute('hidden'), true);
   assert.equal(tabs[1].hasAttribute('hidden'), true);
+  assert.equal(tabs[2].hasAttribute('hidden'), true);
   for (const tab of tabs) {
     const panel = document.getElementById(tab.getAttribute('aria-controls'));
     assert.ok(panel);

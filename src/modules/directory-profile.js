@@ -1,18 +1,22 @@
-import { createPublicDirectoryClient, directoryConfig, fetchPublicProfile, publicImageUrl } from './directory-api.js';
+import { createCreatorClient } from './auth-api.js';
+import { directoryConfig, fetchPublicProfile, publicImageUrl } from './directory-api.js';
 import { renderPublicRateCards } from './rate-cards.js';
 import { renderBookingHours } from './booking-hours.js';
 import { fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from './profile-gallery.js';
 import { renderRichText } from './profile-rich-text.js';
 import { initBookingEnquiry } from './booking-enquiry.js';
 import { renderHardwareItems, renderWishlistItems } from './profile-collections.js';
+import { renderCreatorBlogFeed } from './creator-blog-feed.js';
 
-function initProfileTabs(hasGallery) {
+function initProfileTabs(hasGallery, hasBlog) {
   const nav = document.querySelector('[data-public-profile-tabs]');
   const tabs = [...nav.querySelectorAll('[role="tab"]')];
   const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
   const galleryTab = document.getElementById('profile-tab-gallery');
+  const blogTab = document.getElementById('profile-tab-blog');
   galleryTab.hidden = !hasGallery;
-  nav.hidden = !hasGallery;
+  blogTab.hidden = !hasBlog;
+  nav.hidden = !hasGallery && !hasBlog;
   const activate = index => {
     tabs.forEach((tab, tabIndex) => {
       const selected = tabIndex === index;
@@ -35,8 +39,9 @@ function initProfileTabs(hasGallery) {
       activate(tabs.indexOf(available[nextIndex]));
     });
   });
-  document.querySelector('[data-public-gallery-view-all]').addEventListener('click', () => {
-    activate(1);
+  document.querySelector('[data-public-gallery-view-all]')?.addEventListener('click', () => {
+    const galleryIndex = tabs.indexOf(galleryTab);
+    activate(galleryIndex);
     galleryTab.focus();
     nav.scrollIntoView({ block: 'start', behavior: 'auto' });
   });
@@ -62,7 +67,7 @@ export async function initDirectoryProfile(clientOverride) {
   const content = document.querySelector('[data-public-profile-content]');
   const slug = new URL(location.href).searchParams.get('slug');
   try {
-    const client = clientOverride || createPublicDirectoryClient(directoryConfig());
+    const client = clientOverride || createCreatorClient(directoryConfig());
     const profile = await fetchPublicProfile(client, slug);
     if (!profile) { status.textContent = 'Profile not found.'; return; }
     const fill = (selector, value) => { document.querySelector(selector).textContent = value || ''; };
@@ -139,24 +144,48 @@ export async function initDirectoryProfile(clientOverride) {
     content.classList.remove('preview-hidden');
     status.textContent = '';
     const previewSection = document.querySelector('[data-public-gallery-preview-section]');
-    let photos;
+    let published = [];
+    let hasGallery = false;
     try {
-      photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
+      const photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
+      published = photos.filter(photo => photo.is_published);
+      const sidebarPhotos = published.filter(photo => photo.show_in_sidebar !== false);
+      renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
+      renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), sidebarPhotos);
+      previewSection.classList.toggle('preview-hidden', !sidebarPhotos.length);
+      document.getElementById('profile-tab-gallery').textContent = `Gallery (${published.length})`;
+      document.querySelector('[data-public-gallery-view-all]').textContent = `View all ${published.length} ${published.length === 1 ? 'photo' : 'photos'}`;
+      hasGallery = published.length > 0;
     } catch {
-      initProfileTabs(true);
+      hasGallery = true;
       document.querySelector('[data-public-gallery-status]').textContent = 'Gallery is temporarily unavailable.';
       document.querySelector('[data-public-gallery-preview-status]').textContent = 'Gallery is temporarily unavailable.';
       document.querySelector('[data-public-gallery-view-all]').hidden = true;
       previewSection.classList.remove('preview-hidden');
-      return;
     }
-    const published = photos.filter(photo => photo.is_published);
-    const sidebarPhotos = published.filter(photo => photo.show_in_sidebar !== false);
-    renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
-    renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), sidebarPhotos);
-    previewSection.classList.toggle('preview-hidden', !sidebarPhotos.length);
-    document.getElementById('profile-tab-gallery').textContent = `Gallery (${published.length})`;
-    document.querySelector('[data-public-gallery-view-all]').textContent = `View all ${published.length} ${published.length === 1 ? 'photo' : 'photos'}`;
-    initProfileTabs(published.length > 0);
+    let hasBlog = false;
+    try {
+      const [offerResult, feedResult] = await Promise.all([
+        client.rpc('creator_blog_public_offer', { target_profile: profile.id }),
+        client.rpc('creator_blog_feed', { target_profile: profile.id })
+      ]);
+      if (offerResult.error || feedResult.error || !Array.isArray(feedResult.data)) throw new Error('Creator blog is temporarily unavailable.');
+      const offer = Array.isArray(offerResult.data) ? offerResult.data[0] || null : offerResult.data;
+      const posts = feedResult.data;
+      await renderCreatorBlogFeed(
+        document.querySelector('[data-public-blog-feed]'),
+        document.querySelector('[data-public-blog-status]'),
+        client,
+        profile,
+        offer,
+        posts
+      );
+      hasBlog = posts.length > 0 || Number(offer?.monthly_price_linden) > 0;
+      document.getElementById('profile-tab-blog').textContent = `Blog (${posts.length})`;
+      document.querySelector('[data-public-blog-title]').textContent = `${profile.display_name}'s Blog`;
+    } catch {
+      document.querySelector('[data-public-blog-status]').textContent = 'Creator blog is temporarily unavailable.';
+    }
+    initProfileTabs(hasGallery, hasBlog);
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }
 }

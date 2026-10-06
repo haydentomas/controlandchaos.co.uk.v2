@@ -4,9 +4,11 @@ Updated: 2026-10-06. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
-**Commit `1c21ac8` is pushed and Netlify serves the gallery upload UI. The user applied migration 12; verification showed the private WebP bucket, zero profiles over the cap, correct grants, trigger and policies. Alt test revealed that the replacement save RPC rejects Boundaries and How to Book fields that Studio submits. Migration 13 fixes this and is local/unapplied; the upload picker has also been moved higher locally. Next: run full tests/build, push the fix, have the user apply migration 13, then retest with the Alt. No photo saved successfully.**
+Creator Blog Studio, public feed, subscriber entitlements, creator-pass payout endpoint, and finance-alt terminal flow are implemented locally. Migration 14 is **not applied remotely**, and these changes are uncommitted, unpushed, and undeployed. The terminal must be owned by the finance alt, remain non-group-deeded, and receive that owner's explicit debit permission before creator passes can be sold. No payment, payout, refund, or permission has been performed in-world.
 
-Validation: before the Alt test, 153/153 tests and production build passed. The new migration-13 regression test now passes with non-empty protocol fields and Storage-backed photos. Rerun the full suite/build before pushing the fix. No successful live upload or booking was made.
+Focused creator/blog/profile/payment tests pass, including the PGlite migration/import test, public locked-content redaction, endpoint identity checks, and terminal asynchronous-transfer contract. The V1 importer defaults to dry-run. Its current preview finds Alek Zane's 3 feed posts, 1 public blog post, L$1,500/month price, and 1 locked media file that needs a private V2 re-upload. Locked post text is preserved privately; old locked media URLs are discarded. Full test suite and production build remain to be run.
+
+Next: finish full local validation and inspect the diff. Any remote migration, importer `--apply`, Netlify identity/secret change, deployment, in-world script replacement, debit grant, or real payment test requires the user's explicit action/approval. Configure the single global finance-terminal SLURL only after the user chooses the exact location. Never retry an uncertain Linden transfer automatically; retain its Linkset Data receipt for manual reconciliation.
 
 Hosted links: [Profile Studio](https://controlandchaosv2.netlify.app/directory-editor.html) and [testpress public profile](https://controlandchaosv2.netlify.app/directory-profile.html?slug=avatar-06fc7dea-e8f9-4d79-896d-264ef8b7b8c7). Toys and wishlist stay hidden until the owner adds entries. Gallery stays hidden until photos are published; the sidebar shows only selected published photos. Do not submit a real booking until the first migration-11 RPC permission check is confirmed and V2 Resend configuration is ready.
 
@@ -48,7 +50,7 @@ No new SQL or terminal setup is needed. Choose the next feature with the user be
 
 ### Next Work After Booking Test
 
-Have the user compare populated V2 rate categories and booking requests against V1 after the migration and approved deployment. Then continue the V1 inventory with public creator blogs and VIP subscriber posts. Define private-post entitlement and access rules before wiring paid content; do not invent prices or tier restrictions. Socials, toys, wishlist/reviews and uploads/storage remain separate work; current galleries use image URLs.
+Creator blogs and subscriber posts are now implemented locally as described at the top of this handoff. After approval for rollout, apply migration 14, set the global finance terminal location, and use the dry-run V1 importer review before any import. The locked V1 media file must be re-uploaded to private storage by the creator; the importer intentionally does not carry its public URL forward. Socials, toys, wishlist/reviews and other remaining profile inventory stay separate work.
 
 ## Product Direction
 
@@ -56,7 +58,7 @@ Have the user compare populated V2 rate categories and booking requests against 
 - Subscription activation, ownership assignment, expiry and renewal must be automated, not staff-assigned day-to-day.
 - Four plans: Basic Monthly, Basic Lifetime, VIP Monthly, VIP Lifetime. Final prices are undecided; do not invent prices or Basic/VIP feature restrictions.
 - Monthly access currently means 30 days. Renewal extends remaining active time, or starts from now after expiry. Lifetime access does not expire.
-- All sales are final: **no automatic refunds and no debit-permission requests**. Unexpected payments are retained for reconciliation.
+- Directory-plan sales remain final; unexpected payments are retained for reconciliation. Creator passes are a separate, exact-price pass-through: the finance alt must explicitly grant debit permission, no platform cut is taken, and a definite failed creator payout returns the original fan payment. Ambiguous transfers are never retried automatically and require manual reconciliation.
 - The user wants complete ready-to-paste LSL files with filename/setup comments, not instructions to replace individual segments. Keep secrets in the private notecard so code updates do not require retyping them.
 
 ## Confirmed Live

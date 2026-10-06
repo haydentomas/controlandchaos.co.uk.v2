@@ -81,6 +81,7 @@
         <div role="tablist" aria-label="Profile views">
           <button type="button" id="profile-tab-details" class="public-profile-tab" role="tab" aria-controls="profile-panel-details" aria-selected="true" tabindex="0">Rate Card &amp; Bio</button>
           <button type="button" id="profile-tab-gallery" class="public-profile-tab" role="tab" aria-controls="profile-panel-gallery" aria-selected="false" tabindex="-1" hidden>Gallery</button>
+          <button type="button" id="profile-tab-blog" class="public-profile-tab" role="tab" aria-controls="profile-panel-blog" aria-selected="false" tabindex="-1" hidden>Blog</button>
         </div>
       </nav>
       <section id="profile-panel-details" class="public-profile-tab-panel" role="tabpanel" aria-labelledby="profile-tab-details" tabindex="0" data-public-profile-details>
@@ -159,6 +160,15 @@
           <p class="text-muted" data-public-gallery-status role="status"></p>
           <div class="account-actions" id="gallery-library-filters"></div>
           <div class="public-gallery-grid" id="gallery-library-grid"></div>
+        </div>
+      </section>
+      <section id="profile-panel-blog" class="public-profile-tab-panel preview-hidden" role="tabpanel" aria-labelledby="profile-tab-blog" tabindex="0" data-public-profile-blog>
+        <div class="creator-blog-page">
+          <header class="creator-blog-page-header">
+            <div><span class="public-booking-eyebrow">Creator Blog</span><h2 class="public-profile-section-title" data-public-blog-title>Blog</h2><p class="text-muted">Public posts, live updates, and subscriber exclusives in one feed.</p></div>
+          </header>
+          <p class="text-muted" data-public-blog-status role="status" aria-live="polite"></p>
+          <div class="creator-blog-feed" data-public-blog-feed></div>
         </div>
       </section>
     </div>

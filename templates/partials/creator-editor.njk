@@ -16,6 +16,7 @@
               <a href="#creator-images">Photos &amp; Visuals</a>
               <a href="#creator-gallery">Gallery</a>
               <a href="#creator-rates">Rate Cards</a>
+              <a href="#creator-blog">Blog</a>
               <a href="#creator-toys-wishlist">Toys &amp; Wishlist</a>
             </nav>
             <div class="creator-editor-toolbar creator-editor-savebar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><a class="btn btn-secondary preview-hidden" data-creator-public href="/directory.html" target="_blank" rel="noopener">View public profile</a><p class="text-muted" data-creator-publication></p></div>
@@ -85,6 +86,18 @@
         <section class="creator-editor-section" id="creator-rates" aria-labelledby="creator-rates-title">
           <div class="creator-editor-toolbar"><h2 id="creator-rates-title" class="account-subheading">Rate Cards &amp; Menus</h2><button class="btn btn-secondary" type="button" data-rate-add-category>Add rate category</button></div>
           <div data-rate-editor></div>
+        </section>
+        <section class="creator-editor-section" id="creator-blog" aria-labelledby="creator-blog-title">
+          <h2 id="creator-blog-title" class="account-subheading">Unified Creator Blog</h2>
+          <p class="text-muted">Public posts and live updates appear alongside subscriber-only posts in one timeline. Subscribers get every published locked post while their monthly pass is active.</p>
+          <div class="form-grid-2 creator-blog-settings">
+            <div><label class="form-label" for="creator-blog-monthly-price">Monthly subscriber price (L$)</label><input class="form-input" id="creator-blog-monthly-price" type="number" min="0" max="1000000" step="1" data-blog-monthly-price value="0"></div>
+            <div><label class="form-label" for="creator-blog-benefits">Membership summary</label><input class="form-input" id="creator-blog-benefits" maxlength="1000" data-blog-benefits></div>
+          </div>
+          <p class="text-muted">Subscribers pay through the shared in-world finance terminal. The creator receives the configured monthly amount directly; the directory listing subscription is separate.</p>
+          <div class="creator-blog-editor-toolbar"><button class="btn btn-secondary" type="button" data-blog-add-post>Add post / live update</button><button class="btn btn-gold" type="button" data-blog-save>Save blog</button><span class="text-muted" data-blog-count>0 / 100 posts</span></div>
+          <p class="account-status" data-blog-status role="status" aria-live="polite"></p>
+          <div data-blog-editor></div>
         </section>
         <section class="creator-editor-section" id="creator-toys-wishlist" aria-labelledby="creator-toys-wishlist-title">
           <h2 id="creator-toys-wishlist-title" class="account-subheading">My Toys &amp; Wishlist</h2>

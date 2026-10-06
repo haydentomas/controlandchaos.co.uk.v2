@@ -3,7 +3,7 @@ import { validateBookingHours } from './booking-hours.js';
 import { fetchGalleryPhotos, validateGalleryPhotos } from './profile-gallery.js';
 import { validateHardwareItems, validateWishlistItems } from './profile-collections.js';
 
-export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours,boundaries,booking_instructions,hardware_title,hardware_compat,wishlist_title,wishlist';
+export const CREATOR_PROFILE_COLUMNS = 'id,slug,display_name,sl_username,role_type,headline,tagline,about,avatar_image,banner_image,starting_rate,availability,tags,is_published,is_approved,rate_categories,availability_note,booking_hours,boundaries,booking_instructions,hardware_title,hardware_compat,wishlist_title,wishlist,creator_blog_monthly_linden,creator_blog_benefits';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const limits = { display_name: 100, headline: 160, tagline: 1000, about: 20000, starting_rate: 100 };
 const optionalTextLimits = { availability_note: 500, boundaries: 4000, booking_instructions: 4000 };

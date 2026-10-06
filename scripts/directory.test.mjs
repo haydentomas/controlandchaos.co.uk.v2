@@ -5,6 +5,7 @@ import { parseHTML } from 'linkedom';
 import { createPublicDirectoryClient, directoryConfig, fetchDirectory, fetchPublicProfile, publicImageUrl, PUBLIC_PROFILE_COLUMNS } from '../src/modules/directory-api.js';
 import { directoryCard } from '../src/modules/directory.js';
 import { initDirectoryProfile } from '../src/modules/directory-profile.js';
+import { renderCreatorBlogFeed } from '../src/modules/creator-blog-feed.js';
 
 const config = directoryConfig({ VITE_SUPABASE_URL: 'https://example.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test_only' });
 
@@ -92,6 +93,36 @@ test('directory cards render untrusted text safely and link only to the public r
     if (previous === undefined) delete globalThis.document;
     else globalThis.document = previous;
   }
+});
+
+test('creator blog renders locked teasers publicly and full posts only when the server unlocks them', async () => {
+  const { document } = parseHTML('<p id="status"></p><div id="feed"></div>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  const signedCalls = [];
+  const client = { storage: { from: bucket => ({ createSignedUrl: async (path, lifetime) => {
+    signedCalls.push({ bucket, path, lifetime });
+    return { data: { signedUrl: 'https://signed.example/private.webp' }, error: null };
+  } }) } };
+  const profile = { id: '33333333-3333-4333-8333-333333333333', display_name: 'Sample Creator' };
+  const offer = { creator_avatar_uuid: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', monthly_price_linden: 1500, benefits: 'Exclusive posts', terminal_slurl: 'secondlife://finance/128/128/20', viewer_is_subscribed: false };
+  const locked = { id: '11111111-1111-4111-8111-111111111111', post_type: 'post', access_level: 'subscribers', title: 'Private set', tag: 'Lookbook', teaser: 'A public preview.', body_markdown: null, media_type: null, media_path: null, media_url: null, is_locked: true };
+  const publicPost = { id: '22222222-2222-4222-8222-222222222222', post_type: 'live_update', access_level: 'public', title: 'Public update', tag: 'Live', teaser: '', body_markdown: 'Visible update.', media_type: 'text', media_path: '', media_url: '', is_locked: false };
+  try {
+    await renderCreatorBlogFeed(document.getElementById('feed'), document.getElementById('status'), client, profile, offer, [locked, publicPost]);
+    const lockedCard = document.querySelector('.creator-blog-card.is-locked');
+    assert.equal(lockedCard.querySelector('.creator-blog-post-teaser').textContent, 'A public preview.');
+    assert.equal(lockedCard.querySelector('.creator-blog-post-body'), null);
+    assert.equal(lockedCard.textContent.includes('Full subscribers-only details.'), false);
+    assert.equal(lockedCard.querySelector('a').getAttribute('href'), offer.terminal_slurl);
+    assert.equal(document.querySelector('.creator-blog-membership-action strong').textContent, 'L$1,500 / month');
+    await renderCreatorBlogFeed(document.getElementById('feed'), document.getElementById('status'), client, profile, { ...offer, viewer_is_subscribed: true }, [
+      { ...locked, is_locked: false, body_markdown: 'Full subscribers-only details.', media_type: 'image', media_path: `${profile.id}/${locked.id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp` }
+    ]);
+    assert.match(document.querySelector('.creator-blog-post-body').textContent, /Full subscribers-only details/);
+    assert.equal(document.querySelector('.creator-blog-media-image').src, 'https://signed.example/private.webp');
+    assert.deepEqual(signedCalls, [{ bucket: 'creator-blog-media', path: `${profile.id}/${locked.id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp`, lifetime: 300 }]);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
 });
 
 for (const mode of ['published', 'single', 'empty', 'failed']) test(`public profile gallery preview and tabs handle ${mode} data`, async () => {

@@ -7,6 +7,7 @@ import { initProfileGalleryEditor } from './profile-gallery-editor.js';
 import { initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, validateHardwareItems, validateWishlistItems, createHardwareItem, createWishlistItem } from './profile-collections.js';
 import { fetchGalleryPhotos } from './profile-gallery.js';
 import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } from './rich-text-editor.js';
+import { initCreatorBlogEditor } from './creator-blog.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -21,6 +22,7 @@ export async function initCreatorEditor(clientOverride) {
   const galleryEditor = initProfileGalleryEditor(form.querySelector('[data-gallery-editor]'), form.querySelector('[data-gallery-add-photo]'));
   const hardwareEditor = initProfileCollectionEditor(form.querySelector('[data-hardware-editor]'), form.querySelector('[data-hardware-add]'), { kind: 'toys', fields: HARDWARE_FIELDS, validate: validateHardwareItems, createItem: createHardwareItem, limit: 30 });
   const wishlistEditor = initProfileCollectionEditor(form.querySelector('[data-wishlist-editor]'), form.querySelector('[data-wishlist-add]'), { kind: 'wishlist', fields: WISHLIST_FIELDS, validate: validateWishlistItems, createItem: createWishlistItem, limit: 20 });
+  const creatorBlogEditor = initCreatorBlogEditor(form.querySelector('[data-blog-editor]'), form.querySelector('[data-blog-add-post]'), form.querySelector('[data-blog-monthly-price]'), form.querySelector('[data-blog-benefits]'));
   let client;
   let generation = 0;
   let saving = false;
@@ -40,6 +42,7 @@ export async function initCreatorEditor(clientOverride) {
     galleryEditor.clear();
     hardwareEditor.clear();
     wishlistEditor.clear();
+    creatorBlogEditor.clear();
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -80,6 +83,15 @@ export async function initCreatorEditor(clientOverride) {
       if (active !== generation) return;
       galleryEditor.load(photos);
       paint(row);
+      try {
+        await creatorBlogEditor.load(client, row);
+        form.querySelector('[data-blog-save]').disabled = false;
+        form.querySelector('[data-blog-status]').textContent = '';
+      }
+      catch (error) {
+        form.querySelector('[data-blog-status]').textContent = error.message;
+        form.querySelector('[data-blog-save]').disabled = true;
+      }
       form.querySelector('[data-creator-subscription]').textContent = subscriptionLabel(subscriptions.find(subscription => subscription.profile_id === row.id));
       form.classList.remove('preview-hidden');
       fields.disabled = false;
@@ -121,6 +133,20 @@ export async function initCreatorEditor(clientOverride) {
   });
   reload.addEventListener('click', refreshAccess);
   picker.addEventListener('change', loadSelected);
+  form.querySelector('[data-blog-save]').addEventListener('click', async () => {
+    if (saving || !profile || fields.disabled) return;
+    const saveButton = form.querySelector('[data-blog-save]');
+    const blogStatus = form.querySelector('[data-blog-status]');
+    saveButton.disabled = true;
+    try {
+      await creatorBlogEditor.save(message => { blogStatus.textContent = message; });
+      blogStatus.textContent = 'Creator blog saved.';
+    } catch (error) {
+      blogStatus.textContent = error.message;
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
   for (const [name, selector] of [['avatar_image', '[data-creator-avatar-preview]'], ['banner_image', '[data-creator-banner-preview]']]) form.elements[name].addEventListener('input', () => preview(name, selector));
   for (const image of form.querySelectorAll('.creator-image-preview')) image.addEventListener('error', () => image.classList.add('preview-hidden'));
   form.addEventListener('submit', async event => {

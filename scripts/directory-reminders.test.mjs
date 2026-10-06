@@ -20,7 +20,10 @@ test('terminal reminder polling is separate from payments and persists submissio
   assert.match(script, /sendReminderRequest\("ack", llJsonGetValue\(journal, \["ack"\]\)\)/);
   assert.ok(script.indexOf('"state", "sending"') < script.indexOf('llInstantMessage((key)recipient, message)'));
   assert.match(script, /sendReminderRequest\("authorize"/);
-  assert.doesNotMatch(script, /llGiveMoney|llTransferLindenDollars|PERMISSION_DEBIT/);
+    assert.match(script, /llTransferLindenDollars\(creatorAvatar, creatorAmount\)/);
+    assert.match(script, /llRequestPermissions\(llGetOwner\(\), PERMISSION_DEBIT\)/);
+    const reminderFlow = script.slice(script.indexOf('sendReminderRequest'), script.indexOf('integer validConfigSecret'));
+    assert.doesNotMatch(reminderFlow, /llGiveMoney|llTransferLindenDollars|PERMISSION_DEBIT/);
 });
 
 test('reminder endpoint authenticates terminal and derives kiosk identity, recipient and text server-side', async () => {

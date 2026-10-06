@@ -9,6 +9,7 @@ import { initRateCardEditor } from '../src/modules/rate-card-editor.js';
 import { validateBookingHours, bookingLocalTime, renderBookingHours, initBookingHoursEditor } from '../src/modules/booking-hours.js';
 import { validateGalleryPhotos, galleryImageUrl, fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from '../src/modules/profile-gallery.js';
 import { initProfileGalleryEditor } from '../src/modules/profile-gallery-editor.js';
+import { initCreatorBlogEditor } from '../src/modules/creator-blog.js';
 import { validateHardwareItems, validateWishlistItems, renderHardwareItems, renderWishlistItems, initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, createHardwareItem, createWishlistItem } from '../src/modules/profile-collections.js';
 import { initAccountDirectory } from '../src/modules/account-directory.js';
 import { CREATOR_PROFILE_COLUMNS, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
@@ -439,6 +440,48 @@ test('rate editor reorders and removes services without changing identifiers or 
   }
 });
 
+test('creator blog editor loads the creator price and saves one unified post list', async () => {
+  const { document } = parseHTML('<fieldset><input id="price"><input id="benefits"><button id="add"></button><div id="posts"></div></fieldset>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  const initialPost = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', legacy_id: 'blog-1', post_type: 'post', access_level: 'public', title: 'Public journal', tag: 'Update', teaser: '', body_markdown: 'An update.', media_type: 'text', media_path: '', media_url: '', is_published: true, sort_order: 0, created_at: '2026-10-01T00:00:00Z', published_at: '2026-10-01T00:00:00Z' };
+  let saveRequest;
+  const client = { rpc: async (name, args) => {
+    if (name === 'creator_blog_editor_posts') return { data: [initialPost], error: null };
+    saveRequest = { name, args };
+    return { data: null, error: null };
+  } };
+  try {
+    for (const select of document.querySelectorAll('select')) {
+      let value = select.querySelector('option')?.value || '';
+      Object.defineProperty(select, 'value', { configurable: true, get: () => value, set: next => { value = String(next); } });
+    }
+    const editor = initCreatorBlogEditor(document.getElementById('posts'), document.getElementById('add'), document.getElementById('price'), document.getElementById('benefits'));
+    await editor.load(client, { id: profileId, creator_blog_monthly_linden: 1500, creator_blog_benefits: 'All subscriber posts.' });
+    assert.equal(document.getElementById('price').value, '1500');
+    assert.equal(document.getElementById('benefits').value, 'All subscriber posts.');
+    assert.equal(document.querySelector('[data-blog-editor-post]').querySelector('[aria-expanded]').getAttribute('aria-expanded'), 'false');
+    document.getElementById('add').click();
+    const newRow = [...document.querySelectorAll('[data-blog-editor-post]')].find(row => row.dataset.blogEditorPost !== initialPost.id);
+    const newTitle = newRow.querySelector('input[id$="-title"]');
+    newTitle.value = 'Subscriber lookbook';
+    newTitle.dispatchEvent(new document.defaultView.Event('input'));
+    newRow.querySelector('select[id$="-access_level"] option[value="subscribers"]').selected = true;
+    newRow.querySelector('select[id$="-access_level"]').dispatchEvent(new document.defaultView.Event('change'));
+    newRow.querySelector('textarea[id$="-teaser"]').value = 'A preview for fans.';
+    newRow.querySelector('textarea[id$="-teaser"]').dispatchEvent(new document.defaultView.Event('input'));
+    await editor.save();
+    assert.equal(saveRequest.name, 'creator_blog_save_all');
+    assert.equal(saveRequest.args.target_profile, profileId);
+    assert.equal(saveRequest.args.monthly_price, 1500);
+    assert.equal(saveRequest.args.posts.length, 2);
+    const lockedPost = saveRequest.args.posts.find(post => post.title === 'Subscriber lookbook');
+    assert.equal(lockedPost.access_level, 'subscribers');
+    assert.equal(lockedPost.teaser, 'A preview for fans.');
+    assert.equal(Object.hasOwn(saveRequest.args.posts[0], 'created_at'), false);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
 test('booking editor distinguishes unset schedules and no available days without losing overnight times', () => {
   const { document } = parseHTML('<div id="editor"><input type="checkbox" data-booking-enabled><fieldset data-booking-fields><select data-booking-timezone></select><input data-booking-start><input data-booking-end><select data-booking-interval><option value="60">60</option></select><textarea data-booking-notes></textarea><input type="checkbox" data-booking-day="sat"><input type="checkbox" data-booking-day="sun"></fieldset></div>');
   const previous = globalThis.document;
@@ -582,12 +625,14 @@ test('booking recipient RPC is private and requires an active published booking 
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth,storage to anon,authenticated,service_role;
       grant select,insert,update,delete on storage.objects to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql', '202610060014_creator_blog_subscriptions.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await database.query('select public,file_size_limit,allowed_mime_types from storage.buckets where id=$1', ['directory-gallery'])).rows[0], { public: false, file_size_limit: 2097152, allowed_mime_types: ['image/webp'] });
     await database.query('insert into auth.users(id,email,email_confirmed_at) values ($1,$2,now()),($3,$4,now())', [owner, 'creator@example.test', stranger, 'stranger@example.test']);
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [rates[0].id, owner, 'test.resident']);
+    const fanAvatar = '33333333-3333-4333-8333-333333333333';
+    await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [fanAvatar, stranger, 'fan.resident']);
     await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'");
     const profile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', [profileId, rates[0].id, 'basic_monthly', 100])).rows[0].id;
     await database.query('select set_config(\'request.jwt.claim.sub\',$1,false)', [owner]);
@@ -622,6 +667,82 @@ test('booking recipient RPC is private and requires an active published booking 
     assert.deepEqual((await database.query('select show_in_sidebar,storage_path,image_url from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, storagePhotos.map(photo => ({ show_in_sidebar: photo.show_in_sidebar, storage_path: photo.storage_path, image_url: '' })));
     assert.equal((await canUpload(`${profile}/${photos[0].id}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`)).rows[0].allowed, true);
     assert.equal((await canUpload(`${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`)).rows[0].allowed, false);
+    const publicPost = { post_type: 'live_update', access_level: 'public', title: 'Public update', tag: 'Live', teaser: 'A public update', body_markdown: 'Visible to everyone.', media_type: 'text', is_published: true };
+    const privatePostId = '55555555-5555-4555-8555-555555555555';
+    const privateMediaPath = `${profile}/${privatePostId}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`;
+    const privatePost = { id: privatePostId, post_type: 'post', access_level: 'subscribers', title: 'Private lookbook', tag: 'Lookbook', teaser: 'A preview only.', body_markdown: 'Full subscribers-only details.', media_type: 'image', media_path: privateMediaPath, is_published: true };
+    await database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['creator-blog-media', privateMediaPath]);
+    await database.exec('reset role; set role service_role');
+    const legacyProfile = {
+      avatar_uuid: rates[0].id,
+      published: true,
+      fan_tier_price: 'L$1,500 / month',
+      fan_tier_desc: 'Legacy subscriber benefits.',
+      posts: [{ id: 'post-1', title: 'Private legacy post', content: 'Preserve subscriber text.', media_url: 'https://legacy.example.test/private.jpg', is_locked: true, type: 'image' }],
+      blog_posts: [{ id: 'blog-1', title: 'Public legacy article', content: 'Preserve public text.', media_url: 'https://legacy.example.test/public.jpg' }]
+    };
+    const importLegacy = () => database.query('select * from public.creator_blog_import_legacy($1,$2::jsonb)', [rates[0].id, JSON.stringify(legacyProfile)]);
+    const imported = (await importLegacy()).rows[0];
+    assert.deepEqual(imported, { creator_profile_id: profile, imported_posts: 2, locked_media_reupload: 1, monthly_price_linden: 1500 });
+    assert.equal((await importLegacy()).rows[0].imported_posts, 2);
+    assert.equal((await database.query('select count(*)::integer as count from public.creator_blog_posts where profile_id=$1 and legacy_id<>\'\'', [profile])).rows[0].count, 2);
+    const importedLocked = (await database.query(`select post.access_level,content.body_markdown,content.media_url
+      from public.creator_blog_posts as post join cc_private.creator_blog_post_content as content on content.post_id=post.id
+      where post.profile_id=$1 and post.legacy_id='feed:post-1'`, [profile])).rows[0];
+    assert.deepEqual(importedLocked, { access_level: 'subscribers', body_markdown: 'Preserve subscriber text.', media_url: '' });
+    const importedPublic = (await database.query(`select post.access_level,content.body_markdown,content.media_url
+      from public.creator_blog_posts as post join cc_private.creator_blog_post_content as content on content.post_id=post.id
+      where post.profile_id=$1 and post.legacy_id='blog:blog-1'`, [profile])).rows[0];
+    assert.deepEqual(importedPublic, { access_level: 'public', body_markdown: 'Preserve public text.', media_url: 'https://legacy.example.test/public.jpg' });
+    await database.query('select public.creator_blog_set_terminal($1)', ['secondlife://finance-land/128/128/20']);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+    await database.exec('set role authenticated');
+    await database.query('select public.creator_blog_save_all($1,$2,$3,$4::jsonb)', [profile, 1500, 'All subscriber posts and monthly updates.', JSON.stringify([publicPost, privatePost])]);
+    const [ownerOffer] = (await database.query('select * from public.creator_blog_public_offer($1)', [profile])).rows;
+    assert.equal(ownerOffer.monthly_price_linden, 1500);
+    assert.equal(ownerOffer.benefits, 'All subscriber posts and monthly updates.');
+    assert.equal(ownerOffer.terminal_slurl, 'secondlife://finance-land/128/128/20');
+    assert.deepEqual((await database.query('select title,body_markdown from public.creator_blog_editor_posts($1) order by title', [profile])).rows, [
+      { title: 'Private lookbook', body_markdown: 'Full subscribers-only details.' },
+      { title: 'Public update', body_markdown: 'Visible to everyone.' }
+    ]);
+    await database.exec("reset role; select set_config('request.jwt.claim.sub','',false); set role anon");
+    const anonymousFeed = (await database.query('select * from public.creator_blog_feed($1)', [profile])).rows;
+    assert.equal(anonymousFeed.length, 2);
+    assert.equal(anonymousFeed.find(post => post.title === 'Private lookbook').is_locked, true);
+    assert.equal(anonymousFeed.find(post => post.title === 'Private lookbook').body_markdown, null);
+    assert.equal(anonymousFeed.find(post => post.title === 'Private lookbook').media_path, null);
+    assert.equal(anonymousFeed.find(post => post.title === 'Private lookbook').teaser, 'A preview only.');
+    assert.equal(anonymousFeed.find(post => post.title === 'Public update').body_markdown, 'Visible to everyone.');
+    assert.equal((await database.query('select name from storage.objects where bucket_id=$1', ['creator-blog-media'])).rows.length, 0);
+    await database.exec('reset role; set role service_role');
+    const terminalOffer = (await database.query('select * from public.creator_blog_offer_for_terminal($1)', [rates[0].id])).rows[0];
+    assert.equal(terminalOffer.profile_id, profile);
+    assert.equal(terminalOffer.monthly_price_linden, 1500);
+    const publicOffer = (await database.query('select * from public.creator_blog_public_offer($1)', [profile])).rows[0];
+    assert.equal(publicOffer.terminal_slurl, 'secondlife://finance-land/128/128/20');
+    await assert.rejects(database.query('select * from public.creator_blog_prepare_payment($1,$2,$3,$4)', ['66666666-6666-4666-8666-666666666666', '44444444-4444-4444-8444-444444444444', rates[0].id, 1500]), /fan_avatar_not_verified/);
+    await assert.rejects(database.query('select * from public.creator_blog_prepare_payment($1,$2,$3,$4)', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1499]), /invalid_creator_payment_amount/);
+    await database.query('select * from public.creator_blog_prepare_payment($1,$2,$3,$4)', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500]);
+    assert.equal((await database.query('select public.creator_blog_start_payout($1,$2,$3,$4) as started', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].started, true);
+    assert.equal((await database.query('select public.creator_blog_start_payout($1,$2,$3,$4) as started', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].started, false);
+    const firstExpiry = (await database.query('select public.creator_blog_confirm_payment($1,$2,$3,$4) as expires', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].expires;
+    assert.equal((await database.query('select public.creator_blog_confirm_payment($1,$2,$3,$4) as expires', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].expires.getTime(), firstExpiry.getTime());
+    await database.query('select * from public.creator_blog_prepare_payment($1,$2,$3,$4)', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500]);
+    await database.query('select public.creator_blog_start_payout($1,$2,$3,$4)', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500]);
+    assert.equal((await database.query('select public.creator_blog_cancel_payment($1,$2,$3,$4) as cancelled', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500])).rows[0].cancelled, true);
+    assert.equal((await database.query('select public.creator_blog_confirm_refund($1,$2,$3,$4) as refunded', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500])).rows[0].refunded, true);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    await database.exec('set role authenticated');
+    const subscribedFeed = (await database.query('select * from public.creator_blog_feed($1)', [profile])).rows;
+    assert.equal(subscribedFeed.find(post => post.title === 'Private lookbook').is_locked, false);
+    assert.equal(subscribedFeed.find(post => post.title === 'Private lookbook').body_markdown, 'Full subscribers-only details.');
+    assert.equal((await database.query('select name from storage.objects where bucket_id=$1', ['creator-blog-media'])).rows.length, 1);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+    await database.exec('set role authenticated');
     assert.equal((await database.query('select public.my_directory_booking_contact($1)', [profile])).rows[0].my_directory_booking_contact, 'bookings@example.test');
     await database.exec('reset role; set role service_role');
     for (const invalid of [
