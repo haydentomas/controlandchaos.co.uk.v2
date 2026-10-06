@@ -1,6 +1,14 @@
 # V2 Shared Template Handoff
 
-Latest pause point (2026-10-05): read [NEXT_STEPS.md](NEXT_STEPS.md) first. The user is stopping after the approved gallery/handoff push. Migrations 1-9 are already applied and permission checks passed. Payments, expiry/renewal, terminal auto-login, profile persistence, rate cards, booking hours and cross-region reminder delivery were confirmed live; gallery code is committed as `726b05d`, with its deployment/live test next. Latest validation: 118 tests and build pass. The resume file supersedes every older setup/pause claim below.
+Latest handover (2026-10-06): read [NEXT_STEPS.md](NEXT_STEPS.md) first. The user explicitly approved pushing the standard TOAST UI editor replacement and updating both handover documents. This commit replaces the custom Tiptap toolbar deployed as `db58520`. Latest focused validation: 70 tests, production build and edited-module diagnostics pass; production dependency audit reports zero vulnerabilities. Netlify deployment and hosted owner editing must be checked after push. Migrations 1-10 are already applied and verified; no SQL or terminal changes are required. The resume file supersedes every older setup/pause claim below.
+
+## October 6 Editor Handover
+
+- Standard TOAST UI toolbar, native link dialog, WYSIWYG / Markdown and Markdown Write / Preview now cover all connected long-form profile fields. Short labels, names, prices and URLs stay plain text. The user likes the simpler V2 design; continue incremental V1 functionality without assuming a full visual redesign.
+- Mocked real-browser tests verify native links, keyboard application without accidental form submission, save/reload, public rendering, mobile overflow, unsupported-source preservation, exact limits, disabled fields and explicit load-error fallback. These tests did not write live profiles.
+- The editor is bundled locally and loaded only for enabled Studio fields. Telemetry is disabled; embedded images/uploads are blocked. The lazy vendor bundle triggers Vite's 500 kB warning but the build succeeds; do not suppress the warning by arbitrarily raising its threshold.
+- Live gallery testing completed and temporary photos were removed. Boundaries / How to Book (`70a154c`) is deployed and user-confirmed working. Migration 10 was applied by the user and its expected privileges confirmed.
+- Next: confirm replacement deployment, then obtain the user's hosted editor/link review. Choose the next V1-parity feature with them after that review; do not imply VIP feeds, toys, socials, booking requests or uploads are connected. Further feature pushes require fresh approval.
 
 ## October 5 Outcome
 

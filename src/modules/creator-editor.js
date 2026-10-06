@@ -5,7 +5,7 @@ import { initRateCardEditor } from './rate-card-editor.js';
 import { initBookingHoursEditor } from './booking-hours.js';
 import { initProfileGalleryEditor } from './profile-gallery-editor.js';
 import { fetchGalleryPhotos } from './profile-gallery.js';
-import { initRichTextEditor } from './rich-text-editor.js';
+import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -118,6 +118,7 @@ export async function initCreatorEditor(clientOverride) {
   for (const image of form.querySelectorAll('.creator-image-preview')) image.addEventListener('error', () => image.classList.add('preview-hidden'));
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    flushRichTextEditors(form);
     if (saving || !profile || fields.disabled || !form.reportValidity()) return;
     const active = generation;
     const values = Object.fromEntries(fieldNames.map(name => [name, form.elements[name].value]));

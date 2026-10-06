@@ -8,6 +8,9 @@
   .creator-editor-section { grid-column: 2; min-width: 0; padding: 22px 24px 26px; border: 1px solid rgba(212,175,55,0.22); border-radius: 8px; background: rgba(26,23,20,0.55); scroll-margin-top: 110px; }
   .creator-editor-section .form-label { margin-top: 12px; }
   .creator-editor-section > :last-child { margin-bottom: 0; }
+  .creator-editor .form-grid-2 { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .creator-editor .form-grid-2 > * { min-width: 0; }
+  @media (max-width: 640px) { .creator-editor .form-grid-2 { grid-template-columns: minmax(0,1fr); } }
   .creator-editor-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px 0; }
   .creator-editor-toolbar .form-select { max-width: 100%; width: auto; }
   .creator-editor-toolbar p { overflow-wrap: anywhere; }
@@ -168,14 +171,10 @@
   .rich-text-content table { width: 100%; table-layout: fixed; border-collapse: collapse; }
   .rich-text-content th, .rich-text-content td { border: 1px solid var(--gold-border); padding: 6px; overflow-wrap: anywhere; }
   .rich-text-editor { min-width: 0; margin-bottom: 12px; }
-  .rich-text-toolbar, .rich-text-modes, .rich-text-link-panel { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-  .rich-text-link-panel .form-input { flex: 1 1 180px; min-width: 0; }
-  .rich-text-link-panel p { flex-basis: 100%; }
-  .rich-text-modes [aria-pressed="true"] { border-color: var(--gold-bright); color: var(--gold-bright); }
-  .rich-text-visual, .rich-text-preview { border: 1px solid var(--gold-border); border-radius: 6px; padding: 12px; background: #09090b; }
-  .rich-text-visual .tiptap { min-height: 120px; outline: none; }
-  .rich-text-visual:focus-within { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
-  .rich-text-visual[aria-disabled="true"] { opacity: 0.6; }
+  .standard-text-editor { min-width: 0; max-width: 100%; }
+  .standard-text-editor[inert] { opacity: 0.6; }
+  .standard-text-editor:focus-within { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+  .rich-text-retry { padding: 6px 12px; border: 1px solid var(--gold-border); border-radius: 4px; }
   .rich-text-status, .rich-text-help { font-size: 12px; margin: 6px 0; }
   [data-public-profile-name], [data-public-profile-headline] { overflow-wrap: anywhere; }
   @media (max-width: 800px) { html[data-template="directory-profile"] .public-profile-layout { grid-template-columns: minmax(0, 1fr); } }

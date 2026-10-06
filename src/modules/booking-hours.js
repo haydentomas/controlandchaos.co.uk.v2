@@ -81,6 +81,7 @@ export function initBookingHoursEditor(container) {
       toggle();
     },
     value() {
+      notesEditor.flush();
       return enabled.checked ? validateBookingHours({ timezone: timezone.value, days: checkboxes.filter(input => input.checked).map(input => input.dataset.bookingDay), start_time: start.value, end_time: end.value, slot_minutes: Number(interval.value), notes: notes.value }) : null;
     }
   };

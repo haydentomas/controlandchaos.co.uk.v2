@@ -1,5 +1,5 @@
 import { validateRateCategories, RATE_CATEGORY_LIMIT, RATE_ITEM_LIMIT, RATE_TOTAL_ITEM_LIMIT } from './rate-cards.js';
-import { initRichTextEditor } from './rich-text-editor.js';
+import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
 
 export function initRateCardEditor(container, addCategory) {
   let categories = [];
@@ -111,6 +111,6 @@ export function initRateCardEditor(container, addCategory) {
   return {
     load(value) { categories = validateRateCategories(value || []); paint(); },
     clear() { categories = []; paint(); },
-    value() { return validateRateCategories(categories); }
+    value() { flushRichTextEditors(container); return validateRateCategories(categories); }
   };
 }

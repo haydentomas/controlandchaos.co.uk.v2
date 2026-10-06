@@ -1,7 +1,23 @@
-import { renderRichText, richTextLink, visualMarkdownSupported } from './profile-rich-text.js';
+import { richTextLink, visualMarkdownSupported } from './profile-rich-text.js';
 
 const instances = new WeakMap();
 let nextId = 0;
+let editorModule;
+
+export function flushRichTextEditors(container) {
+  for (const input of container.querySelectorAll('[data-rich-text-source]')) instances.get(input)?.flush();
+}
+
+function loadEditor() {
+  editorModule ||= Promise.all([
+    import('@toast-ui/editor'),
+    import('@toast-ui/editor/dist/toastui-editor.css'),
+    import('@toast-ui/editor/dist/theme/toastui-editor-dark.css'),
+    import('../standard-editor.css'),
+    import('dompurify')
+  ]).catch(error => { editorModule = undefined; throw error; });
+  return editorModule;
+}
 
 export function initRichTextEditor(input) {
   if (instances.has(input)) return instances.get(input);
@@ -9,234 +25,219 @@ export function initRichTextEditor(input) {
   const doc = input.ownerDocument;
   const create = (tag, className = '') => { const element = doc.createElement(tag); element.className = className; return element; };
   const wrapper = create('div', 'rich-text-editor');
-  const toolbar = create('div', 'rich-text-toolbar');
-  toolbar.setAttribute('role', 'group');
-  toolbar.setAttribute('aria-label', 'Text formatting');
-  const modes = create('div', 'rich-text-modes');
-  modes.setAttribute('role', 'group');
-  modes.setAttribute('aria-label', 'Editing mode');
-  const visual = create('div', 'rich-text-visual preview-hidden');
-  const preview = create('div', 'rich-text-preview preview-hidden');
+  const host = create('div', 'standard-text-editor preview-hidden');
   const status = create('p', 'rich-text-status text-muted');
   status.setAttribute('role', 'status');
+  const retry = create('button', 'rich-text-retry preview-hidden');
+  retry.type = 'button';
+  retry.textContent = 'Retry editor';
   const help = create('p', 'text-muted rich-text-help');
-  help.textContent = 'Visual formatting or Markdown source. Blank lines create paragraphs. HTML and embedded images are not enabled.';
+  help.textContent = 'Use the toolbar and link dialog, or switch to Markdown below the editor. Formatting counts toward the character limit. HTML and embedded images are not enabled.';
   input.before(wrapper);
-  wrapper.append(modes, toolbar, input, visual, preview, status, help);
+  wrapper.append(host, input, status, retry, help);
   input.dataset.richTextSource = '';
-  let mode = 'markdown';
-  let editor;
-  let visualSource;
-  let opening = false;
-  let message = '';
-  const controls = [];
-  let history = [input.value];
-  let historyIndex = 0;
   const label = doc.querySelector(`label[for="${input.id}"]`);
   if (label && !label.id) label.id = `${input.id}-label`;
+  let editor;
+  let opening = false;
+  let destroyed = false;
+  let syncing = false;
+  let renderedMarkdown;
+  let message = '';
   const disabled = () => input.matches(':disabled');
   const updateStatus = () => {
     const limit = Number(input.getAttribute('maxlength'));
     const tooLong = limit > 0 && input.value.length > limit;
     status.textContent = message || `${input.value.length}${limit > 0 ? ` / ${limit}` : ''} characters${tooLong ? ' - shorten this text before saving.' : ''}`;
     input.setCustomValidity?.(tooLong ? `Text must be at most ${limit} characters.` : '');
-    visual.setAttribute('aria-invalid', String(tooLong));
+    host.setAttribute('aria-invalid', String(tooLong));
   };
   const syncDisabled = () => {
     const locked = disabled();
-    for (const control of controls) control.disabled = locked || opening;
-    if (editor && editor.isEditable === locked) editor.setEditable(!locked, false);
-    visual.setAttribute('aria-disabled', String(locked));
+    host.inert = locked;
+    host.setAttribute('aria-disabled', String(locked));
+    for (const surface of host.querySelectorAll('.ProseMirror')) surface.setAttribute('contenteditable', String(!locked));
+    retry.disabled = locked || opening;
+    if (!locked && !editor && !opening && !destroyed && !message && typeof doc.defaultView.getSelection === 'function') void open();
   };
-  const changed = () => {
+  const flush = () => {
+    if (syncing || !editor || disabled()) return;
+    const value = editor.getMarkdown();
+    if (value === renderedMarkdown) return;
+    renderedMarkdown = value;
+    input.value = value;
     message = '';
     updateStatus();
     input.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
   };
-  const setMode = next => {
-    mode = next;
-    linkPanel?.classList.add('preview-hidden');
-    input.classList.toggle('preview-hidden', next !== 'markdown');
-    visual.classList.toggle('preview-hidden', next !== 'visual');
-    preview.classList.toggle('preview-hidden', next !== 'preview');
-    toolbar.classList.toggle('preview-hidden', next === 'preview');
-    for (const control of modes.children) control.setAttribute('aria-pressed', String(control.dataset.mode === next));
-    wrapper.dataset.mode = next;
-    if (next === 'preview') renderRichText(preview, input.value);
-    updateStatus();
-  };
-  const button = (parent, title, action) => {
-    const control = create('button', 'btn btn-secondary btn-sm');
-    control.type = 'button';
-    control.textContent = title;
-    control.setAttribute('aria-label', title);
-    control.addEventListener('click', () => { if (!disabled() && !opening) action(); });
-    parent.append(control);
-    controls.push(control);
-    return control;
-  };
-  const openVisual = async () => {
-    if (!visualMarkdownSupported(input.value)) {
-      message = 'Keep Markdown mode for tables, task lists, images, raw HTML or headings deeper than level 3. Your source has not been changed.';
-      updateStatus();
-      return;
-    }
+  const open = async () => {
+    if (opening || editor || destroyed || disabled()) return;
     opening = true;
-    const previousFocus = doc.activeElement;
-    const openingSource = input.value;
-    syncDisabled();
+    retry.disabled = true;
     try {
-      if (editor && visualSource !== input.value) {
-        editor.destroy();
-        editor = undefined;
-      }
-      if (!editor) {
-        const [{ Editor }, { default: StarterKit }, { Markdown }] = await Promise.all([
-          import('@tiptap/core'), import('@tiptap/starter-kit'), import('@tiptap/markdown')
-        ]);
-        if (!wrapper.isConnected || disabled()) return;
-        if (input.value !== openingSource) {
-          message = 'Text changed while Visual was loading. Your source is retained; select Visual again when ready.';
+      const [{ default: Editor }, , , , { default: DOMPurify }] = await loadEditor();
+      if (destroyed || !wrapper.isConnected || disabled()) return;
+      syncing = true;
+      editor = new Editor({
+        el: host,
+        theme: 'dark',
+        height: '300px',
+        minHeight: '220px',
+        initialEditType: visualMarkdownSupported(input.value) ? 'wysiwyg' : 'markdown',
+        initialValue: input.value,
+        previewStyle: 'tab',
+        autofocus: false,
+        usageStatistics: false,
+        extendedAutolinks: false,
+        toolbarItems: [['heading', 'bold', 'italic', 'strike'], ['hr', 'quote'], ['ul', 'ol'], ['link'], ['code', 'codeblock']],
+        linkAttributes: { rel: 'nofollow noopener noreferrer' },
+        customHTMLRenderer: {
+          htmlInline: node => ({ type: 'text', content: node.literal }),
+          htmlBlock: node => [
+            { type: 'openTag', tagName: 'div', outerNewLine: true },
+            { type: 'text', content: node.literal },
+            { type: 'closeTag', tagName: 'div', outerNewLine: true }
+          ],
+          image: (node, context) => {
+            context.skipChildren();
+            return { type: 'text', content: context.getChildrenText(node) };
+          },
+          softbreak: () => ({ type: 'openTag', tagName: 'br', selfClose: true })
+        },
+        customHTMLSanitizer: html => {
+          const fragment = DOMPurify.sanitize(html, {
+            RETURN_DOM_FRAGMENT: true,
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 's', 'del', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'hr', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div'],
+            ALLOWED_ATTR: ['href', 'rel', 'start', 'class', 'data-nodeid']
+          });
+          for (const link of fragment.querySelectorAll('a')) {
+            if (!richTextLink(link.getAttribute('href'))) link.removeAttribute('href');
+          }
+          const container = doc.createElement('div');
+          container.append(fragment);
+          return container.innerHTML;
+        },
+        hooks: {
+          addImageBlobHook: () => { message = 'Embedded images are not enabled in profile text. Use the Gallery image URL fields.'; updateStatus(); return false; }
+        },
+        events: {
+          change: type => {
+            if (syncing || !editor || disabled()) return;
+            if ((type === 'markdown') !== editor.isMarkdownMode()) return;
+            flush();
+          }
+        }
+      });
+      renderedMarkdown = editor.getMarkdown();
+      const changeMode = editor.changeMode.bind(editor);
+      editor.changeMode = (mode, withoutFocus) => {
+        if (!syncing) flush();
+        if (!syncing && mode === 'wysiwyg' && !visualMarkdownSupported(input.value)) {
+          message = 'Keep Markdown mode for tables, task lists, images, raw HTML or headings deeper than level 3. Your source has not been changed.';
+          updateStatus();
           return;
         }
-        editor = new Editor({
-          element: visual,
-          extensions: [
-            StarterKit.configure({ underline: false, trailingNode: false, heading: { levels: [1, 2, 3] }, link: { openOnClick: false, autolink: false, isAllowedUri: url => !!richTextLink(url) } }),
-            Markdown.configure({ markedOptions: { gfm: true, breaks: true } })
-          ],
-          content: input.value,
-          contentType: 'markdown',
-          editorProps: {
-            attributes: { class: 'rich-text-content', role: 'textbox', 'aria-multiline': 'true', ...(label ? { 'aria-labelledby': label.id } : { 'aria-label': 'Formatted text' }) },
-            handlePaste: (view, event) => {
-              const value = event.clipboardData?.getData('text/plain');
-              if (!value) {
-                message = 'Paste plain text here; clipboard images and rich-only content are not enabled.';
-                updateStatus();
-                return true;
-              }
-              view.dispatch(view.state.tr.insertText(value));
-              return true;
-            },
-            handleDrop: (_view, event) => {
-              event.preventDefault();
-              message = 'Drag-and-drop is not enabled here. Paste plain text or use the formatting toolbar.';
-              updateStatus();
-              return true;
-            }
-          },
-          onUpdate: () => {
-            input.value = editor.getMarkdown();
-            visualSource = input.value;
-            changed();
-          }
-        });
+        const wasSyncing = syncing;
+        syncing = true;
+        try {
+          changeMode(mode, withoutFocus);
+          if (mode === 'markdown') editor.setMarkdown(input.value, false);
+          renderedMarkdown = editor.getMarkdown();
+        }
+        finally { syncing = wasSyncing; }
+        message = '';
+        updateStatus();
+        syncDisabled();
+      };
+      for (const surface of host.querySelectorAll('.ProseMirror')) {
+        surface.setAttribute('role', 'textbox');
+        surface.setAttribute('aria-multiline', 'true');
+        if (label) surface.setAttribute('aria-labelledby', label.id);
+        else surface.setAttribute('aria-label', 'Formatted text');
       }
-      visualSource = input.value;
+      input.classList.add('preview-hidden');
+      host.classList.remove('preview-hidden');
+      retry.classList.add('preview-hidden');
       message = '';
-      setMode('visual');
-      if (doc.activeElement === previousFocus) editor.view.focus();
     } catch {
-      message = 'Visual editor could not be loaded. Your text is retained; use Markdown mode or retry Visual.';
-      setMode('markdown');
+      editor?.destroy();
+      editor = undefined;
+      host.replaceChildren();
+      host.classList.add('preview-hidden');
+      input.classList.remove('preview-hidden');
+      retry.classList.remove('preview-hidden');
+      message = 'The editor could not be loaded. Your text is retained; edit Markdown here or retry.';
     } finally {
+      syncing = false;
       opening = false;
-      syncDisabled();
       updateStatus();
+      syncDisabled();
     }
   };
-  for (const [name, title] of [['visual', 'Visual'], ['markdown', 'Markdown'], ['preview', 'Preview']]) {
-    const control = button(modes, title, () => {
-      if (name === 'visual') void openVisual();
-      else { message = ''; setMode(name); if (name === 'markdown') input.focus(); }
-    });
-    control.dataset.mode = name;
-  }
-  const insert = (prefix, suffix = '', line = false) => {
-    const start = input.selectionStart ?? input.value.length;
-    const end = input.selectionEnd ?? start;
-    const from = line ? input.value.lastIndexOf('\n', start - 1) + 1 : start;
-    const selected = input.value.slice(from, end);
-    const replacement = line ? selected.split('\n').map(text => prefix + text).join('\n') : prefix + (selected || 'Text') + suffix;
-    const limit = Number(input.getAttribute('maxlength'));
-    if (limit > 0 && input.value.length - (end - from) + replacement.length > limit) {
-      message = `Formatting would exceed ${limit} characters. Shorten the text first.`;
-      updateStatus();
+  host.addEventListener('click', event => {
+    const mode = event.target.closest('.toastui-editor-mode-switch .tab-item');
+    if (mode && editor) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (!disabled()) editor.changeMode(mode.textContent === 'Markdown' ? 'markdown' : 'wysiwyg');
       return;
     }
-    input.setRangeText(replacement, from, end, 'select');
-    input.focus();
-    changed();
-  };
-  for (const [title, command, prefix, suffix, line] of [
-    ['Bold', 'toggleBold', '**', '**'], ['Italic', 'toggleItalic', '*', '*'],
-    ['Heading', 'toggleHeading', '## ', '', true], ['Bullet list', 'toggleBulletList', '- ', '', true],
-    ['Numbered list', 'toggleOrderedList', '1. ', '', true], ['Quote', 'toggleBlockquote', '> ', '', true]
-  ]) button(toolbar, title, () => {
-    if (mode === 'visual') editor.chain().focus()[command](...(command === 'toggleHeading' ? [{ level: 2 }] : [])).run();
-    else insert(prefix, suffix, line);
-  });
-  const linkPanel = create('div', 'rich-text-link-panel preview-hidden');
-  const url = create('input', 'form-input');
-  url.type = 'text';
-  url.inputMode = 'url';
-  url.setAttribute('aria-label', 'Link URL');
-  url.placeholder = 'https://example.com';
-  const linkStatus = create('p', 'text-muted');
-  linkStatus.setAttribute('role', 'status');
-  linkPanel.append(url, linkStatus);
-  toolbar.after(linkPanel);
-  let selection;
-  button(toolbar, 'Link', () => {
-    selection = mode === 'visual' ? { ...editor.state.selection.toJSON() } : { from: input.selectionStart, to: input.selectionEnd };
-    linkPanel.classList.remove('preview-hidden');
-    url.value = '';
-    linkStatus.textContent = '';
-    url.focus();
-  });
-  button(linkPanel, 'Apply link', () => {
-    const href = richTextLink(url.value.trim());
-    if (!href) { linkStatus.textContent = 'Use a valid HTTP(S), mailto, site-relative or anchor link.'; return; }
-    if (mode === 'visual') editor.chain().focus().setTextSelection(selection).setLink({ href }).run();
-    else {
-      input.setSelectionRange(selection.from, selection.to);
-      insert('[', `](${href.replaceAll('(', '%28').replaceAll(')', '%29')})`);
+    const button = event.target.closest('.toastui-editor-ok-button');
+    const popup = button?.closest('.toastui-editor-popup');
+    const url = popup?.querySelector('input[data-standard-link="url"], input[id="toastuiLinkUrlInput"]');
+    if (url && !richTextLink(url.value.trim())) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      url.setAttribute('aria-invalid', 'true');
+      message = 'Use a valid HTTP(S), mailto, site-relative or anchor link.';
+      updateStatus();
+      url.focus();
+    } else if (url) {
+      url.value = url.value.trim();
+      url.removeAttribute('aria-invalid');
     }
-    linkPanel.classList.add('preview-hidden');
-  });
-  button(linkPanel, 'Cancel link', () => { linkPanel.classList.add('preview-hidden'); });
-  button(toolbar, 'Remove link', () => {
-    if (mode === 'visual') editor.chain().focus().unsetLink().run();
-    else { message = 'In Markdown, remove the surrounding [text](URL) syntax to remove a link.'; updateStatus(); }
-  });
-  button(toolbar, 'Undo', () => {
-    if (mode === 'visual') editor.chain().focus().undo().run();
-    else if (historyIndex > 0) {
-      input.value = history[--historyIndex];
-      changed();
+  }, true);
+  const popupObserver = new doc.defaultView.MutationObserver(() => {
+    for (const [name, original] of [['url', 'toastuiLinkUrlInput'], ['text', 'toastuiLinkTextInput']]) {
+      const field = host.querySelector(`input[id="${original}"]`);
+      if (!field) continue;
+      field.id = `${input.id}-${original}`;
+      field.dataset.standardLink = name;
+      host.querySelector(`label[for="${original}"]`)?.setAttribute('for', field.id);
     }
   });
-  button(toolbar, 'Redo', () => {
-    if (mode === 'visual') editor.chain().focus().redo().run();
-    else if (historyIndex < history.length - 1) {
-      input.value = history[++historyIndex];
-      changed();
-    }
+  popupObserver.observe(host, { childList: true, subtree: true });
+  host.addEventListener('keydown', event => {
+    if (!event.target.matches('input[data-standard-link]') || !['Enter', 'Escape'].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const popup = event.target.closest('.toastui-editor-popup');
+    popup?.querySelector(event.key === 'Enter' ? '.toastui-editor-ok-button' : '.toastui-editor-close-button')?.click();
+    if (event.key === 'Escape') editor?.focus();
   });
-  input.addEventListener('input', () => {
-    if (history[historyIndex] !== input.value) {
-      history = [...history.slice(0, historyIndex + 1), input.value].slice(-100);
-      historyIndex = history.length - 1;
-    }
-    message = '';
+  host.addEventListener('paste', event => {
+    if (disabled() || !editor || !editor.isWysiwygMode()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const value = event.clipboardData?.getData('text/plain');
+    if (value) editor.insertText(value);
+    else { message = 'Paste plain text here; clipboard images and rich-only content are not enabled.'; updateStatus(); }
+  }, true);
+  host.addEventListener('drop', event => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    message = 'Drag-and-drop is not enabled here. Paste text or use the formatting toolbar.';
     updateStatus();
-  });
+  }, true);
+  input.addEventListener('input', () => { message = ''; updateStatus(); });
   input.addEventListener('invalid', event => {
-    if (mode !== 'markdown') { event.preventDefault(); setMode('markdown'); input.focus(); }
+    if (editor) { event.preventDefault(); editor.changeMode('markdown'); editor.focus(); }
   });
-  const Observer = doc.defaultView.MutationObserver;
-  const observer = new Observer(syncDisabled);
+  retry.addEventListener('click', () => { message = ''; void open(); });
+  label?.addEventListener('click', event => {
+    if (editor && !disabled()) { event.preventDefault(); editor.focus(); }
+  });
+  const observer = new doc.defaultView.MutationObserver(syncDisabled);
   observer.observe(input, { attributes: true, attributeFilter: ['disabled'] });
   for (let ancestor = wrapper.parentElement; ancestor; ancestor = ancestor.parentElement) {
     if (ancestor.tagName === 'FIELDSET') observer.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
@@ -244,24 +245,23 @@ export function initRichTextEditor(input) {
   const api = {
     load(value) {
       input.value = value || '';
-      history = [input.value];
-      historyIndex = 0;
-      editor?.destroy();
-      editor = undefined;
-      if (mode === 'visual') setMode('markdown');
-      if (mode === 'preview') renderRichText(preview, input.value);
+      if (editor) {
+        editor.destroy();
+        editor = undefined;
+        host.replaceChildren();
+        host.classList.add('preview-hidden');
+        input.classList.remove('preview-hidden');
+      }
       message = '';
       updateStatus();
       syncDisabled();
     },
-    focus() { if (mode === 'visual') editor.view.focus(); else { setMode('markdown'); input.focus(); } },
-    destroy() { editor?.destroy(); observer.disconnect(); instances.delete(input); }
+    focus() { if (editor) editor.focus(); else input.focus(); },
+    flush,
+    destroy() { flush(); destroyed = true; editor?.destroy(); observer.disconnect(); popupObserver.disconnect(); instances.delete(input); }
   };
   instances.set(input, api);
-  label?.addEventListener('click', event => {
-    if (mode !== 'markdown') { event.preventDefault(); api.focus(); }
-  });
-  setMode('markdown');
+  updateStatus();
   syncDisabled();
   return api;
 }

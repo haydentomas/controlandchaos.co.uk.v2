@@ -1,5 +1,5 @@
 import { validateGalleryPhotos, galleryImageUrl, GALLERY_PHOTO_LIMIT } from './profile-gallery.js';
-import { initRichTextEditor } from './rich-text-editor.js';
+import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js';
 
 export function initProfileGalleryEditor(container, addPhoto) {
   let photos = [];
@@ -92,6 +92,6 @@ export function initProfileGalleryEditor(container, addPhoto) {
   return {
     load(value) { photos = validateGalleryPhotos(value); paint(); },
     clear() { photos = []; paint(); },
-    value() { return validateGalleryPhotos(photos); }
+    value() { flushRichTextEditors(container); return validateGalleryPhotos(photos); }
   };
 }

@@ -54,12 +54,9 @@ test('editor initialization and loading retain exact Markdown without modifying 
   assert.equal(initRichTextEditor(input), editor);
   assert.equal(document.querySelectorAll('.rich-text-editor').length, 1);
   assert.equal(input.value, original);
-  document.querySelector('[data-mode="preview"]').click();
-  assert.equal(document.querySelectorAll('.rich-text-preview li').length, 2);
   editor.load('Updated\n\nSecond paragraph');
-  assert.equal(document.querySelectorAll('.rich-text-preview p').length, 2);
   assert.equal(input.value, 'Updated\n\nSecond paragraph');
   editor.load('');
-  assert.equal(document.querySelector('.rich-text-preview').textContent, '');
+  assert.equal(input.value, '');
   editor.destroy();
 });

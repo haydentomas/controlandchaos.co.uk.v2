@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
 
-test('visual/Markdown studio saves, reloads and renders all long-form fields without touching live data', async () => {
+test('standard editor links, modes and all profile fields persist through save/reload and public rendering', async () => {
   const server = await createServer({ server: { host: '127.0.0.1', port: 0, open: false }, logLevel: 'error' });
   let browser;
   try {
@@ -12,9 +12,13 @@ test('visual/Markdown studio saves, reloads and renders all long-form fields wit
     browser = await chromium.launch();
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = [];
+    const externalRequests = [];
     page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/*', route => {
+      if (!route.request().url().startsWith(origin)) { externalRequests.push(route.request().url()); return route.abort(); }
+      return route.continue();
+    });
     await page.route('**/src/main.js', route => route.fulfill({ contentType: 'text/javascript', body: "import '/src/templates.css';" }));
-    await page.goto(`${origin}/directory-editor.html`);
     const fixture = {
       row: {
         id: '33333333-3333-4333-8333-333333333333', slug: 'sample-profile', sl_username: 'sample.resident',
@@ -28,146 +32,167 @@ test('visual/Markdown studio saves, reloads and renders all long-form fields wit
       },
       photos: [{ id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', title: 'Portrait', category: 'Portraits', description: '**Photo** description\n\n- Detail', image_url: '/images/shop-banner.png', is_published: true }]
     };
-    const mountEditor = async data => page.evaluate(async data => {
-      window.fixture = structuredClone(data);
-      window.saves = [];
-      const client = {
-        auth: { getUser: async () => ({ data: { user: { id: 'fake-owner' } } }), onAuthStateChange: callback => { window.notifyAuth = callback; return { data: { subscription: { unsubscribe() {} } } }; } },
-        rpc(name, args) {
-          if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: window.fixture.row.id, avatar_uuid: window.fixture.row.id, plan_code: 'basic_lifetime', is_active: true, is_lifetime: true }] });
-          if (name !== 'save_directory_profile_media') throw new Error(`Unexpected RPC ${name}`);
-          return { maybeSingle: async () => {
-            window.saves.push(structuredClone(args));
-            Object.assign(window.fixture.row, args.profile_changes);
-            window.fixture.photos = args.photos;
-            return { data: structuredClone(window.fixture.row) };
-          } };
-        },
-        from(name) {
-          const chain = { select() { return chain; }, eq() { return chain; }, order() { return chain; }, maybeSingle: async () => ({ data: structuredClone(window.fixture.row) }), then(resolve, reject) { return Promise.resolve({ data: window.fixture.photos }).then(resolve, reject); } };
-          if (!['directory_profiles', 'directory_gallery_photos'].includes(name)) throw new Error(name);
-          return chain;
+    const mountEditor = async data => {
+      await page.goto(`${origin}/directory-editor.html`);
+      await page.evaluate(async data => {
+        window.fixture = structuredClone(data);
+        window.saves = [];
+        const client = {
+          auth: { getUser: async () => ({ data: { user: { id: 'fake-owner' } } }), onAuthStateChange: callback => { window.notifyAuth = callback; return { data: { subscription: { unsubscribe() {} } } }; } },
+          rpc(name, args) {
+            if (name === 'my_directory_subscriptions') return Promise.resolve({ data: [{ profile_id: window.fixture.row.id, avatar_uuid: window.fixture.row.id, plan_code: 'basic_lifetime', is_active: true, is_lifetime: true }] });
+            if (name !== 'save_directory_profile_media') throw new Error(`Unexpected RPC ${name}`);
+            return { maybeSingle: async () => {
+              window.saves.push(structuredClone(args));
+              Object.assign(window.fixture.row, args.profile_changes);
+              window.fixture.photos = args.photos;
+              return { data: structuredClone(window.fixture.row) };
+            } };
+          },
+          from() {
+            const chain = { select() { return chain; }, eq() { return chain; }, order() { return chain; }, maybeSingle: async () => ({ data: structuredClone(window.fixture.row) }), then(resolve, reject) { return Promise.resolve({ data: window.fixture.photos }).then(resolve, reject); } };
+            return chain;
+          }
+        };
+        await (await import('/src/modules/creator-editor.js')).initCreatorEditor(client);
+      }, data);
+      await page.waitForFunction(() => document.querySelectorAll('.toastui-editor-defaultUI').length === 8);
+    };
+    const field = selector => page.locator(selector).locator('..');
+    const surface = group => group.locator('.toastui-editor-ww-container .ProseMirror');
+    const mode = async (group, name) => group.locator('.toastui-editor-mode-switch').getByText(name, { exact: true }).click();
+    const selectText = async (group, text) => {
+      await surface(group).scrollIntoViewIfNeeded();
+      const bounds = await surface(group).evaluate((element, text) => {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const start = node.textContent.indexOf(text);
+          if (start < 0) continue;
+          const range = document.createRange();
+          range.setStart(node, start);
+          range.setEnd(node, start + text.length);
+          const rect = range.getBoundingClientRect();
+          return { left: rect.left, right: rect.right, y: rect.top + rect.height / 2 };
         }
-      };
-      const { initCreatorEditor } = await import('/src/modules/creator-editor.js');
-      await initCreatorEditor(client);
-    }, data);
+        throw new Error(`Text not found: ${text}`);
+      }, text);
+      await page.mouse.move(bounds.left + 1, bounds.y);
+      await page.mouse.down();
+      await page.mouse.move(bounds.right - 1, bounds.y, { steps: 5 });
+      await page.mouse.up();
+      assert.equal(await page.evaluate(() => window.getSelection().toString()), text);
+    };
+    const openLinkDialog = async group => {
+      if (!await group.locator('button.link:visible').count()) await group.locator('button.more').click();
+      await group.locator('button.link:visible').click();
+    };
+    const applyLink = async (group, text, url, enter = false) => {
+      await selectText(group, text);
+      await openLinkDialog(group);
+      const popup = group.locator('.toastui-editor-popup').filter({ has: page.locator('input[data-standard-link="url"]') });
+      await popup.getByLabel('URL', { exact: true }).fill(url);
+      await popup.getByLabel('Link text', { exact: true }).fill(text);
+      if (enter) await popup.getByLabel('Link text', { exact: true }).press('Enter');
+      else await popup.getByRole('button', { name: 'OK', exact: true }).click();
+    };
     await mountEditor(fixture);
-    assert.equal(await page.locator('.rich-text-editor').count(), 8);
-    const about = page.locator('#creator-about').locator('..');
-    await about.getByRole('button', { name: 'Visual', exact: true }).click();
-    await about.locator('.tiptap').waitFor({ state: 'visible' });
-    await about.locator('.tiptap').waitFor();
+    const about = field('#creator-about');
     assert.equal(await page.locator('#creator-about').inputValue(), fixture.row.about);
-    assert.equal(await about.locator('.tiptap > p').count(), 2);
-    assert.equal(await about.locator('.tiptap li').count(), 2);
-    await about.locator('.tiptap').evaluate(element => {
-      const text = element.querySelector('p').firstChild;
-      const range = document.createRange();
-      range.setStart(text, 0);
-      range.setEnd(text, 5);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-    });
-    await about.getByRole('button', { name: 'Bold', exact: true }).click();
+    await mode(about, 'Markdown');
+    await about.getByText('Preview', { exact: true }).click();
+    assert.equal(await about.locator('.toastui-editor-md-preview li').count(), 2);
+    await about.getByText('Write', { exact: true }).click();
+    await mode(about, 'WYSIWYG');
+    assert.equal(await page.locator('#creator-about').inputValue(), fixture.row.about);
+    await selectText(about, 'First');
+    await about.locator('button.bold').click();
     assert.match(await page.locator('#creator-about').inputValue(), /\*\*First\*\*/);
-    await about.getByRole('button', { name: 'Undo', exact: true }).click();
+    await surface(about).focus();
+    await page.keyboard.press('Control+z');
     assert.doesNotMatch(await page.locator('#creator-about').inputValue(), /\*\*First\*\*/);
-    await about.getByRole('button', { name: 'Redo', exact: true }).click();
+    await page.keyboard.press('Control+Shift+z');
     assert.match(await page.locator('#creator-about').inputValue(), /\*\*First\*\*/);
-    await about.getByRole('button', { name: 'Markdown', exact: true }).click();
-    await about.getByRole('button', { name: 'Preview', exact: true }).click();
-    assert.equal(await about.locator('.rich-text-preview strong').textContent(), 'First');
-    await about.getByRole('button', { name: 'Visual', exact: true }).click();
-    const boundaries = page.locator('#creator-boundaries').locator('..');
-    await page.locator('#creator-boundaries').fill('Paragraph one.\n\nParagraph two.\n\n- First\n- Second');
-    assert.equal(await page.locator('#creator-boundaries').inputValue(), 'Paragraph one.\n\nParagraph two.\n\n- First\n- Second');
-    await boundaries.getByRole('button', { name: 'Preview', exact: true }).click();
-    assert.equal(await boundaries.locator('.rich-text-preview > p').count(), 2);
-    assert.equal(await boundaries.locator('.rich-text-preview li').count(), 2);
-    const instructions = page.locator('#creator-booking-instructions').locator('..');
-    await page.locator('#creator-booking-instructions').fill('<b>Retain literal text</b>');
-    await instructions.getByRole('button', { name: 'Visual', exact: true }).click();
-    assert.equal(await instructions.getAttribute('data-mode'), 'markdown');
-    assert.match(await instructions.locator('.rich-text-status').textContent(), /source has not been changed/);
-    assert.equal(await page.locator('#creator-booking-instructions').inputValue(), '<b>Retain literal text</b>');
-    await page.locator('#creator-booking-instructions').fill(fixture.row.booking_instructions);
-    const photoSource = page.locator('[data-gallery-editor] textarea');
-    const photoEditor = page.locator('[data-gallery-editor] .rich-text-editor');
-    await photoEditor.getByRole('button', { name: 'Visual', exact: true }).click();
-    await photoEditor.locator('.tiptap').waitFor();
-    await photoEditor.locator('.tiptap').fill('Updated photo description');
-    fixture.photos[0].description = '**Updated photo description**';
-    assert.equal(await photoSource.inputValue(), fixture.photos[0].description);
-    await photoEditor.getByRole('button', { name: 'Markdown', exact: true }).click();
-    await photoSource.fill('**Photo** description\n\n- Detail');
-    fixture.photos[0].description = '**Photo** description\n\n- Detail';
-    const serviceEditor = page.locator('[data-rate-item] .rich-text-editor');
-    await serviceEditor.getByRole('button', { name: 'Visual', exact: true }).click();
-    await serviceEditor.locator('.tiptap').waitFor();
-    await serviceEditor.locator('.tiptap p').first().evaluate(element => {
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-    });
-    await serviceEditor.getByRole('button', { name: 'Bold', exact: true }).click();
-    assert.match(await serviceEditor.locator('textarea').inputValue(), /\*\*Detail one\*\*/);
-    fixture.row.rate_categories[0].items[0].description = await serviceEditor.locator('textarea').inputValue();
-    const notes = page.locator('[data-booking-notes]').locator('..');
-    await notes.getByRole('button', { name: 'Visual', exact: true }).click();
-    await notes.locator('.tiptap').waitFor();
+    await applyLink(about, 'Second', 'https://example.com/about');
+    assert.equal(await surface(about).locator('a').getAttribute('href'), 'https://example.com/about');
+    assert.match(await page.locator('#creator-about').inputValue(), /\[Second\]\(https:\/\/example.com\/about\)/);
+    const instructions = field('#creator-booking-instructions');
+    await applyLink(instructions, 'Contact', 'javascript:alert(1)');
+    assert.match(await instructions.locator('.rich-text-status').textContent(), /valid HTTP/);
+    assert.equal(await surface(instructions).locator('a').count(), 0);
+    await instructions.locator('.toastui-editor-popup').getByRole('button', { name: 'Cancel', exact: true }).click();
+    await applyLink(instructions, 'Contact', 'https://example.com/book');
+    assert.equal(await surface(instructions).locator('a').getAttribute('href'), 'https://example.com/book');
+    const notes = field('[data-booking-notes]');
+    await applyLink(notes, 'Advance notice', 'https://example.com/notice', true);
+    assert.equal(await page.evaluate(() => window.saves.length), 0);
+    assert.match(await page.locator('[data-booking-notes]').inputValue(), /https:\/\/example.com\/notice/);
     await page.locator('[data-booking-enabled]').uncheck();
-    await page.waitForFunction(() => document.querySelector('[data-booking-notes]').closest('.rich-text-editor').querySelector('.tiptap').getAttribute('contenteditable') === 'false');
+    await page.waitForFunction(() => document.querySelector('[data-booking-notes]').closest('.rich-text-editor').querySelector('.standard-text-editor').inert);
+    assert.equal(await surface(notes).getAttribute('contenteditable'), 'false');
     await page.locator('[data-booking-enabled]').check();
-    await page.waitForFunction(() => document.querySelector('[data-booking-notes]').closest('.rich-text-editor').querySelector('.tiptap').getAttribute('contenteditable') === 'true');
-    await page.locator('#creator-booking-instructions').fill('Link text');
-    await page.locator('#creator-booking-instructions').evaluate(element => element.setSelectionRange(0, 4));
-    await instructions.getByRole('button', { name: 'Bold', exact: true }).click();
-    assert.equal(await page.locator('#creator-booking-instructions').inputValue(), '**Link** text');
-    await instructions.getByRole('button', { name: 'Undo', exact: true }).click();
-    assert.equal(await page.locator('#creator-booking-instructions').inputValue(), 'Link text');
-    await instructions.getByRole('button', { name: 'Redo', exact: true }).click();
-    assert.equal(await page.locator('#creator-booking-instructions').inputValue(), '**Link** text');
-    await instructions.getByRole('button', { name: 'Link', exact: true }).click();
-    await instructions.getByRole('textbox', { name: 'Link URL' }).fill('javascript:alert(1)');
-    await instructions.getByRole('button', { name: 'Apply link', exact: true }).click();
-    assert.match(await instructions.locator('.rich-text-link-panel [role=status]').textContent(), /valid HTTP/);
-    await instructions.getByRole('button', { name: 'Cancel link', exact: true }).click();
-    await page.locator('#creator-booking-instructions').fill(fixture.row.booking_instructions);
-    const boundarySource = await page.locator('#creator-boundaries').inputValue();
-    await boundaries.getByRole('button', { name: 'Markdown', exact: true }).click();
-    await page.locator('#creator-boundaries').fill('x'.repeat(4000));
-    await page.locator('#creator-boundaries').evaluate(element => element.setSelectionRange(0, 1));
-    await boundaries.getByRole('button', { name: 'Bold', exact: true }).click();
-    assert.match(await boundaries.locator('.rich-text-status').textContent(), /exceed 4000/);
-    assert.equal((await page.locator('#creator-boundaries').inputValue()).length, 4000);
-    await page.locator('#creator-boundaries').evaluate(element => { element.value = 'x'.repeat(4001); element.dispatchEvent(new Event('input', { bubbles: true })); });
-    await boundaries.getByRole('button', { name: 'Preview', exact: true }).click();
+    await page.waitForFunction(() => !document.querySelector('[data-booking-notes]').closest('.rich-text-editor').querySelector('.standard-text-editor').inert);
+    const photo = field('[data-gallery-editor] textarea[data-rich-text-source]');
+    await selectText(photo, 'description');
+    await photo.locator('button.bold').click();
+    const service = page.locator('[data-rate-item] .rich-text-editor');
+    await selectText(service, 'Detail one');
+    await service.locator('button.bold').click();
+    fixture.photos[0].description = await photo.locator('textarea[data-rich-text-source]').inputValue();
+    fixture.row.rate_categories[0].items[0].description = await service.locator('textarea[data-rich-text-source]').inputValue();
+    fixture.row.booking_hours.notes = await notes.locator('textarea[data-rich-text-source]').inputValue();
+    const boundaries = field('#creator-boundaries');
+    const original = await boundaries.locator('textarea[data-rich-text-source]').inputValue();
+    await mode(boundaries, 'Markdown');
+    const markdown = boundaries.locator('.toastui-editor-md-container .ProseMirror');
+    await markdown.fill('x'.repeat(4001));
     await page.locator('[data-creator-save]').click();
     assert.equal(await page.evaluate(() => window.saves.length), 0);
-    assert.equal(await boundaries.getAttribute('data-mode'), 'markdown');
-    await page.locator('#creator-boundaries').fill(boundarySource);
+    assert.match(await boundaries.locator('.rich-text-status').textContent(), /shorten/);
+    await markdown.fill('x'.repeat(4000));
+    assert.equal((await boundaries.locator('textarea[data-rich-text-source]').inputValue()).length, 4000);
+    await markdown.fill(original);
     await page.locator('[data-creator-save]').click();
     await page.waitForFunction(() => document.querySelector('[data-creator-status]').textContent === 'Profile saved.');
-    let saved = await page.evaluate(() => ({ fixture: window.fixture, args: window.saves.at(-1) }));
+    const saved = await page.evaluate(() => ({ fixture: window.fixture, args: window.saves.at(-1) }));
     assert.deepEqual(saved.args.photos, fixture.photos);
     assert.deepEqual(saved.args.profile_changes.rate_categories, fixture.row.rate_categories);
     assert.deepEqual(saved.args.profile_changes.booking_hours, fixture.row.booking_hours);
     assert.equal(saved.args.profile_changes.headline, fixture.row.headline);
-    await page.reload();
     await mountEditor(saved.fixture);
-    assert.match(await page.locator('#creator-about').inputValue(), /\*\*First\*\*/);
-    assert.equal(await page.locator('#creator-boundaries').inputValue(), saved.args.profile_changes.boundaries);
+    assert.match(await page.locator('#creator-about').inputValue(), /https:\/\/example.com\/about/);
+    assert.match(await page.locator('#creator-booking-instructions').inputValue(), /https:\/\/example.com\/book/);
     await page.setViewportSize({ width: 390, height: 844 });
+    await mountEditor(saved.fixture);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await applyLink(field('#creator-about'), 'Second', 'https://example.com/mobile');
+    assert.equal(await surface(field('#creator-about')).locator('a').getAttribute('href'), 'https://example.com/mobile');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await mode(field('#creator-about'), 'Markdown');
+    await field('#creator-about').getByText('Write', { exact: true }).click();
+    await openLinkDialog(field('#creator-about'));
+    const sourcePopup = field('#creator-about').locator('.toastui-editor-popup');
+    await sourcePopup.getByLabel('URL', { exact: true }).fill('https://example.com/source');
+    await sourcePopup.getByLabel('Link text', { exact: true }).fill('Source link');
+    await sourcePopup.getByRole('button', { name: 'OK', exact: true }).click();
+    assert.match(await page.locator('#creator-about').inputValue(), /\[Source link\]\(https:\/\/example.com\/source\)/);
+    const unsafeFixture = structuredClone(saved.fixture);
+    unsafeFixture.row.about = '<script>window.unsafeExecuted=true</script>\n\n![Alt](https://example.com/image.jpg)';
+    await mountEditor(unsafeFixture);
+    const unsafeAbout = field('#creator-about');
+    assert.equal(await page.locator('#creator-about').inputValue(), unsafeFixture.row.about);
+    await mode(unsafeAbout, 'WYSIWYG');
+    assert.match(await unsafeAbout.locator('.rich-text-status').textContent(), /source has not been changed/);
+    assert.equal(await page.locator('#creator-about').inputValue(), unsafeFixture.row.about);
+    await unsafeAbout.getByText('Preview', { exact: true }).click();
+    assert.equal(await unsafeAbout.locator('.toastui-editor-md-preview script, .toastui-editor-md-preview img').count(), 0);
+    assert.match(await unsafeAbout.locator('.toastui-editor-md-preview').textContent(), /<script>/);
+    assert.equal(await page.evaluate(() => window.unsafeExecuted), undefined);
     await page.evaluate(() => window.notifyAuth('SIGNED_OUT'));
     assert.equal(await page.locator('[data-live-profile-form]').isVisible(), false);
     await page.goto(`${origin}/directory-profile.html?slug=sample-profile`);
     await page.evaluate(async data => {
-      const client = { from(name) {
+      const client = { from() {
         const chain = { select() { return chain; }, eq() { return chain; }, order() { return chain; }, maybeSingle: async () => ({ data: data.row }), then(resolve, reject) { return Promise.resolve({ data: data.photos }).then(resolve, reject); } };
         return chain;
       } };
@@ -175,20 +200,40 @@ test('visual/Markdown studio saves, reloads and renders all long-form fields wit
       (await import('/src/modules/gallery.js')).initGallery();
     }, saved.fixture);
     assert.equal(await page.locator('[data-public-profile-about] strong').textContent(), 'First');
+    assert.equal(await page.locator('[data-public-profile-about] a').getAttribute('href'), 'https://example.com/about');
+    assert.equal(await page.locator('[data-public-profile-instructions] a').getAttribute('href'), 'https://example.com/book');
     assert.equal(await page.locator('[data-public-profile-boundaries] li').count(), 2);
-    assert.equal(await page.locator('[data-public-profile-instructions] ol > li').count(), 2);
+    assert.equal(await page.locator('[data-public-profile-instructions] li').count(), 2);
     assert.equal(await page.locator('[data-public-profile-tagline] strong').textContent(), 'Tagline');
     assert.equal(await page.locator('.public-rate-category > .rich-text-content strong').textContent(), 'Category');
     assert.equal(await page.locator('.public-rate-item li').count(), 2);
-    assert.equal(await page.locator('[data-public-profile-hours] strong').textContent(), 'Advance notice');
+    assert.equal(await page.locator('[data-public-profile-hours] a').getAttribute('href'), 'https://example.com/notice');
     await page.locator('[data-public-gallery-preview] [data-photo]').click();
-    assert.equal(await page.locator('#lightbox-description strong').textContent(), 'Photo');
     assert.equal(await page.locator('#lightbox-description li').count(), 1);
     await page.keyboard.press('Escape');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.deepEqual(errors, []);
+    assert.deepEqual(externalRequests.filter(url => !url.startsWith('https://fonts.googleapis.com/')), []);
+    const fallback = await browser.newPage();
+    await fallback.route('**/src/main.js', route => route.fulfill({ contentType: 'text/javascript', body: "import '/src/templates.css';" }));
+    await fallback.route('**/*', route => {
+      if (route.request().url().includes('@toast-ui')) return route.abort();
+      return route.fallback();
+    });
+    await fallback.goto(`${origin}/directory-editor.html`);
+    await fallback.evaluate(async () => {
+      document.querySelector('[data-live-profile-form]').classList.remove('preview-hidden');
+      document.querySelector('[data-creator-fields]').disabled = false;
+      const input = document.querySelector('#creator-about');
+      input.value = 'Retain this Markdown.\n\n- Item';
+      (await import('/src/modules/rich-text-editor.js')).initRichTextEditor(input);
+    });
+    await fallback.waitForFunction(() => document.querySelector('#creator-about').closest('.rich-text-editor').querySelector('[role=status]').textContent.includes('could not be loaded'));
+    assert.equal(await fallback.locator('#creator-about').inputValue(), 'Retain this Markdown.\n\n- Item');
+    assert.equal(await fallback.locator('#creator-about').isVisible(), true);
+    await fallback.locator('#creator-about').fill('Still editable after the loading failure.');
+    assert.equal(await fallback.locator('#creator-about').inputValue(), 'Still editable after the loading failure.');
+    await fallback.close();
   } finally {
     await browser?.close();
     await server.close();

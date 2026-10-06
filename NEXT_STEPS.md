@@ -1,10 +1,10 @@
 # V2 Resume Handoff
 
-Updated: 2026-10-05. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
+Updated: 2026-10-06. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
 
 ## Resume Here
 
-**Next action: deploy the visual/Markdown editor slice and let the user review it live. The user approved its commit/push on 2026-10-05 after 70 tests and the production build passed. Boundaries / How to Book is deployed as `70a154c`; the user confirmed it works. Migrations 1-10 are already applied. Do not rerun them. No additional migration is needed for Markdown.**
+**Next action: confirm Netlify publishes the TOAST UI editor replacement included in this commit, then let the user review its native toolbar and links. The user explicitly approved this push and handover update on 2026-10-06. The custom Tiptap toolbar was deployed as `db58520`; the user reported links not applying and disliked its nonstandard UI. Boundaries / How to Book is deployed as `70a154c` and user-confirmed working. Migrations 1-10 are already applied. Do not rerun them. No additional migration is needed for either editor.**
 
 The live V2 gallery test was completed on 2026-10-05 as **testpress**:
 
@@ -26,19 +26,25 @@ The user applied [202610050010_directory_profile_protocol.sql](supabase/migratio
 
 65 focused directory/template/creator tests, production build and edited-module diagnostics passed. Tests cover exact field limits/types, clearing, owner and anonymous reads, stranger/expired denial, transactional rollback, preserved rates/hours/gallery and older-client saves that omit the new fields. Local mocked browser checks verified editor save/reload and public literal-text rendering on desktop/mobile without horizontal overflow. These mocks did not write live data. After migration and an approved push, verify a real owner save/reload and signed-out public read, including clearing each card. The V1 fixture's VIP feed, blog, toys, socials, booking requests and other unconnected controls remain references; do not fake them as live. Do not commit, push, or deploy further work without fresh approval.
 
-### Approved visual / Markdown editor slice
+### Standard editor replacement approved for delivery
 
 The user likes the simpler design but wants real paragraphs/lists and an editor toolbar. They explicitly approved visual editing plus Markdown source for **all connected long-form text**: tagline, About, Boundaries, How to Book, booking notes, rate category/service descriptions and photo descriptions. Names, headlines, prices, tags, availability labels and URLs remain plain text.
 
-- [rich-text-editor.js](src/modules/rich-text-editor.js) supplies Visual, Markdown and Preview modes with bold, italic, headings, lists, quotes, links and undo/redo. Markdown is the initial mode to retain existing source exactly; Tiptap loads lazily when Visual is selected. Source edits and visual changes use the same existing text fields and atomic save flow.
+- Commit `db58520` deployed the first custom Tiptap Visual / Markdown / Preview toolbar. The user reported its links not applying and requested a familiar, standard editor instead. They accepted TOAST UI Editor as the replacement and explicitly approved pushing it on 2026-10-06; this commit includes the replacement.
+- [rich-text-editor.js](src/modules/rich-text-editor.js) now adapts standard TOAST UI Editor with native formatting buttons, link popup and WYSIWYG / Markdown switch. Markdown has native Write / Preview tabs. The package loads automatically when the field is enabled, without stealing focus. WYSIWYG is initial for supported source. No custom gold pill toolbar remains.
 - [profile-rich-text.js](src/modules/profile-rich-text.js) builds public DOM from an allowlisted Markdown token tree, never from arbitrary HTML. Paragraphs, line breaks, lists, emphasis, quotes, code, headings, tables and safe links render semantically; raw HTML is literal text, and Markdown images are alt text only. Directory cards use plain-text tagline summaries. Gallery lightbox descriptions also use the shared renderer.
 - Existing plain text needs no data rewrite. Markdown syntax in existing text now deliberately gains formatting; source character limits still include syntax. Empty fields still hide the relevant cards.
-- Tables, task lists, images, raw HTML and headings deeper than level 3 stay source-only rather than silently losing content in Visual mode. Switching modes without editing preserves source. Reloading/saving resets visual history to avoid undoing across profile loads.
-- Dependency additions are pinned Tiptap core/starter-kit/Markdown packages; no schema, RLS, terminal or live data changes. Install reported two low-severity advisories in the dependency tree; no unrelated dependency upgrades were made.
-- `npm run test:rich-text` runs semantic-rendering tests and an isolated real-browser studio/public workflow using mocked clients only. It covers all long-form fields, source/visual/preview, undo/redo, exact limits, safe links, unsupported-source preservation, nested disabled booking fields, save/reload, public list/paragraph rendering, gallery lightbox and desktop/mobile overflow. No live writes.
-- Validation: 70 combined directory/profile/template/rich-text tests passed, including the real-browser workflow and visual edits to dynamic rate/gallery descriptions. Production build and edited-module diagnostics passed. Temporary local previews were stopped and the shared page returned to the live site; no live profile data was changed.
+- Tables, task lists, images, raw HTML and headings deeper than level 3 stay source-only rather than silently losing content in WYSIWYG mode. Native mode switching is guarded to retain exact stored source until an actual edit. Loading/saving recreates editor instances so undo cannot restore a previous profile. Synchronous flushing before saves and dynamic-model reads prevents pending editor events from dropping edits.
+- Tiptap dependencies were removed and replaced with pinned `@toast-ui/editor` 3.2.2. Its older DOMPurify dependency is overridden to the repository's current DOMPurify version, exercised in preview tests. `npm audit --omit=dev` reports zero vulnerabilities; two existing low-severity development advisories remain. Usage statistics are disabled, images/uploads are blocked, and all editor assets are local bundles. No schema, RLS, terminal or live data changes.
+- [standard-editor.css](src/standard-editor.css) contains narrowly scoped native-editor layout overrides outside Tailwind layers, since the vendor CSS is unlayered. Existing Studio grids now use zero-minimum tracks so long editor content cannot force mobile overflow. Native responsive toolbar overflow menus are retained.
+- `npm run test:rich-text` runs semantic-rendering tests and an isolated real-browser studio/public workflow using mocked clients only. It specifically applies native links in About, How to Book and booking notes, rejects unsafe links, inserts links in Markdown mode, saves/reloads and verifies public hrefs. It also covers real mouse text selection, keyboard undo/redo, unchanged mode switches, exact limits, unsupported-source preservation, nested disabled booking fields, dynamic rate/gallery edits, native preview, mobile link dialogs/overflow, sign-out and explicit loading-failure fallback. No live writes; editor telemetry and image requests are checked absent.
+- Validation: 70 combined directory/profile/template/rich-text tests and production build passed for the replacement; edited-module diagnostics are clear. The build warns that the lazy vendor editor chunk exceeds 500 kB; public pages do not import the visual editor. Hosted replacement behavior remains unverified until an approved push and user review.
 
-Commit/push of this slice is approved. After deployment, let the user review the editor with their own content; hosted visual editing remains unverified until that review. Further feature work requires fresh push approval.
+After deployment, verify the standard toolbar is present without changing live profile data. The user should then review native link insertion, save/reload and public rendering with their own content. Hosted owner-save behavior is not yet verified for this replacement. No new SQL or terminal setup is needed. Further feature pushes require fresh approval.
+
+### Next feature work after editor review
+
+Continue incremental V1 parity while retaining the simpler V2 design the user now likes. Choose the next connected feature with the user before implementation: remaining V1 socials, toys, VIP feed/blog and booking-request controls are references, not live features. Do not invent plan restrictions, prices, reservations or payment behavior. Gallery uploads/storage remain separate work; current galleries use image URLs.
 
 ## Product Direction
 
@@ -95,7 +101,7 @@ An alternate new prim (`2cafaa5a-4307-74fb-540d-9288dafe8e91`) caused HTTP 403 b
 
 ## Applied Migrations
 
-All nine were applied manually by the user to the V2 development project. **Do not apply them again.**
+All ten were applied manually by the user to the V2 development project. Migration 10 and its verified privileges are described above; the table below records migrations 1-9. **Do not apply them again.**
 
 | Migration | Purpose / confirmed check |
 | --- | --- |

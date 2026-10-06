@@ -1,0 +1,6 @@
+.standard-text-editor .toastui-editor-defaultUI { font-family: Arial,sans-serif; }
+.standard-text-editor .toastui-editor-toolbar { flex-shrink: 0; }
+.standard-text-editor .toastui-editor-defaultUI-toolbar { padding: 0 8px; overflow: hidden; }
+.standard-text-editor .toastui-editor-contents { overflow-wrap: anywhere; }
+.standard-text-editor .toastui-editor-popup { max-width: calc(100% - 12px); }
+.standard-text-editor .toastui-editor-popup input { min-width: 0; max-width: 100%; }
