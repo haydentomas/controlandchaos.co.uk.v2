@@ -9,6 +9,11 @@
     <section class="preview-hidden" data-account-session>
       <h2 class="account-subheading">Signed in</h2>
       <p class="text-gold" data-account-email></p>
+      <section class="account-verification">
+        <h2 class="account-subheading">Web login</h2>
+        <p>Your account email above is your web login. Set a password to sign in without the Second Life terminal. Login credentials are private and are not part of your public profile.</p>
+        <button type="button" class="btn btn-secondary" data-account-change-password>Set or change web password</button>
+      </section>
       <section class="account-verification" data-account-directory>
         <h2 class="account-subheading">Directory subscription</h2>
         <p class="account-status" data-subscription-status role="status" aria-live="polite"></p>
@@ -36,6 +41,7 @@
           <div data-account-password-field><label for="account-password">Password</label><input id="account-password" name="password" type="password" autocomplete="current-password" required></div>
           <div class="preview-hidden" data-account-confirm-field><label for="account-confirm">Confirm password</label><input id="account-confirm" name="confirmation" type="password" autocomplete="new-password"></div>
           <button type="submit" class="btn btn-gold account-submit" data-account-submit>Sign in</button>
+          <button type="button" class="btn btn-secondary preview-hidden" data-account-cancel-password>Cancel password change</button>
         </form>
       </section>
     </div>

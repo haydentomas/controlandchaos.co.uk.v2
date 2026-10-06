@@ -1,8 +1,8 @@
-import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin } from './auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, setWebPassword } from './auth-api.js';
 import { initAvatarVerification } from './avatar-verification.js';
 import { initAccountDirectory } from './account-directory.js';
 
-export async function initAuth() {
+export async function initAuth(providedClient, passwordVerifierFactory) {
   const status = document.querySelector('[data-account-status]');
   const container = document.querySelector('[data-account-form-container]');
   const sessionPanel = document.querySelector('[data-account-session]');
@@ -12,9 +12,12 @@ export async function initAuth() {
   const confirmation = form.elements.confirmation;
   const submit = document.querySelector('[data-account-submit]');
   const signout = document.querySelector('[data-account-signout]');
+  const changePassword = document.querySelector('[data-account-change-password]');
+  const cancelPassword = document.querySelector('[data-account-cancel-password]');
   const tabs = [...document.querySelectorAll('[data-account-mode]')];
   let mode = 'signin';
   let recovery = false;
+  let editingPassword = false;
   let busy = false;
   let client;
   let refreshDirectory;
@@ -23,7 +26,7 @@ export async function initAuth() {
   const setBusy = value => {
     busy = value;
     form.setAttribute('aria-busy', String(value));
-    for (const control of [...tabs, submit, signout]) control.disabled = value;
+    for (const control of [...tabs, submit, signout, changePassword, cancelPassword, email, password, confirmation]) control.disabled = value;
   };
   const showMode = value => {
     mode = value;
@@ -34,6 +37,7 @@ export async function initAuth() {
     document.querySelector('[data-account-confirm-field]').classList.toggle('preview-hidden', !needsConfirmation);
     document.querySelector('[data-account-tabs]').classList.toggle('preview-hidden', mode === 'update');
     document.querySelector('[data-account-recovery-title]').classList.toggle('preview-hidden', mode !== 'update');
+    cancelPassword.classList.toggle('preview-hidden', mode !== 'update' || recovery);
     email.required = mode !== 'update';
     password.required = needsPassword;
     confirmation.required = needsConfirmation;
@@ -60,15 +64,15 @@ export async function initAuth() {
     const user = error ? null : data.user;
     sessionPanel.classList.toggle('preview-hidden', !user);
     document.querySelector('[data-account-email]').textContent = user?.email || '';
-    container.classList.toggle('preview-hidden', !!user && !recovery);
+    container.classList.toggle('preview-hidden', !!user && !recovery && !editingPassword);
     if (recovery && user && mode !== 'update') showMode('update');
-    if (!user && mode === 'update') { recovery = false; showMode('signin'); }
+    if (!user && mode === 'update') { recovery = false; editingPassword = false; showMode('signin'); }
     await refreshDirectory(user);
     if (user && active === refreshGeneration) document.querySelector('[data-avatar-refresh]').click();
   };
   const callback = callbackState(location.href);
   if (location.search || location.hash) history.replaceState(null, '', callback.cleanUrl);
-  try { client = createCreatorClient(); } catch { message('Account service is unavailable. Please try again later.'); return; }
+  try { client = providedClient || createCreatorClient(); } catch { message('Account service is unavailable. Please try again later.'); return; }
   initAvatarVerification(client);
   refreshDirectory = initAccountDirectory(client);
   const subscriptionRefresh = document.querySelector('[data-subscription-refresh]');
@@ -79,7 +83,7 @@ export async function initAuth() {
   });
   const { data: listener } = client.auth.onAuthStateChange(event => {
     if (event === 'PASSWORD_RECOVERY') recovery = true;
-    if (event === 'SIGNED_OUT') { recovery = false; refreshGeneration++; }
+    if (event === 'SIGNED_OUT') { recovery = false; editingPassword = false; password.value = confirmation.value = ''; refreshGeneration++; }
     if (!busy) setTimeout(() => refresh().catch(() => message('Unable to check your account. Please try again.')), 0);
   });
   window.addEventListener('pagehide', event => { if (!event.persisted) listener.subscription.unsubscribe(); });
@@ -102,15 +106,47 @@ export async function initAuth() {
       tabs[next].focus();
     });
   }
+  changePassword.addEventListener('click', () => {
+    if (busy) return;
+    editingPassword = true;
+    showMode('update');
+    container.classList.remove('preview-hidden');
+    message('Set a web password for the account email shown above. Opening a reset email or a terminal login does not itself change your password.');
+    password.focus();
+  });
+  cancelPassword.addEventListener('click', () => {
+    if (busy) return;
+    editingPassword = false;
+    showMode('signin');
+    container.classList.add('preview-hidden');
+    message('');
+  });
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (busy || !form.reportValidity()) return;
     const action = mode;
     if ((action === 'signup' || action === 'update') && password.value !== confirmation.value) { message('The passwords do not match.'); confirmation.focus(); return; }
-    if (action === 'update' && !recovery) { message('Open a valid password reset link first.'); return; }
+    if (action === 'update' && !recovery && !editingPassword) { message('Sign in or open a valid password reset link first.'); return; }
     setBusy(true);
     message('Please wait...');
     try {
+      if (action === 'update') {
+        try {
+          const accountEmail = await setWebPassword(client, { password: password.value, confirmation: confirmation.value }, passwordVerifierFactory);
+          if (recovery) {
+            const { error: signOutError } = await client.auth.signOut({ scope: 'local' });
+            if (signOutError) { message('Password updated and web sign-in verified, but sign-out failed. Keep this session open.'); return; }
+          }
+          recovery = false;
+          editingPassword = false;
+          showMode('signin');
+          message(`Password updated and web sign-in verified for ${accountEmail}. Use your new password to sign in.`);
+        } catch (error) {
+          message(error.message);
+        }
+        await refresh();
+        return;
+      }
       const { error } = await authenticate(client, { mode: action, email: email.value, password: password.value, confirmation: confirmation.value, locationUrl: location.href });
       if (error) {
         message(accountRequestMessage(error));
@@ -119,12 +155,6 @@ export async function initAuth() {
       if (action === 'signup') message('Check your email to confirm your account. Open the link in this same browser.');
       if (action === 'reset') message('If this address can receive a reset email, it will arrive shortly. Open the link in this same browser.');
       if (action === 'signin') message('Signed in.');
-      if (action === 'update') {
-        recovery = false;
-        await client.auth.signOut({ scope: 'local' });
-        showMode('signin');
-        message('Password updated. Sign in with your new password.');
-      }
       form.reset();
       await refresh();
     } catch { message('Unable to complete this request. Please try again later.'); }

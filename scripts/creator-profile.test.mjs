@@ -447,7 +447,7 @@ test('creator blog editor loads the creator price and saves one unified post lis
   const initialPost = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', legacy_id: 'blog-1', post_type: 'post', access_level: 'public', title: 'Public journal', tag: 'Update', teaser: '', body_markdown: 'An update.', media_type: 'text', media_path: '', media_url: '', is_published: true, sort_order: 0, created_at: '2026-10-01T00:00:00Z', published_at: '2026-10-01T00:00:00Z' };
   let saveRequest;
   const client = { rpc: async (name, args) => {
-    if (name === 'creator_blog_editor_posts') return { data: [initialPost], error: null };
+    if (name === 'creator_blog_editor_posts_v2') return { data: [initialPost], error: null };
     saveRequest = { name, args };
     return { data: null, error: null };
   } };
@@ -471,7 +471,7 @@ test('creator blog editor loads the creator price and saves one unified post lis
     newRow.querySelector('textarea[id$="-teaser"]').value = 'A preview for fans.';
     newRow.querySelector('textarea[id$="-teaser"]').dispatchEvent(new document.defaultView.Event('input'));
     await editor.save();
-    assert.equal(saveRequest.name, 'creator_blog_save_all');
+    assert.equal(saveRequest.name, 'creator_blog_save_all_v2');
     assert.equal(saveRequest.args.target_profile, profileId);
     assert.equal(saveRequest.args.monthly_price, 1500);
     assert.equal(saveRequest.args.posts.length, 2);
@@ -500,6 +500,32 @@ test('booking editor distinguishes unset schedules and no available days without
     editor.load({ ...hours, days: [] });
     assert.deepEqual(editor.value().days, []);
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('blog editor gates multi-attachment saves when only migration 14 is installed', async () => {
+  const { document } = parseHTML('<fieldset><input id="price"><input id="benefits"><button id="add"></button><div id="posts"></div></fieldset>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  const calls = [];
+  const post = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Existing post', post_type: 'post', access_level: 'public', body_markdown: '', media_type: 'image', media_url: 'https://example.test/photo.webp', media_path: '', is_published: false };
+  const client = { rpc: async (name, args) => {
+    calls.push({ name, args });
+    if (name === 'creator_blog_editor_posts_v2') return { error: { code: 'PGRST202' } };
+    if (name === 'creator_blog_editor_posts') return { data: [post], error: null };
+    return { error: null };
+  } };
+  try {
+    const editor = initCreatorBlogEditor(document.getElementById('posts'), document.getElementById('add'), document.getElementById('price'), document.getElementById('benefits'));
+    await editor.load(client, { id: profileId, creator_blog_monthly_linden: 1500 });
+    assert.match(document.querySelector('.creator-blog-attachments').textContent, /Apply migration 15/);
+    await editor.save();
+    assert.equal(calls.at(-1).name, 'creator_blog_save_all');
+    assert.equal(calls.at(-1).args.posts[0].media_url, post.media_url);
+    assert.equal(Object.hasOwn(calls.at(-1).args.posts[0], 'attachments'), false);
+    await assert.rejects(editor.load({ rpc: async () => ({ error: { code: '42501' } }) }, { id: profileId }), /could not be loaded/);
+  } finally {
+    if (previous === undefined) delete globalThis.document; else globalThis.document = previous;
+  }
 });
 
 test('gallery editor reorders and removes photos while public rendering excludes unpublished URLs', () => {

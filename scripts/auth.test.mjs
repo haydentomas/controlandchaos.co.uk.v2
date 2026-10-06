@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { parseHTML } from 'linkedom';
 import { renderPage } from './render-templates.mjs';
-import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin } from '../src/modules/auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, setWebPassword } from '../src/modules/auth-api.js';
 import { createPublicDirectoryClient } from '../src/modules/directory-api.js';
 
 test('creator sessions use PKCE and separate storage while public directory remains anonymous', async () => {
@@ -25,8 +25,48 @@ test('account page uses real form hooks and suppresses callback referrers', asyn
   assert.equal(document.querySelector('meta[name="referrer"]').getAttribute('content'), 'no-referrer');
   assert.equal(document.querySelector('#account-password').getAttribute('type'), 'password');
   assert.equal(document.querySelectorAll('[data-account-mode]').length, 3);
+  assert.ok(document.querySelector('[data-account-session] [data-account-change-password]'));
+  assert.equal(document.querySelector('[data-account-cancel-password]').getAttribute('type'), 'button');
   const handlers = await fs.readFile(new URL('../src/modules/preview-actions.js', import.meta.url), 'utf8');
   assert.match(handlers, /form:not\(\[data-live-auth-form\]\)/);
+});
+
+test('signed-in web password setting verifies the server identity and password without profile writes', async () => {
+  const calls = [];
+  const user = { id: 'owner', email: 'owner@example.test', email_confirmed_at: '2026-10-04T00:00:00Z' };
+  const client = { auth: {
+    getUser: async () => { calls.push('getUser'); return { data: { user }, error: null }; },
+    updateUser: async payload => { calls.push(['update', payload]); return { error: null }; }
+  } };
+  const verifier = { auth: {
+    signInWithPassword: async payload => { calls.push(['verify', payload]); return { data: { user, session: {} }, error: null }; },
+    signOut: async options => { calls.push(['signout', options]); return { error: null }; }
+  } };
+  const request = { password: 'test-password-long', confirmation: 'test-password-long' };
+  assert.equal(await setWebPassword(client, request, () => verifier), user.email);
+  assert.deepEqual(calls, ['getUser', ['update', { password: request.password }], ['verify', { email: user.email, password: request.password }], ['signout', { scope: 'local' }]]);
+  await assert.rejects(setWebPassword(client, { ...request, confirmation: 'mismatch' }, () => verifier), /do not match/);
+  await assert.rejects(setWebPassword(client, { password: 'short', confirmation: 'short' }, () => verifier), /12 characters/);
+  const count = calls.length;
+  await assert.rejects(setWebPassword({ auth: { getUser: async () => ({ data: { user: { ...user, email_confirmed_at: null } } }) } }, request, () => verifier), /email-confirmed/);
+  assert.equal(calls.length, count);
+});
+
+test('password-setting failures distinguish rejected updates from unverified updates', async () => {
+  const user = { id: 'owner', email: 'owner@example.test', email_confirmed_at: '2026-10-04T00:00:00Z' };
+  const request = { password: 'test-password-long', confirmation: 'test-password-long' };
+  for (const [code, expected] of [['reauthentication_needed', /fresh authentication/], ['weak_password', /stronger/], ['same_password', /different/], ['unexpected', /was not changed/]]) {
+    const client = { auth: { getUser: async () => ({ data: { user } }), updateUser: async () => ({ error: { code, message: 'private provider details' } }) } };
+    await assert.rejects(setWebPassword(client, request, () => ({})), error => expected.test(error.message) && !error.message.includes('private provider'));
+  }
+  let signedOut = false;
+  const client = { auth: { getUser: async () => ({ data: { user } }), updateUser: async () => ({ error: null }) } };
+  const verifier = { auth: {
+    signInWithPassword: async () => ({ data: {}, error: { code: 'invalid_credentials' } }),
+    signOut: async () => { signedOut = true; return { error: null }; }
+  } };
+  await assert.rejects(setWebPassword(client, request, () => verifier), /Password updated, but normal web sign-in could not be verified/);
+  assert.equal(signedOut, true);
 });
 
 test('account redirects accept only configured exact local/staging addresses', () => {

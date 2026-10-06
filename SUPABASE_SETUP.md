@@ -99,9 +99,27 @@ After local demo reads are verified, enter `VITE_SUPABASE_URL` and `VITE_SUPABAS
 
 Email/password registration, confirmation, sign-in/out and password recovery are implemented. A separate creator client uses PKCE and its own session storage; the public directory client stays anonymous. Callbacks are exchanged explicitly, URL codes/error fragments are stripped, and account pages send no referrers. Session display verifies the user with Supabase. No account action creates profile ownership or modifies directory records.
 
+Signed-in users, including users arriving via the Second Life terminal, can open My Account and select **Set or change web password**. The verified account email is displayed as their login address; it is not stored in public profile fields. The form requires matching passwords of at least 12 characters, checks the current server-verified account, calls Supabase `updateUser`, and verifies the new password using an isolated, non-persistent password-sign-in client. The normal account session stays signed in; only the temporary verification session is signed out. Password inputs are cleared after submission, cancellation and sign-out. Supabase password policies and any required reauthentication remain enforced; the form does not bypass them or send recovery emails. Password-recovery callbacks retain their separate password-update flow and sign out the account after successful verification.
+
 Supabase's default development mailer only delivers to project-team email addresses and is currently limited to two messages per hour. Production requires custom SMTP and anti-abuse configuration. Never disable email confirmation to bypass a mail-delivery problem.
 
 ## Step 6: Test A Real Development Account
+
+### Owner-assisted password recovery without email
+
+When normal password sign-in fails and recovery emails are throttled, the project owner can run `.\scripts\recover-creator-account.ps1` from the V2 folder in their own PowerShell terminal. It prompts for the account email, its UUID from Authentication > Users, a V2 `sb_secret_...` key, and the new password twice. Secret inputs are masked; never send them through chat. No credentials are stored in source or command arguments, and temporary process environment values are restored afterward.
+
+The account UUID is the **UID column in Authentication > Users**, not a Second Life avatar UUID or directory profile ID. The tool restricts recovery to the V2 project, checks that the UUID and email match an already email-confirmed, non-banned account, changes only its password via the official admin API, then verifies normal password sign-in and signs out only that test session. It does not send email, confirm unconfirmed accounts, change avatar/profile ownership, grant admin privileges, or create a master-login bypass. If the password update succeeds but verification fails, it reports that distinction explicitly; stop and inspect Auth logs rather than repeatedly resetting. This is a privileged operator tool, never a browser endpoint.
+
+### Creator blog mixed attachments (migration 15)
+
+After migration 14, [migration 15](supabase/migrations/202610060015_creator_blog_attachments.sql) adds ordered private attachment metadata, backfills saved single media without moving files, and introduces versioned editor/feed/save RPCs. Apply the whole transactional migration once, only with approval; then run [the read-only checks](supabase/verify-creator-blog-attachments.sql). No import, profile publication, terminal update or payment is part of this migration.
+
+Each post accepts up to 10 mixed images, audio files and videos. Source images remain limited to 10 MB and are optimized to WebP; MP3/M4A audio and MP4/WebM video remain limited to 25 MB per file. The editor shows ordered preview tiles with move/remove controls and uploads selected files only on Save blog. Public text appears above the responsive attachment grid. Images use the existing keyboard-accessible gallery lightbox; audio/video use native controls without autoplay. Private previews use five-minute signed URLs; reopen the post to renew them. Locked feeds redact the whole attachment list, and Storage policies authorize every saved path.
+
+Before migration 15 exists, the frontend explicitly retains single-attachment mode via the legacy RPCs. Other failures (including authorization denial) do not downgrade to legacy mode. Older clients can still edit unchanged legacy media without discarding a multi-attachment set; changing single media on a multi-attachment post is rejected instead of truncating it. Do not rerun the V1 importer after editing attachments. Removed uploads are cleaned up only after metadata saves successfully. Cleanup failures and ambiguous save responses are reported explicitly; ambiguous responses retain uploaded files and require refresh/reconciliation rather than risking deletion of committed media.
+
+Validation commands: `npm run test:creator`, `npm run test:blog:browser`, and `npm run build`. Browser tests cover private previews, ten-item limits, ordering/removal, saved uploads, public mixed media, image-lightbox navigation, mobile layout and preservation of the real rich-text widget during attachment edits.
 
 1. Open `http://127.0.0.1:4182/auth.html` and select Create account.
 2. Use your Supabase project-team email address for the default mailer. Enter a unique password of at least 12 characters directly into the form; never share it through chat.

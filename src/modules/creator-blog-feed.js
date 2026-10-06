@@ -1,5 +1,6 @@
 import { publicImageUrl } from './directory-api.js';
 import { renderRichText } from './profile-rich-text.js';
+import { blogAttachments, renderCreatorBlogMedia } from './creator-blog-media.js';
 
 const BUCKET = 'creator-blog-media';
 
@@ -12,31 +13,6 @@ function element(tag, className = '') {
 function readableDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
-}
-
-function renderMedia(container, post, url) {
-  if (!url) return;
-  if (post.media_type === 'image') {
-    const image = element('img', 'creator-blog-media-image');
-    image.src = url;
-    image.alt = post.title;
-    image.loading = 'lazy';
-    image.referrerPolicy = 'no-referrer';
-    image.addEventListener('error', () => image.remove());
-    container.append(image);
-  } else if (post.media_type === 'audio') {
-    const audio = element('audio', 'creator-blog-media-audio');
-    audio.controls = true;
-    audio.preload = 'none';
-    audio.src = url;
-    container.append(audio);
-  } else if (post.media_type === 'video') {
-    const video = element('video', 'creator-blog-media-video');
-    video.controls = true;
-    video.preload = 'metadata';
-    video.src = url;
-    container.append(video);
-  }
 }
 
 export async function renderCreatorBlogFeed(container, status, client, profile, offer, posts) {
@@ -130,17 +106,36 @@ export async function renderCreatorBlogFeed(container, status, client, profile, 
       const body = element('div', 'creator-blog-post-body');
       renderRichText(body, post.body_markdown || '');
       card.append(body);
-      if (post.media_path || post.media_url) {
-        const mediaContainer = element('div', 'creator-blog-post-media');
+      const attachments = blogAttachments(post);
+      if (attachments.length) {
+        const mediaContainer = element('div', 'creator-blog-post-media creator-blog-attachment-grid');
         card.append(mediaContainer);
-        if (post.media_url) renderMedia(mediaContainer, post, publicImageUrl(post.media_url));
-        else {
-          const { data, error } = await client.storage.from(BUCKET).createSignedUrl(post.media_path, 300);
-          if (error || !data?.signedUrl) {
+        for (const [index, attachment] of attachments.entries()) {
+          let url = attachment.media_url ? publicImageUrl(attachment.media_url) : '';
+          if (attachment.media_path) {
+            try {
+              const { data, error } = await client.storage.from(BUCKET).createSignedUrl(attachment.media_path, 300);
+              if (error || !data?.signedUrl) throw new Error('Media unavailable.');
+              url = data.signedUrl;
+            } catch {
+              url = '';
+            }
+          }
+          const title = `${post.title} - attachment ${index + 1}`;
+          const tile = element(attachment.media_type === 'image' && url ? 'button' : 'div', 'creator-blog-attachment-tile');
+          mediaContainer.append(tile);
+          if (!url) {
             const message = element('p', 'text-muted');
             message.textContent = 'This post’s media is temporarily unavailable.';
-            mediaContainer.append(message);
-          } else renderMedia(mediaContainer, post, data.signedUrl);
+            tile.append(message);
+          } else {
+            if (attachment.media_type === 'image') {
+              tile.type = 'button';
+              tile.setAttribute('aria-label', `View photo: ${title}`);
+              Object.assign(tile.dataset, { photo: url, photoTitle: title, photoCategory: '', photoDescription: '' });
+            }
+            renderCreatorBlogMedia(tile, { ...attachment, title }, url);
+          }
         }
       }
     }

@@ -65,6 +65,39 @@ export function accountRequestMessage(error) {
   return 'Unable to complete this request. Check your details and try again.';
 }
 
+export async function setWebPassword(client, { password, confirmation }, verifierFactory = () => createCreatorClient(undefined, {
+  auth: { storageKey: `${AUTH_STORAGE_KEY}-password-check`, persistSession: false, autoRefreshToken: false }
+})) {
+  if (password.length < 12) throw new Error('Use a password of at least 12 characters.');
+  if (password !== confirmation) throw new Error('The passwords do not match.');
+  const { data, error } = await client.auth.getUser();
+  if (error || !data?.user?.email || !data.user.email_confirmed_at) {
+    throw new Error('Sign in to an email-confirmed account before setting your web password.');
+  }
+  const verifier = verifierFactory();
+  const { error: updateError } = await client.auth.updateUser({ password });
+  if (updateError) {
+    if (['reauthentication_needed', 'reauthentication_not_valid'].includes(updateError.code)) {
+      throw new Error('Supabase requires fresh authentication. Request a fresh terminal login or password recovery link before changing your password.');
+    }
+    if (updateError.code === 'same_password') throw new Error('Choose a different password from your current password.');
+    if (updateError.code === 'weak_password') throw new Error('This password does not meet the account password policy. Choose a stronger password.');
+    throw new Error('Password update was rejected. Your web password was not changed. Check Supabase Auth logs.');
+  }
+  try {
+    const { data: verified, error: verificationError } = await verifier.auth.signInWithPassword({ email: data.user.email, password });
+    if (verificationError || !verified?.session || verified.user?.id !== data.user.id) {
+      throw new Error('Password updated, but normal web sign-in could not be verified. Keep this session open and check Supabase Auth logs.');
+    }
+  } catch {
+    throw new Error('Password updated, but normal web sign-in could not be verified. Keep this session open and check Supabase Auth logs.');
+  } finally {
+    const { error: signOutError } = await verifier.auth.signOut({ scope: 'local' });
+    if (signOutError) throw new Error('Password updated, but the verification session could not be cleared. Keep this account session open.');
+  }
+  return data.user.email;
+}
+
 export async function exchangeAuthCallback(client, callback) {
   return client.auth.exchangeCodeForSession(callback.code, callback.flowId ? { flowId: callback.flowId } : undefined);
 }

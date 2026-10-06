@@ -7,6 +7,7 @@ import { renderRichText } from './profile-rich-text.js';
 import { initBookingEnquiry } from './booking-enquiry.js';
 import { renderHardwareItems, renderWishlistItems } from './profile-collections.js';
 import { renderCreatorBlogFeed } from './creator-blog-feed.js';
+import { missingBlogV2Rpc } from './creator-blog-media.js';
 
 function initProfileTabs(hasGallery, hasBlog) {
   const nav = document.querySelector('[data-public-profile-tabs]');
@@ -165,10 +166,12 @@ export async function initDirectoryProfile(clientOverride) {
     }
     let hasBlog = false;
     try {
-      const [offerResult, feedResult] = await Promise.all([
+      const [offerResult, initialFeedResult] = await Promise.all([
         client.rpc('creator_blog_public_offer', { target_profile: profile.id }),
-        client.rpc('creator_blog_feed', { target_profile: profile.id })
+        client.rpc('creator_blog_feed_v2', { target_profile: profile.id })
       ]);
+      const feedResult = missingBlogV2Rpc(initialFeedResult.error)
+        ? await client.rpc('creator_blog_feed', { target_profile: profile.id }) : initialFeedResult;
       if (offerResult.error || feedResult.error || !Array.isArray(feedResult.data)) throw new Error('Creator blog is temporarily unavailable.');
       const offer = Array.isArray(offerResult.data) ? offerResult.data[0] || null : offerResult.data;
       const posts = feedResult.data;
