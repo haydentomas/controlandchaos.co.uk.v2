@@ -27,6 +27,7 @@ export async function initCreatorEditor(clientOverride) {
   let generation = 0;
   let saving = false;
   let profile;
+  let selectedIsVip = false;
   let timer;
   let subscriptions = [];
   const fieldNames = ['display_name', 'role_type', 'headline', 'tagline', 'about', 'avatar_image', 'banner_image', 'starting_rate', 'availability', 'availability_note', 'boundaries', 'booking_instructions', 'booking_email', 'hardware_title', 'wishlist_title'];
@@ -55,6 +56,12 @@ export async function initCreatorEditor(clientOverride) {
     else image.removeAttribute('src');
   };
   const paint = row => {
+    form.querySelector('[data-gallery-editor-title]').textContent = selectedIsVip ? 'VIP Gallery Library' : 'Profile card photos';
+    form.querySelector('[data-gallery-tier-note]').textContent = selectedIsVip
+      ? 'Publish up to 20 gallery photos. Choose up to four for the directory profile card.'
+      : 'Basic includes up to four photos on your directory card. Extra saved photos are retained if your plan changes; upgrade to VIP for a full Gallery tab.';
+    form.querySelector('[data-blog-vip-controls]').classList.toggle('preview-hidden', !selectedIsVip);
+    form.querySelector('[data-blog-vip-notice]').classList.toggle('preview-hidden', selectedIsVip);
     rateEditor.load(row.rate_categories);
     bookingEditor.load(row.booking_hours);
     hardwareEditor.load(row.hardware_compat);
@@ -79,17 +86,24 @@ export async function initCreatorEditor(clientOverride) {
     status.textContent = 'Loading profile...';
     try {
       const row = await loadCreatorProfile(client, picker.value);
-      const photos = await fetchGalleryPhotos(client, row.id);
+      const selectedSubscription = subscriptions.find(subscription => subscription.profile_id === row.id && subscription.is_active === true);
+      selectedIsVip = selectedSubscription?.plan_code?.startsWith('vip_') === true;
+      galleryEditor.setLimit(selectedIsVip ? 20 : 4);
+      const photos = await fetchGalleryPhotos(client, row.id, { maximumSortOrder: selectedIsVip ? null : 4 });
       if (active !== generation) return;
       galleryEditor.load(photos);
       paint(row);
-      try {
+      if (selectedIsVip) try {
         await creatorBlogEditor.load(client, row);
         form.querySelector('[data-blog-save]').disabled = false;
         form.querySelector('[data-blog-status]').textContent = '';
       }
       catch (error) {
         form.querySelector('[data-blog-status]').textContent = error.message;
+        form.querySelector('[data-blog-save]').disabled = true;
+      } else {
+        creatorBlogEditor.clear();
+        form.querySelector('[data-blog-status]').textContent = '';
         form.querySelector('[data-blog-save]').disabled = true;
       }
       form.querySelector('[data-creator-subscription]').textContent = subscriptionLabel(subscriptions.find(subscription => subscription.profile_id === row.id));
@@ -134,7 +148,7 @@ export async function initCreatorEditor(clientOverride) {
   reload.addEventListener('click', refreshAccess);
   picker.addEventListener('change', loadSelected);
   form.querySelector('[data-blog-save]').addEventListener('click', async () => {
-    if (saving || !profile || fields.disabled) return;
+    if (saving || !profile || fields.disabled || !selectedIsVip) return;
     const saveButton = form.querySelector('[data-blog-save]');
     const blogStatus = form.querySelector('[data-blog-status]');
     saveButton.disabled = true;
@@ -191,7 +205,10 @@ export async function initCreatorEditor(clientOverride) {
     try {
       const available = await myDirectorySubscriptions(client);
       if (active !== generation) return;
-      if (!available.some(subscription => subscription.profile_id === profile.id && subscription.is_active === true)) lock('Subscription access expired or was revoked. Your content is retained.');
+      subscriptions = available.filter(subscription => subscription.is_active === true && subscription.profile_id);
+      const current = subscriptions.find(subscription => subscription.profile_id === profile.id);
+      if (!current) lock('Subscription access expired or was revoked. Your content is retained.');
+      else if (current.plan_code?.startsWith('vip_') !== selectedIsVip) await loadSelected();
     } catch { if (active === generation) lock('Unable to confirm subscription access. Refresh access to continue.'); }
   };
   const startTimer = () => { clearInterval(timer); timer = setInterval(checkExpiry, 60000); };

@@ -4,6 +4,8 @@ import { initRichTextEditor, flushRichTextEditors } from './rich-text-editor.js'
 
 export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = optimizeGalleryUpload } = {}) {
   let photos = [];
+  let photoLimit = GALLERY_PHOTO_LIMIT;
+  const retainedPhotosNote = container.closest('#creator-gallery')?.querySelector('[data-gallery-retained-count]');
   let textEditors = [];
   let savedStoragePaths = new Set();
   let expandedPhotoId = null;
@@ -50,11 +52,19 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
     for (const editor of textEditors) editor.destroy();
     textEditors = [];
     container.replaceChildren();
-    addPhoto.disabled = photos.length >= GALLERY_PHOTO_LIMIT;
+    addPhoto.disabled = photos.length >= photoLimit;
     const count = container.closest('#creator-gallery')?.querySelector('[data-gallery-count]');
-    if (count) count.textContent = `${photos.length} / ${GALLERY_PHOTO_LIMIT} photos`;
+    const visibleCount = Math.min(photos.length, photoLimit);
+    if (count) count.textContent = `${visibleCount} / ${photoLimit} photos`;
+    if (retainedPhotosNote) {
+      const retainedCount = Math.max(0, photos.length - photoLimit);
+      retainedPhotosNote.hidden = retainedCount === 0;
+      retainedPhotosNote.textContent = retainedCount === 1
+        ? '1 additional VIP photo is retained and hidden until VIP access is restored.'
+        : `${retainedCount} additional VIP photos are retained and hidden until VIP access is restored.`;
+    }
     if (!photos.length) { const empty = create('p', 'text-muted'); empty.textContent = 'No gallery photos yet.'; container.append(empty); }
-    photos.forEach((photo, index) => {
+    photos.slice(0, photoLimit).forEach((photo, index) => {
       const row = create('section', 'profile-gallery-editor-item');
       row.dataset.galleryEditorPhoto = photo.id;
       const expanded = photo.id === expandedPhotoId;
@@ -228,7 +238,7 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
     });
   };
   addPhoto.addEventListener('click', () => {
-    if (container.closest('fieldset')?.disabled || photos.length >= GALLERY_PHOTO_LIMIT) return;
+    if (container.closest('fieldset')?.disabled || photos.length >= photoLimit) return;
     const photo = { id: crypto.randomUUID(), title: '', category: '', description: '', image_url: '', is_published: false, show_in_sidebar: true };
     photos.push(photo);
     expandedPhotoId = photo.id;
@@ -236,6 +246,11 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
     document.getElementById(`photo-${photo.id}-upload`)?.focus();
   });
   return {
+    setLimit(value) {
+      if (!Number.isInteger(value) || value < 1 || value > GALLERY_PHOTO_LIMIT) throw new Error('Invalid gallery limit.');
+      photoLimit = value;
+      paint();
+    },
     load(value) {
       for (const photo of photos) if (photo.previewObjectUrl) URL.revokeObjectURL(photo.previewObjectUrl);
       photos = validateGalleryPhotos(value);
@@ -246,7 +261,7 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
     clear() { for (const photo of photos) if (photo.previewObjectUrl) URL.revokeObjectURL(photo.previewObjectUrl); photos = []; expandedPhotoId = null; savedStoragePaths.clear(); paint(); },
     value() {
       flushRichTextEditors(container);
-      return validateGalleryPhotos(photos.map(photo => {
+      return validateGalleryPhotos(photos.slice(0, photoLimit).map(photo => {
         const value = { ...photo };
         delete value.pendingFile;
         delete value.previewObjectUrl;
@@ -255,8 +270,9 @@ export function initProfileGalleryEditor(container, addPhoto, { optimizeImage = 
       }));
     },
     async uploadPending(profileId, storage, onProgress = () => {}) {
-      if (photos.some(photo => !photo.title.trim())) throw new Error('Add a title to each gallery photo before saving.');
-      const pending = photos.filter(photo => photo.pendingFile);
+      const editablePhotos = photos.slice(0, photoLimit);
+      if (editablePhotos.some(photo => !photo.title.trim())) throw new Error('Add a title to each gallery photo before saving.');
+      const pending = editablePhotos.filter(photo => photo.pendingFile);
       if (!pending.length) return { uploaded: [], obsolete: [...savedStoragePaths] };
       if (!storage?.from) throw new Error('Photo storage is unavailable. Try again later.');
       const uploaded = [];

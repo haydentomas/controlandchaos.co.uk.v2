@@ -575,6 +575,16 @@ test('creator pass dialog copies the creator UUID, uses the terminal SLURL, and 
   }
 });
 
+test('Creator Studio markup gates the blog editor and paid controls behind the VIP plan check', async () => {
+  const { document } = parseHTML(await renderPage('directory-editor.html'));
+  assert.ok(document.querySelector('[data-blog-vip-controls] [data-blog-monthly-price]'));
+  assert.ok(document.querySelector('[data-blog-vip-controls] [data-blog-editor]'));
+  assert.match(document.querySelector('[data-blog-vip-notice]').textContent, /VIP features/);
+  const editorModule = await fs.readFile(new URL('../src/modules/creator-editor.js', import.meta.url), 'utf8');
+  assert.match(editorModule, /selectedSubscription\?\.plan_code\?\.startsWith\('vip_'\)/);
+  assert.match(editorModule, /creatorBlogEditor\.clear\(\)/);
+});
+
 test('booking editor distinguishes unset schedules and no available days without losing overnight times', () => {
   const { document } = parseHTML('<div id="editor"><input type="checkbox" data-booking-enabled><fieldset data-booking-fields><select data-booking-timezone></select><input data-booking-start><input data-booking-end><select data-booking-interval><option value="60">60</option></select><textarea data-booking-notes></textarea><input type="checkbox" data-booking-day="sat"><input type="checkbox" data-booking-day="sun"></fieldset></div>');
   const previous = globalThis.document;
@@ -622,7 +632,7 @@ test('blog editor gates multi-attachment saves when only migration 14 is install
 });
 
 test('gallery editor reorders and removes photos while public rendering excludes unpublished URLs', () => {
-  const { document } = parseHTML('<section id="creator-gallery"><button id="add"></button><p data-gallery-count></p><fieldset><div id="editor"></div></fieldset></section><div id="filters"></div><div id="grid"></div>');
+  const { document } = parseHTML('<section id="creator-gallery"><button id="add"></button><p data-gallery-count></p><p data-gallery-retained-count hidden></p><fieldset><div id="editor"></div></fieldset></section><div id="filters"></div><div id="grid"></div>');
   const previous = globalThis.document;
   globalThis.document = document;
   try {
@@ -644,6 +654,18 @@ test('gallery editor reorders and removes photos while public rendering excludes
     assert.equal(document.querySelectorAll('[data-photo]').length, 1);
     assert.equal(document.querySelectorAll('script').length, 0);
     assert.ok(!document.getElementById('grid').innerHTML.includes(photos[1].image_url));
+    const vipPhotos = Array.from({ length: 6 }, (_, index) => ({ ...photos[0], id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index).padStart(12, '0')}`, title: `VIP photo ${index + 1}` }));
+    editor.load(vipPhotos);
+    editor.setLimit(4);
+    assert.equal(document.querySelector('[data-gallery-count]').textContent, '4 / 4 photos');
+    assert.equal(document.querySelectorAll('[data-gallery-editor-photo]').length, 4);
+    assert.equal(editor.value().length, 4);
+    assert.equal(document.getElementById('add').disabled, true);
+    assert.equal(document.querySelector('[data-gallery-retained-count]').textContent, '2 additional VIP photos are retained and hidden until VIP access is restored.');
+    editor.setLimit(20);
+    assert.equal(document.querySelectorAll('[data-gallery-editor-photo]').length, 6);
+    assert.equal(editor.value().length, 6);
+    assert.equal(document.querySelector('[data-gallery-retained-count]').hidden, true);
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
 });
 
@@ -744,7 +766,7 @@ test('booking recipient RPC is private and requires an active published booking 
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth,storage to anon,authenticated,service_role;
       grant select,insert,update,delete on storage.objects to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql', '202610060014_creator_blog_subscriptions.sql', '202610070016_creator_blog_subscription_list.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql', '202610060014_creator_blog_subscriptions.sql', '202610060015_creator_blog_attachments.sql', '202610070016_creator_blog_subscription_list.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await database.query('select public,file_size_limit,allowed_mime_types from storage.buckets where id=$1', ['directory-gallery'])).rows[0], { public: false, file_size_limit: 2097152, allowed_mime_types: ['image/webp'] });
@@ -752,9 +774,12 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [rates[0].id, owner, 'test.resident']);
     const adminAvatar = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [adminAvatar, owner, 'controlandchaos']);
+    const basicAvatar = 'bbbbbbbb-cccc-4ddd-8eee-ffffffffffff';
+    await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [basicAvatar, owner, 'basic.resident']);
     const fanAvatar = '33333333-3333-4333-8333-333333333333';
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [fanAvatar, stranger, 'fan.resident']);
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070017_directory_superadmin.sql', import.meta.url), 'utf8'));
+    await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070018_vip_feature_entitlements.sql', import.meta.url), 'utf8'));
     await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
     await database.exec('set role authenticated');
     assert.equal((await database.query('select public.my_directory_admin_access() as allowed')).rows[0].allowed, false);
@@ -762,11 +787,34 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.exec('reset role; set role anon');
     await assert.rejects(database.query('select public.my_directory_admin_access()'), error => error.code === '42501');
     await database.exec('reset role');
-    await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'");
-    const profile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', [profileId, rates[0].id, 'basic_monthly', 100])).rows[0].id;
+    await database.exec("update cc_private.directory_plans set amount_linden=100,enabled=true where code='basic_monthly'; update cc_private.directory_plans set amount_linden=1500,enabled=true where code='vip_monthly'");
+    const profile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', [profileId, rates[0].id, 'vip_monthly', 1500])).rows[0].id;
+    const basicProfile = (await database.query('select public.register_directory_payment($1,$2,$3,$4) as id', ['cccccccc-dddd-4eee-8fff-000000000001', basicAvatar, 'basic_monthly', 100])).rows[0].id;
     await database.query('select set_config(\'request.jwt.claim.sub\',$1,false)', [owner]);
     await database.exec('set role authenticated');
     await database.query('update public.directory_profiles set is_published=true,rate_categories=$1::jsonb,booking_hours=$2::jsonb where id=$3', [JSON.stringify(rates), JSON.stringify(hours), profile]);
+    const basicPhotos = ['10111111-1111-4111-8111-111111111111','20222222-2222-4222-8222-222222222222','30333333-3333-4333-8333-333333333333','40444444-4444-4444-8444-444444444444'].map((id, index) => ({ ...photos[0], id, title: `Basic card photo ${index + 1}`, image_url: `https://images.example.test/basic-${index + 1}.jpg`, is_published: true }));
+    await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [basicProfile, JSON.stringify({ is_published: true }), JSON.stringify(basicPhotos), '']);
+    assert.equal((await database.query('select cc_private.directory_profile_is_vip($1) as is_vip', [profile])).rows[0].is_vip, true);
+    assert.equal((await database.query('select cc_private.directory_profile_is_vip($1) as is_vip', [basicProfile])).rows[0].is_vip, false);
+    await assert.rejects(database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [basicProfile, '{}', JSON.stringify([...basicPhotos, { ...basicPhotos[0], id: '50555555-5555-4555-8555-555555555555', title: 'Fifth photo' }]), '']), /gallery_photo_limit/);
+    assert.equal((await database.query('select count(*)::integer as count from public.directory_gallery_photos where profile_id=$1', [basicProfile])).rows[0].count, 4);
+    assert.deepEqual((await database.query('select * from public.creator_blog_public_offer($1)', [basicProfile])).rows[0], {
+      creator_avatar_uuid: basicAvatar,
+      monthly_price_linden: 0,
+      benefits: '',
+      terminal_slurl: '',
+      viewer_is_subscribed: false,
+      creator_is_vip: false
+    });
+    await assert.rejects(database.query('update public.directory_profiles set creator_blog_monthly_linden=100 where id=$1', [basicProfile]), error => error.code === '42501');
+    await assert.rejects(database.query('select public.creator_blog_save_all($1,$2,$3,$4::jsonb)', [basicProfile, 0, '', JSON.stringify([{ post_type: 'post', access_level: 'subscribers', title: 'Basic locked post', teaser: 'Preview', is_published: true }])]), error => error.code === '42501');
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select id from public.directory_gallery_photos where profile_id=$1', [basicProfile])).rows.length, 4);
+    await database.exec('reset role; set role authenticated');
+    await database.exec('reset role; set role service_role');
+    assert.equal((await database.query('select * from public.creator_blog_offer_for_terminal($1)', [basicAvatar])).rows.length, 0);
+    await database.exec('reset role; set role authenticated');
     assert.equal((await database.query('select public.my_directory_admin_access() as allowed')).rows[0].allowed, true);
     const listings = (await database.query('select * from public.admin_directory_listings()')).rows;
     const listing = listings.find(row => row.profile_data.id === profile);
@@ -820,6 +868,66 @@ test('booking recipient RPC is private and requires an active published booking 
     assert.deepEqual((await database.query('select show_in_sidebar,storage_path,image_url from public.directory_gallery_photos where profile_id=$1 order by sort_order', [profile])).rows, storagePhotos.map(photo => ({ show_in_sidebar: photo.show_in_sidebar, storage_path: photo.storage_path, image_url: '' })));
     assert.equal((await canUpload(`${profile}/${photos[0].id}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`)).rows[0].allowed, true);
     assert.equal((await canUpload(`${profile}/ffffffff-ffff-4fff-8fff-ffffffffffff/cccccccc-cccc-4ccc-8ccc-cccccccccccc.webp`)).rows[0].allowed, false);
+    const additionalVipPhotos = Array.from({ length: 4 }, (_, index) => ({
+      ...photos[0],
+      id: `eeeeeeee-eeee-4eee-8eee-${String(index + 1).padStart(12, '0')}`,
+      title: `VIP-only gallery photo ${index + 1}`,
+      image_url: `https://images.example.test/vip-${index + 1}.jpg`,
+      storage_path: '',
+      is_published: true,
+      show_in_sidebar: false
+    }));
+    const vipGallery = [...storagePhotos, ...additionalVipPhotos];
+    await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, '{}', JSON.stringify(vipGallery), 'bookings@example.test']);
+    assert.equal((await database.query('select count(*)::integer as count from public.directory_gallery_photos where profile_id=$1', [profile])).rows[0].count, 6);
+    await database.exec('reset role; set role service_role');
+    await database.query("update cc_private.directory_subscriptions set plan_code='basic_monthly' where profile_id=$1", [profile]);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select id from public.directory_gallery_photos where profile_id=$1 order by sort_order,id', [profile])).rows.length, 3);
+    await database.exec('reset role; set role service_role');
+    assert.equal((await database.query('select count(*)::integer as count from public.directory_gallery_photos where profile_id=$1', [profile])).rows[0].count, 6);
+    const retainedPassPost = 'aaaaaaaa-1111-4111-8111-111111111111';
+    await database.query("select set_config('request.jwt.claim.sub','',false)");
+    await database.query(`insert into public.creator_blog_posts(id,profile_id,post_type,access_level,title,teaser,is_published,published_at)
+      values ($1,$2,'post','subscribers','Existing VIP pass post','Already purchased access.',true,now())`, [retainedPassPost, profile]);
+    const retainedPassMedia = `${profile}/${retainedPassPost}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`;
+    await database.query(`insert into cc_private.creator_blog_post_content(post_id,body_markdown,media_type,media_path,attachments)
+      values ($1,'Existing fan content.','image',$2,$3::jsonb)`, [retainedPassPost, retainedPassMedia, JSON.stringify([{ id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', media_type: 'image', media_path: retainedPassMedia, media_url: '' }])]);
+    await database.query('insert into storage.objects(bucket_id,name) values ($1,$2)', ['creator-blog-media', retainedPassMedia]);
+    await database.query(`insert into cc_private.creator_content_subscriptions(fan_avatar_uuid,creator_profile_id,creator_avatar_uuid,expires_at)
+      values ($1,$2,$3,now()+interval '20 days')`, [fanAvatar, profile, rates[0].id]);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select * from public.creator_blog_feed_v2($1)', [profile])).rows.length, 0);
+    assert.equal((await database.query('select name from storage.objects where bucket_id=$1', ['creator-blog-media'])).rows.length, 0);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    await database.exec('set role authenticated');
+    const retainedPassFeed = (await database.query('select * from public.creator_blog_feed_v2($1)', [profile])).rows;
+    assert.equal(retainedPassFeed.length, 1);
+    assert.equal(retainedPassFeed[0].body_markdown, 'Existing fan content.');
+    assert.equal(retainedPassFeed[0].is_locked, false);
+    assert.equal(retainedPassFeed[0].attachments[0].media_path, retainedPassMedia);
+    assert.deepEqual((await database.query('select name from storage.objects where bucket_id=$1', ['creator-blog-media'])).rows, [{ name: retainedPassMedia }]);
+    const retainedFanOffer = (await database.query('select * from public.creator_blog_public_offer($1)', [profile])).rows[0];
+    assert.equal(retainedFanOffer.monthly_price_linden, 0);
+    assert.equal(retainedFanOffer.viewer_is_subscribed, true);
+    await database.exec('reset role; set role service_role');
+    await database.query("select set_config('request.jwt.claim.sub','',false)");
+    await database.query('delete from storage.objects where bucket_id=$1 and name=$2', ['creator-blog-media', retainedPassMedia]);
+    await database.query('delete from public.creator_blog_posts where id=$1', [retainedPassPost]);
+    await database.query('delete from cc_private.creator_content_subscriptions where fan_avatar_uuid=$1 and creator_profile_id=$2', [fanAvatar, profile]);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+    await database.exec('set role authenticated');
+    const modifiedVipGallery = vipGallery.map(photo => photo.id === additionalVipPhotos[3].id ? { ...photo, title: 'Basic must not edit VIP photo' } : photo);
+    await assert.rejects(database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, '{}', JSON.stringify(modifiedVipGallery), 'bookings@example.test']), /gallery_photo_limit|vip_gallery_photo_required/);
+    await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [profile, '{}', JSON.stringify(vipGallery.slice(0, 4)), 'bookings@example.test']);
+    assert.equal((await database.query('select count(*)::integer as count from public.directory_gallery_photos where profile_id=$1', [profile])).rows[0].count, 6);
+    await database.exec('reset role; set role service_role');
+    await database.query("update cc_private.directory_subscriptions set plan_code='vip_monthly' where profile_id=$1", [profile]);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select id from public.directory_gallery_photos where profile_id=$1', [profile])).rows.length, 5);
+    await database.exec('reset role; set role authenticated');
     const publicPost = { post_type: 'live_update', access_level: 'public', title: 'Public update', tag: 'Live', teaser: 'A public update', body_markdown: 'Visible to everyone.', media_type: 'text', is_published: true };
     const privatePostId = '55555555-5555-4555-8555-555555555555';
     const privateMediaPath = `${profile}/${privatePostId}/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.webp`;
@@ -1074,4 +1182,17 @@ test('storage-backed gallery images use short-lived signed URLs', async () => {
   const [photo] = await fetchGalleryPhotos(client, profileId, { publishedOnly: true });
   assert.equal(photo.image_url, 'https://signed.example/photo.webp');
   assert.deepEqual(calls, [{ bucket: 'directory-gallery', path: storedPhoto.storage_path, expires: 3600 }]);
+});
+
+test('Basic gallery editor fetch includes only reserved card photo slots', async () => {
+  const client = { from: () => {
+    let publishedOnly = false;
+    const rows = Array.from({ length: 6 }, (_, sort_order) => ({ ...photos[0], id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(sort_order + 1).padStart(12, '0')}`, sort_order }));
+    const query = { select: () => query, eq: (column, value) => { if (column === 'is_published' && value) publishedOnly = true; return query; }, order: () => query, then: resolve => resolve({ data: publishedOnly ? rows.filter(photo => photo.is_published) : rows, error: null }) };
+    return query;
+  } };
+  const basicPhotos = await fetchGalleryPhotos(client, profileId, { maximumSortOrder: 4 });
+  const vipPhotos = await fetchGalleryPhotos(client, profileId);
+  assert.equal(basicPhotos.length, 4);
+  assert.equal(vipPhotos.length, 6);
 });

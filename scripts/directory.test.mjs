@@ -126,7 +126,7 @@ test('creator blog renders locked teasers publicly and full posts only when the 
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
 });
 
-for (const mode of ['published', 'single', 'empty', 'failed']) test(`public profile gallery preview and tabs handle ${mode} data`, async () => {
+for (const mode of ['published', 'single', 'empty', 'failed', 'basic']) test(`public profile gallery preview and tabs handle ${mode} data`, async () => {
   const { document, window } = parseHTML(await fs.readFile(new URL('../directory-profile.html', import.meta.url), 'utf8'));
   const previousDocument = globalThis.document;
   const previousLocation = globalThis.location;
@@ -152,7 +152,14 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
       boundaries: mode === 'empty' ? '  ' : '<script>Respect limits</script>\nSecond line',
       booking_instructions: mode === 'empty' ? '' : 'Contact me in-world.\nConfirm a time.'
     }]), { headers: { 'content-type': 'application/json' } });
-    return new Response(JSON.stringify(mode === 'failed' ? { message: 'Internal error' } : mode === 'empty' ? [] : mode === 'single' ? [photos[1]] : photos), {
+    if (request.pathname.endsWith('/rpc/creator_blog_public_offer')) return new Response(JSON.stringify([{
+      creator_avatar_uuid: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      monthly_price_linden: mode === 'published' || mode === 'single' || mode === 'failed' ? 1500 : 0,
+      benefits: '', terminal_slurl: '', viewer_is_subscribed: false,
+      creator_is_vip: mode === 'published' || mode === 'single' || mode === 'failed'
+    }]), { headers: { 'content-type': 'application/json' } });
+    if (request.pathname.endsWith('/rpc/creator_blog_feed_v2')) return new Response('[]', { headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify(mode === 'failed' ? { message: 'Internal error' } : mode === 'empty' ? [] : mode === 'single' ? [photos[1]] : mode === 'basic' ? photos.filter(photo => photo.is_published).slice(1, 5) : photos), {
       status: mode === 'failed' ? 403 : 200, headers: { 'content-type': 'application/json' }
     });
   });
@@ -181,11 +188,12 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
       assert.equal(instructions.querySelector('[data-profile-protocol-text] p').textContent, 'Contact me in-world.Confirm a time.');
       assert.equal(instructions.querySelectorAll('[data-profile-protocol-text] br').length, 1);
     }
-    assert.equal(requests[1].searchParams.get('is_published'), 'eq.true');
-    assert.equal(requests[1].searchParams.get('profile_id'), 'eq.33333333-3333-4333-8333-333333333333');
+    const galleryRequest = requests.find(request => request.pathname.endsWith('/directory_gallery_photos'));
+    assert.equal(galleryRequest.searchParams.get('is_published'), 'eq.true');
+    assert.equal(galleryRequest.searchParams.get('profile_id'), 'eq.33333333-3333-4333-8333-333333333333');
     const nav = document.querySelector('[data-public-profile-tabs]');
     const preview = document.querySelector('[data-public-gallery-preview-section]');
-    assert.equal(nav.hidden, mode === 'empty');
+    assert.equal(nav.hidden, mode === 'empty' || mode === 'basic');
     assert.equal(preview.classList.contains('preview-hidden'), mode === 'empty');
     const galleryTab = document.getElementById('profile-tab-gallery');
     const details = document.getElementById('profile-panel-details');
@@ -220,12 +228,19 @@ for (const mode of ['published', 'single', 'empty', 'failed']) test(`public prof
       image.dispatchEvent(new window.Event('error'));
       assert.equal(image.hidden, true);
       assert.match(document.querySelector('[data-public-gallery-preview]').textContent, /Photo 1 - image unavailable/);
+    } else if (mode === 'basic') {
+      assert.equal(document.querySelectorAll('[data-public-gallery-preview] [data-photo]').length, 4);
+      assert.equal(document.querySelectorAll('#gallery-library-grid [data-photo]').length, 0);
+      assert.equal(galleryTab.hidden, true);
+      assert.equal(document.querySelector('[data-public-gallery-preview-title]').textContent, 'Profile photos');
+      assert.equal(document.querySelector('[data-public-gallery-view-all]').hidden, true);
     } else {
       assert.equal(document.querySelectorAll('[data-photo]').length, 0);
       if (mode === 'failed') {
         assert.equal(document.querySelector('[data-public-gallery-preview-status]').textContent, 'Gallery is temporarily unavailable.');
         assert.equal(document.querySelector('[data-public-gallery-status]').textContent, 'Gallery is temporarily unavailable.');
         assert.equal(document.querySelector('[data-public-gallery-view-all]').hidden, true);
+        assert.equal(galleryTab.hidden, false);
         galleryTab.click();
         assert.equal(gallery.classList.contains('preview-hidden'), false);
       }

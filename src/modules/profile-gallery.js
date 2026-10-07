@@ -42,7 +42,7 @@ export function validateGalleryPhotos(photos) {
   });
 }
 
-export async function fetchGalleryPhotos(client, profileId, { publishedOnly = false } = {}) {
+export async function fetchGalleryPhotos(client, profileId, { publishedOnly = false, maximumSortOrder = null } = {}) {
   if (!uuid.test(profileId || '')) throw new Error('Invalid gallery profile.');
   const query = columns => {
     let request = client.from('directory_gallery_photos').select(columns).eq('profile_id', profileId).order('sort_order').order('id');
@@ -58,7 +58,8 @@ export async function fetchGalleryPhotos(client, profileId, { publishedOnly = fa
   }
   let { data, error } = result;
   if (error || !Array.isArray(data)) throw new Error('Gallery could not be loaded.');
-  const photos = validateGalleryPhotos(data.map(({ sort_order, ...photo }) => photo));
+  const eligible = Number.isInteger(maximumSortOrder) ? data.filter(photo => photo.sort_order < maximumSortOrder) : data;
+  const photos = validateGalleryPhotos(eligible.map(({ sort_order, ...photo }) => photo));
   return Promise.all(photos.map(async photo => {
     if (!photo.storage_path) return photo;
     if (!client.storage) throw new Error('Gallery images could not be signed.');

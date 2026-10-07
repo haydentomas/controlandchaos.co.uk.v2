@@ -144,6 +144,16 @@ export async function initDirectoryProfile(clientOverride) {
     document.querySelector('[data-public-profile-booking-section]').classList.toggle('preview-hidden', !hours.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
+    const blogStatus = document.querySelector('[data-public-blog-status]');
+    let offer = null;
+    try {
+      const offerResult = await client.rpc('creator_blog_public_offer', { target_profile: profile.id });
+      if (offerResult.error) throw offerResult.error;
+      offer = Array.isArray(offerResult.data) ? offerResult.data[0] || null : offerResult.data;
+    } catch {
+      blogStatus.textContent = 'Creator subscription details are temporarily unavailable.';
+    }
+    const isVip = offer?.creator_is_vip === true;
     const previewSection = document.querySelector('[data-public-gallery-preview-section]');
     let published = [];
     let hasGallery = false;
@@ -151,14 +161,20 @@ export async function initDirectoryProfile(clientOverride) {
       const photos = await fetchGalleryPhotos(client, profile.id, { publishedOnly: true });
       published = photos.filter(photo => photo.is_published);
       const sidebarPhotos = published.filter(photo => photo.show_in_sidebar !== false);
-      renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
+      if (isVip) renderProfileGallery(document.getElementById('gallery-library-grid'), document.getElementById('gallery-library-filters'), published);
+      else {
+        document.getElementById('gallery-library-grid').replaceChildren();
+        document.getElementById('gallery-library-filters').replaceChildren();
+      }
       renderGalleryPreview(document.querySelector('[data-public-gallery-preview]'), sidebarPhotos);
       previewSection.classList.toggle('preview-hidden', !sidebarPhotos.length);
+      document.querySelector('[data-public-gallery-preview-title]').textContent = isVip ? 'Gallery' : 'Profile photos';
+      document.querySelector('[data-public-gallery-view-all]').hidden = !isVip;
       document.getElementById('profile-tab-gallery').textContent = `Gallery (${published.length})`;
       document.querySelector('[data-public-gallery-view-all]').textContent = `View all ${published.length} ${published.length === 1 ? 'photo' : 'photos'}`;
-      hasGallery = published.length > 0;
+      hasGallery = isVip && published.length > 0;
     } catch {
-      hasGallery = true;
+      hasGallery = isVip;
       document.querySelector('[data-public-gallery-status]').textContent = 'Gallery is temporarily unavailable.';
       document.querySelector('[data-public-gallery-preview-status]').textContent = 'Gallery is temporarily unavailable.';
       document.querySelector('[data-public-gallery-view-all]').hidden = true;
@@ -166,28 +182,24 @@ export async function initDirectoryProfile(clientOverride) {
     }
     let hasBlog = false;
     try {
-      const [offerResult, initialFeedResult] = await Promise.all([
-        client.rpc('creator_blog_public_offer', { target_profile: profile.id }),
-        client.rpc('creator_blog_feed_v2', { target_profile: profile.id })
-      ]);
+      const initialFeedResult = await client.rpc('creator_blog_feed_v2', { target_profile: profile.id });
       const feedResult = missingBlogV2Rpc(initialFeedResult.error)
         ? await client.rpc('creator_blog_feed', { target_profile: profile.id }) : initialFeedResult;
-      if (offerResult.error || feedResult.error || !Array.isArray(feedResult.data)) throw new Error('Creator blog is temporarily unavailable.');
-      const offer = Array.isArray(offerResult.data) ? offerResult.data[0] || null : offerResult.data;
+      if (feedResult.error || !Array.isArray(feedResult.data)) throw new Error('Creator blog is temporarily unavailable.');
       const posts = feedResult.data;
       await renderCreatorBlogFeed(
         document.querySelector('[data-public-blog-feed]'),
-        document.querySelector('[data-public-blog-status]'),
+        blogStatus,
         client,
         profile,
         offer,
         posts
       );
-      hasBlog = posts.length > 0 || Number(offer?.monthly_price_linden) > 0;
+      hasBlog = posts.length > 0 || (isVip && Number(offer?.monthly_price_linden) > 0);
       document.getElementById('profile-tab-blog').textContent = `Blog (${posts.length})`;
       document.querySelector('[data-public-blog-title]').textContent = `${profile.display_name}'s Blog`;
     } catch {
-      document.querySelector('[data-public-blog-status]').textContent = 'Creator blog is temporarily unavailable.';
+      blogStatus.textContent = 'Creator blog is temporarily unavailable.';
     }
     initProfileTabs(hasGallery, hasBlog);
   } catch { status.textContent = 'This profile is unavailable. Please try again later.'; }
