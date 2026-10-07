@@ -370,6 +370,7 @@ test('subscription display distinguishes active, inactive and lifetime access wi
 
 test('creator subscription account list shows status and links to the creator profile', async () => {
   const { document } = parseHTML('<section data-account-creator-subscriptions><p data-creator-subscription-status></p><div data-creator-subscription-list></div></section>');
+  const expiredProfileId = '44444444-4444-4444-8444-444444444444';
   const previousDocument = globalThis.document;
   const previousLocation = globalThis.location;
   globalThis.document = document;
@@ -379,19 +380,27 @@ test('creator subscription account list shows status and links to the creator pr
     const refresh = initAccountCreatorSubscriptions({
       auth: { onAuthStateChange: callback => { notify = callback; } },
       rpc: async name => ({ data: name === 'my_creator_blog_subscriptions' ? [
-        { creator_name: 'Alek Zane', creator_slug: 'alek-zane', expires_at: '2099-10-05T00:00:00Z', is_active: true },
-        { creator_name: 'Past Creator', creator_slug: 'past-creator', expires_at: '2020-01-01T00:00:00Z', is_active: false }
-      ] : null, error: null })
+        { creator_profile_id: profileId, creator_name: 'Alek Zane', creator_slug: 'alek-zane', expires_at: '2099-10-05T00:00:00Z', is_active: true },
+        { creator_profile_id: expiredProfileId, creator_name: 'Past Creator', creator_slug: 'past-creator', expires_at: '2020-01-01T00:00:00Z', is_active: false }
+      ] : null, error: null }),
+      from: table => ({
+        select: columns => ({
+          in: async (column, ids) => ({ data: table === 'directory_profiles' && columns === 'id,avatar_image' && column === 'id'
+            ? ids.map(id => ({ id, avatar_image: id === profileId ? 'https://images.example.test/alek.jpg' : '' })) : [], error: null })
+        })
+      })
     });
     await refresh({ id: 'test-user' });
-    const rows = [...document.querySelectorAll('.account-subscription-row')];
-    assert.equal(rows.length, 2);
-    assert.match(rows[0].textContent, /Alek Zane - Active - expires/);
-    assert.match(rows[1].textContent, /Past Creator - Inactive - expires/);
+    const rows = [...document.querySelectorAll('.account-creator-subscription-card')];
+    assert.equal(rows.length, 2, document.querySelector('[data-creator-subscription-status]').textContent);
+    assert.match(rows[0].textContent, /Alek Zane[\s\S]*Active[\s\S]*expires/);
+    assert.match(rows[1].textContent, /Past Creator[\s\S]*Inactive[\s\S]*expires/);
+    assert.equal(rows[0].querySelector('img').getAttribute('src'), 'https://images.example.test/alek.jpg');
     assert.equal(rows[0].querySelector('a').getAttribute('href'), '/directory-profile.html?slug=alek-zane');
+    assert.equal(rows[0].querySelector('a').textContent, 'Open profile & blog');
     notify('SIGNED_OUT');
     assert.equal(document.querySelector('[data-creator-subscription-status]').textContent, '');
-    assert.equal(document.querySelectorAll('.account-subscription-row').length, 0);
+    assert.equal(document.querySelectorAll('.account-creator-subscription-card').length, 0);
   } finally {
     if (previousDocument === undefined) delete globalThis.document;
     else globalThis.document = previousDocument;

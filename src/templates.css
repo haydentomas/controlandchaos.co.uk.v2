@@ -25,8 +25,6 @@
   .creator-editor-savebar [data-creator-public] { width: 100%; justify-content: center; text-align: center; }
   .creator-editor-savebar [data-creator-publication] { margin: 0; font-size: 12px; }
   .creator-image-preview { display: block; width: 100%; height: 160px; object-fit: contain; margin-top: 12px; }
-  .account-subscription-row { min-width: 0; max-width: 100%; }
-  .account-subscription-row p { overflow-wrap: anywhere; }
   .rate-editor-category { padding: 16px 0 24px; border-bottom: 1px solid rgba(212,175,55,0.25); }
   .rate-editor-category > .creator-editor-toolbar { gap: 12px; }
   .rate-category-toggle { display: flex; min-width: 0; min-height: 64px; flex: 1 1 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.6); color: inherit; cursor: pointer; text-align: left; }
@@ -233,12 +231,24 @@
 }
 
 @layer components {
-  .account-section { padding-top: 120px; min-height: 70vh; }
-  .account-container { max-width: 600px; }
+  .account-section { padding-top: 112px; min-height: 70vh; }
+  .account-container { max-width: 1080px; }
   .account-heading .section-title { font-size: 30px; text-align: left; margin-bottom: 16px; }
-  .account-subheading { font-family: var(--font-heading); font-size: 20px; color: var(--gold-bright); margin: 20px 0 12px; }
-  .account-status { min-height: 48px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
+  .account-subheading { font-family: var(--font-heading); font-size: 19px; color: var(--gold-bright); margin: 0 0 12px; }
+  .account-status { min-height: 0; margin: 0 0 12px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
   .account-tabs, .account-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+  .account-session-header { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--gold-border); }
+  .account-session-kicker { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; }
+  .account-session-email { margin: 4px 0 0; color: var(--gold-bright); overflow-wrap: anywhere; }
+  .account-session-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .account-dashboard-grid { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(280px,0.8fr); align-items: start; gap: 18px; margin-top: 18px; }
+  .account-dashboard-column { display: grid; min-width: 0; gap: 18px; }
+  .account-panel { display: grid; min-width: 0; gap: 10px; padding: 20px; border: 1px solid var(--gold-border); border-radius: 8px; background: linear-gradient(145deg,rgba(26,23,20,0.96),rgba(18,16,14,0.94)); }
+  .account-panel .account-subheading { margin: 0; }
+  .account-panel > p:not(.account-status) { margin: 0; color: var(--text-muted); line-height: 1.6; }
+  .account-panel > .btn { justify-self: start; }
+  .account-panel-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .account-subscription-list, .account-creator-subscription-list { display: grid; min-width: 0; gap: 10px; }
   .account-tabs button { min-height: 44px; flex: 1; white-space: normal; }
   .account-form { display: grid; gap: 20px; }
   .account-form label { display: block; font-size: 13px; font-weight: 600; color: var(--gold-bright); margin-bottom: 8px; }
@@ -246,8 +256,26 @@
   .account-submit { min-height: 48px; width: 100%; }
   .account-verification { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--gold-border); }
   .account-verification-code { display: block; padding: 12px; background: var(--bg-card); border: 1px solid var(--gold-border); border-radius: 4px; font-family: var(--font-mono); overflow-wrap: anywhere; user-select: all; }
+  .account-subscription-row { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.64); }
+  .account-subscription-row p { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+  .account-creator-subscription-card { display: grid; min-width: 0; grid-template-columns: 64px minmax(0,1fr) auto; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: rgba(20,18,16,0.72); }
+  .account-creator-avatar { position: relative; display: grid; width: 64px; height: 64px; place-items: center; overflow: hidden; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(212,175,55,0.1); color: var(--gold-bright); font-family: var(--font-heading); font-size: 20px; font-weight: 800; }
+  .account-creator-avatar > span, .account-creator-avatar > img { position: absolute; inset: 0; display: grid; width: 100%; height: 100%; place-items: center; }
+  .account-creator-avatar img { object-fit: cover; }
+  .account-creator-card-content { display: grid; min-width: 0; gap: 5px; }
+  .account-creator-card-content strong { overflow-wrap: anywhere; color: var(--text-primary); }
+  .account-creator-card-expiry { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .account-creator-card-status { color: var(--gold-bright); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
+  .account-creator-card-status.is-inactive { color: var(--text-muted); }
   .account-form input:focus-visible, .account-tabs button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
   .account-actions button:disabled, .account-tabs button:disabled, .account-submit:disabled { opacity: 0.5; cursor: wait; }
+  @media (max-width: 760px) {
+    .account-dashboard-grid { grid-template-columns: minmax(0,1fr); }
+    .account-session-header { align-items: flex-start; flex-direction: column; }
+    .account-creator-subscription-card { grid-template-columns: 56px minmax(0,1fr); }
+    .account-creator-avatar { width: 56px; height: 56px; }
+    .account-creator-subscription-card > a { grid-column: 1 / -1; width: 100%; justify-content: center; }
+  }
   [data-directory-grid] { min-height: 200px; }
   [data-directory-grid] .dom-name, [data-directory-grid] .dom-quote, [data-directory-grid] .dom-rate-price { overflow-wrap: anywhere; }
   .directory-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
