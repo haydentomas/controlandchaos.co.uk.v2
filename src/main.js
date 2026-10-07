@@ -8,6 +8,8 @@ initHero();
 if (page === 'directory') import('./modules/directory.js').then(module => module.initDirectory());
 if (page === 'directory-profile') import('./modules/directory-profile.js').then(module => module.initDirectoryProfile());
 if (page === 'auth') import('./modules/auth.js').then(module => module.initAuth());
+if (page === 'directory-admin') import('./modules/directory-admin.js').then(module => module.initDirectoryAdmin());
+if (page === 'directory-admin') import('./modules/directory-admin.js').then(module => module.initDirectoryAdmin());
 
 if (page.startsWith('profile')) import('./modules/profile.js').then(module => module.initProfile());
 if (document.getElementById('gallery-lightbox')) import('./modules/gallery.js').then(module => module.initGallery());

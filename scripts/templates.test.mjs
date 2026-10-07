@@ -126,6 +126,18 @@ test('signed-in account exposes directory and creator subscription lists', async
   assert.equal(session.querySelector('[data-subscription-refresh]').textContent.trim(), 'Refresh subscriptions');
 });
 
+test('directory admin page is a live authenticated console, not a browser-token mock', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-admin.html'), 'utf8'));
+  assert.ok(document.querySelector('[data-directory-admin]'));
+  assert.ok(document.querySelector('[data-admin-gate]'));
+  assert.ok(document.querySelector('[data-admin-listings]'));
+  assert.ok(document.querySelector('[data-admin-subscribers]'));
+  assert.ok(document.querySelector('[data-admin-edit-form]'));
+  assert.equal(document.querySelector('[name="ADMIN_EDIT_TOKEN"]'), null);
+  assert.equal(document.querySelector('[placeholder*="admin token"]'), null);
+  assert.equal(document.querySelector('input[type="password"]'), null);
+});
+
 for (const template of manifest) test(`${template.page}: flat, styled, and isolated from the backend`, async () => {
   const html = await fs.readFile(path.join(root, template.page), 'utf8');
   const { document } = parseHTML(html);

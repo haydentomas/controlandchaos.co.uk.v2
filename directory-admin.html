@@ -56,162 +56,72 @@
       </div>
     </div>
   </nav>
-</site-navbar><header class="hero tw:[padding:120px_0_40px] tw:[text-align:center] tw:[background:radial-gradient(circle_at_50%_20%,_rgba(139,30,45,0.2)_0%,_rgba(18,16,14,0.98)_70%)]">
-    <div class="container">
-      <span class="section-tag">ESTATE OWNER CONSOLE</span>
-      <h1 class="hero-title tw:[font-size:40px] tw:[margin-bottom:12px]">Directory &amp; Subscription Manager</h1>
-      <p class="hero-subtitle tw:[max-width:700px] tw:[margin:0_auto]">
-        Control published states, grant membership extensions, view expiration countdowns, and manage live directory listings.
-      </p>
-    </div>
-  </header>
-
-  <main class="section tw:[padding:40px_0_80px]">
-    <div class="container">
-
-      <!-- Admin Secret Key Bar -->
-      <div class="admin-card mb-30 tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[flex-wrap:wrap] tw:[gap:16px]">
-        <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:12px]">
-          <span class="tw:[font-size:24px]">🔐</span>
-          <div>
-            <div class="tw:[font-weight:700] tw:[color:var(--gold-bright)]">Directory Admin Authorization</div>
-            <div class="tw:[font-size:12px] tw:[color:var(--text-muted)]">Enter the ADMIN_EDIT_TOKEN configured in Netlify to perform administrative actions.</div>
-          </div>
+</site-navbar><main class="section directory-admin-page" data-directory-admin>
+  <div class="container directory-admin-container">
+    <header class="directory-admin-header">
+      <div><span class="directory-admin-eyebrow">Control &amp; Chaos</span><h1 class="section-title">Directory administration</h1></div>
+      <a class="btn btn-secondary" href="/directory.html">View directory</a>
+    </header>
+    <p class="directory-admin-status" data-admin-status role="status" aria-live="polite">Checking administrator access...</p>
+    <section class="directory-admin-gate" data-admin-gate>
+      <h2>Superadmin sign-in required</h2>
+      <p>Sign in with the designated ControlandChaos account. Access is verified by the database; no admin token is stored in this page.</p>
+      <a class="btn btn-gold" href="/auth.html" data-admin-signin>Sign in</a>
+    </section>
+    <section class="directory-admin-console preview-hidden" data-admin-console>
+      <div class="directory-admin-toolbar"><p class="directory-admin-privacy-note">Payment records and credentials are not available in this console.</p><button type="button" class="btn btn-secondary" data-admin-signout>Sign out</button></div>
+      <nav class="directory-admin-tabs" aria-label="Administration sections">
+        <button type="button" class="btn btn-gold" data-admin-tab="listings" aria-selected="true">Listings</button>
+        <button type="button" class="btn btn-secondary" data-admin-tab="subscribers" aria-selected="false">Subscribers</button>
+      </nav>
+      <section class="directory-admin-pane" data-admin-listings-pane>
+        <div class="directory-admin-toolbar">
+          <label class="directory-admin-search"><span>Find a listing</span><input type="search" maxlength="120" placeholder="Name, username, slug, or ID" data-admin-listing-search></label>
+          <button type="button" class="btn btn-secondary" data-admin-listing-refresh>Refresh listings</button>
         </div>
-        <div class="tw:[display:flex] tw:[gap:10px] tw:[align-items:center]">
-          <input class="directory-admin-input-presentation" value="" type="password" placeholder="Enter directory admin token...">
-          <button class="btn btn-gold btn-sm">Authorize</button>
+        <div class="directory-admin-list" data-admin-listings></div>
+      </section>
+      <section class="directory-admin-pane preview-hidden" data-admin-subscribers-pane>
+        <div class="directory-admin-toolbar">
+          <label class="directory-admin-search"><span>Find a subscriber</span><input type="search" maxlength="120" placeholder="Avatar, username, or creator" data-admin-subscriber-search></label>
+          <label class="directory-admin-filter"><span>Subscription type</span><select data-admin-subscriber-type><option value="all">All</option><option value="directory">Directory</option><option value="creator">Creator</option></select></label>
+          <button type="button" class="btn btn-secondary" data-admin-subscriber-refresh>Refresh subscribers</button>
         </div>
+        <div class="directory-admin-list" data-admin-subscribers></div>
+      </section>
+    </section>
+  </div>
+  <dialog class="directory-admin-dialog" data-admin-edit-dialog>
+    <form method="dialog" class="directory-admin-edit-form" data-admin-edit-form>
+      <header><div><span class="directory-admin-eyebrow">Listing editor</span><h2 data-admin-edit-title>Edit listing</h2></div><button type="button" class="btn btn-secondary" data-admin-edit-cancel>Close</button></header>
+      <div class="directory-admin-edit-grid">
+        <label>Display name<input name="display_name" maxlength="100" required></label>
+        <label>Role<select name="role_type"><option value="domme">Domme</option><option value="sub">Submissive</option><option value="switch">Switch</option></select></label>
+        <label>Headline<input name="headline" maxlength="160"></label>
+        <label>Tags (comma-separated)<input name="tags" maxlength="1000"></label>
+        <label>Starting rate<input name="starting_rate" maxlength="100"></label>
+        <label>Availability<select name="availability"><option value="available">Available</option><option value="busy">Busy</option><option value="away">Away</option><option value="offline">Offline</option></select></label>
+        <label>Avatar image URL<input name="avatar_image" maxlength="2048"></label>
+        <label>Banner image URL<input name="banner_image" maxlength="2048"></label>
+        <label>Creator monthly price (L$)<input name="creator_blog_monthly_linden" type="number" min="0" max="1000000" step="1"></label>
+        <label class="admin-edit-wide">Tagline<textarea name="tagline" maxlength="1000" rows="3"></textarea></label>
+        <label class="admin-edit-wide">About<textarea name="about" maxlength="20000" rows="6"></textarea></label>
+        <label class="admin-edit-wide">Availability note<textarea name="availability_note" maxlength="500" rows="2"></textarea></label>
+        <label class="admin-edit-wide">Boundaries<textarea name="boundaries" maxlength="4000" rows="4"></textarea></label>
+        <label class="admin-edit-wide">How to book<textarea name="booking_instructions" maxlength="4000" rows="4"></textarea></label>
+        <label class="admin-edit-wide">Creator pass benefits<textarea name="creator_blog_benefits" maxlength="1000" rows="3"></textarea></label>
+        <label>Toys section title<input name="hardware_title" maxlength="100"></label>
+        <label>Wishlist section title<input name="wishlist_title" maxlength="100"></label>
+        <label class="admin-edit-wide">Rate categories JSON<textarea name="rate_categories" rows="8" spellcheck="false"></textarea></label>
+        <label class="admin-edit-wide">Booking hours JSON<textarea name="booking_hours" rows="6" spellcheck="false"></textarea></label>
+        <label class="admin-edit-wide">Toys JSON<textarea name="hardware_compat" rows="6" spellcheck="false"></textarea></label>
+        <label class="admin-edit-wide">Wishlist JSON<textarea name="wishlist" rows="6" spellcheck="false"></textarea></label>
+        <label class="admin-feature-toggle"><input name="is_featured" type="checkbox"> Feature this listing</label>
       </div>
-
-      <div class="admin-card mb-30 tw:[display:flex] tw:[align-items:center] tw:[flex-wrap:wrap] tw:[gap:12px]">
-        <div class="tw:[flex:1] tw:[min-width:260px]">
-          <div class="tw:[font-weight:700] tw:[color:var(--gold-bright)]">Restore a Paid Subscription</div>
-          <div class="tw:[font-size:12px] tw:[color:var(--text-muted)]">Credit 30 days by avatar UUID when payment succeeded but activation did not.</div>
-        </div>
-        <input class="directory-admin-input-presentation-2" type="text" placeholder="Avatar UUID">
-        <button class="btn btn-secondary btn-sm">Grant 30 Days</button>
-      </div>
-
-      <!-- Quick Stats Counter -->
-      <div class="tw:[display:grid] tw:[grid-template-columns:repeat(auto-fit,_minmax(220px,_1fr))] tw:[gap:20px] tw:[margin-bottom:30px]">
-        <div class="admin-card">
-          <div class="text-muted font-xs font-mono mb-6">TOTAL PROVIDERS</div>
-          <div class="stat-badge">1</div>
-        </div>
-        <div class="admin-card">
-          <div class="text-muted font-xs font-mono mb-6">🟢 ACTIVE LISTINGS</div>
-          <div class="stat-badge text-green tw:[color:#4ade80]">1</div>
-        </div>
-        <div class="admin-card">
-          <div class="text-muted font-xs font-mono mb-6">🟡 EXPIRING SOON (≤3 DAYS)</div>
-          <div class="stat-badge tw:[color:#facc15]">0</div>
-        </div>
-        <div class="admin-card">
-          <div class="text-muted font-xs font-mono mb-6">🔴 EXPIRED / UNPUBLISHED</div>
-          <div class="stat-badge tw:[color:#f87171]">0</div>
-        </div>
-      </div>
-
-      <div class="admin-card mb-24 tw:[display:flex] tw:[align-items:center] tw:[gap:12px] tw:[flex-wrap:wrap]">
-        <div class="tw:[flex:1_1_280px]">
-          <div class="tw:[font-weight:700] tw:[color:var(--gold-bright)]">Credit a paid account</div>
-          <div class="tw:[font-size:12px] tw:[color:var(--text-muted)]">Use when payment succeeded but the profile is not yet in the table.</div>
-        </div>
-        <input class="directory-admin-input-presentation-2" type="text" placeholder="Avatar UUID" autocomplete="off">
-        <button class="btn btn-gold btn-sm">Credit 30 days</button>
-      </div>
-
-      <!-- Filter and Action Bar -->
-      <div class="admin-card mb-24 tw:[display:flex] tw:[justify-content:space-between] tw:[align-items:center] tw:[flex-wrap:wrap] tw:[gap:16px]">
-        <div class="tw:[display:flex] tw:[gap:12px] tw:[align-items:center] tw:[flex-wrap:wrap]">
-          <input class="directory-admin-input-presentation-3" type="text" placeholder="Search provider name, username, or ID...">
-          <select class="directory-admin-select-presentation">
-            <option value="all">All Statuses</option>
-            <option value="active">Active Only</option>
-            <option value="expiring">Expiring Soon (≤3 Days)</option>
-            <option value="expired">Expired Only</option>
-            <option value="unpublished">Unpublished Only</option>
-            <option value="vip">VIP Lifetime Only</option>
-          </select>
-        </div>
-        <div class="tw:[display:flex] tw:[gap:10px]">
-          <button class="btn btn-secondary btn-sm">🔄 Refresh Data</button>
-          <a href="/directory.html" target="_blank" class="btn btn-gold btn-sm">🌐 View Public Directory ↗</a>
-        </div>
-      </div>
-
-      <!-- Listings Management Table -->
-      <div class="admin-card tw:[overflow-x:auto] tw:[padding:0]">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Provider</th>
-              <th>Role</th>
-              <th>Publish State</th>
-              <th>Subscription Status</th>
-              <th>Expires</th>
-              <th class="tw:[text-align:right]">Quick Actions</th>
-            </tr>
-          </thead>
-          <tbody><tr>
-            <td>
-              <div class="tw:[display:flex] tw:[align-items:center] tw:[gap:12px]">
-                <div class="directory-admin-div-presentation">
-                  🩷
-                </div>
-                <div>
-                  <strong class="tw:[color:var(--text-primary)] tw:[font-size:14.5px]">Alek Zane</strong>
-                  <div class="tw:[font-family:var(--font-mono)] tw:[font-size:11px] tw:[color:var(--gold-muted)]">@alek.zane</div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="section-tag font-2xs m-0 tw:[font-size:10px] tw:[padding:2px_8px]">
-                SUBMISSIVE
-              </span>
-            </td>
-            <td>
-              <button class="switch-btn switch-published" data-id="alek-zane" data-action="toggle-publish">
-                ● Published
-              </button>
-            </td>
-            <td>
-              <span class="sub-badge sub-vip">
-                👑 VIP Lifetime
-              </span>
-            </td>
-            <td class="tw:[font-family:var(--font-mono)] tw:[font-size:12px] tw:[color:var(--text-muted)]">
-              Permanent VIP
-            </td>
-            <td class="tw:[text-align:right]">
-              <div class="tw:[display:inline-flex] tw:[gap:6px] tw:[flex-wrap:wrap] tw:[justify-content:flex-end]">
-                <button class="action-pill" data-id="alek-zane" data-action="grant-30" title="Add 30 days">+30d</button>
-                <button class="action-pill" data-id="alek-zane" data-action="grant-90" title="Add 90 days">+90d</button>
-                <button class="action-pill" data-id="alek-zane" data-action="grant-vip" title="Set VIP Lifetime">👑 VIP</button>
-                <button class="action-pill tw:[color:#f87171] tw:[border-color:rgba(248,113,113,0.35)]" data-id="alek-zane" data-action="remove-profile" title="Permanently remove this dynamic profile">Remove</button>
-                <a href="/directory-editor.html" target="_blank" class="action-pill tw:[text-decoration:none]" title="Open editor">✏️ Edit</a>
-                <a href="/profile.html" target="_blank" class="action-pill tw:[text-decoration:none]" title="View public rate card">👁️ View</a>
-              </div>
-            </td>
-          </tr></tbody>
-        </table>
-      </div>
-
-      <!-- In-World Kiosk Sync & Reminder Protocol Notice -->
-      <div class="admin-card mt-30 tw:[border-color:rgba(184,_154,_88,_0.3)]">
-        <h3 class="tw:[font-family:var(--font-heading)] tw:[font-size:18px] tw:[color:var(--gold-bright)] tw:[margin-bottom:8px]">
-          🤖 Automated In-World Kiosk Synchronization
-        </h3>
-        <p class="tw:[font-size:13.5px] tw:[color:var(--text-muted)] tw:[line-height:1.6] tw:[margin-bottom:0]">
-          • <strong>Instant Web Unpublishing:</strong> When a subscription reaches 0 days left, the public directory automatically hides the card from search listings.<br>
-          • <strong>3-Day Expiration Reminder:</strong> The in-world Kiosk automatically detects expiring accounts and sends an automated Second Life Instant Message (IM) inviting them to touch the kiosk or pay via PayPal to maintain their listing.<br>
-          • <strong>Zero-Loss Reactivation:</strong> Unpublishing hides listings from public search but never deletes photos, bios, or rates. Once renewed, listings re-publish immediately.
-        </p>
-      </div>
-
-    </div>
-  </main>
+      <footer><button type="button" class="btn btn-secondary" data-admin-edit-cancel>Cancel</button><button type="submit" class="btn btn-gold">Save listing</button></footer>
+    </form>
+  </dialog>
+</main>
 
 <site-footer>
   <footer class="footer">
