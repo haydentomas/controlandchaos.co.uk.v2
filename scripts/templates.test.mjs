@@ -118,6 +118,14 @@ test('creator Studio exposes owner repeaters for My Toys and Wishlist', async ()
   for (const selector of ['[data-public-profile-hardware]', '[data-public-profile-wishlist]']) assert.ok(profile.querySelector(selector));
 });
 
+test('signed-in account exposes directory and creator subscription lists', async () => {
+  const { document } = parseHTML(await fs.readFile(path.join(root, 'auth.html'), 'utf8'));
+  const session = document.querySelector('[data-account-session]');
+  assert.ok(session.querySelector('[data-account-directory] [data-subscription-list]'));
+  assert.ok(session.querySelector('[data-account-creator-subscriptions] [data-creator-subscription-list]'));
+  assert.equal(session.querySelector('[data-subscription-refresh]').textContent.trim(), 'Refresh subscriptions');
+});
+
 for (const template of manifest) test(`${template.page}: flat, styled, and isolated from the backend`, async () => {
   const html = await fs.readFile(path.join(root, template.page), 'utf8');
   const { document } = parseHTML(html);

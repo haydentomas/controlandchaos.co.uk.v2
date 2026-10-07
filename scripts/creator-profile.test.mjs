@@ -11,8 +11,8 @@ import { validateGalleryPhotos, galleryImageUrl, fetchGalleryPhotos, renderProfi
 import { initProfileGalleryEditor } from '../src/modules/profile-gallery-editor.js';
 import { initCreatorBlogEditor } from '../src/modules/creator-blog.js';
 import { validateHardwareItems, validateWishlistItems, renderHardwareItems, renderWishlistItems, initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, createHardwareItem, createWishlistItem } from '../src/modules/profile-collections.js';
-import { initAccountDirectory } from '../src/modules/account-directory.js';
-import { CREATOR_PROFILE_COLUMNS, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
+import { initAccountCreatorSubscriptions, initAccountDirectory } from '../src/modules/account-directory.js';
+import { CREATOR_PROFILE_COLUMNS, myCreatorBlogSubscriptions, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
 
 const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
@@ -365,6 +365,39 @@ test('subscription display distinguishes active, inactive and lifetime access wi
   assert.match(subscriptionLabel({ plan_code: 'vip_lifetime', is_active: true, is_lifetime: true }), /VIP Lifetime - Active - Lifetime/);
   assert.match(subscriptionLabel({ plan_code: 'basic_monthly', is_active: false, expires_at: '2026-10-01T00:00:00Z' }), /Basic Monthly - Inactive/);
   await assert.rejects(myDirectorySubscriptions({ rpc: async () => ({ error: { message: 'private' } }) }), error => !error.message.includes('private'));
+  await assert.rejects(myCreatorBlogSubscriptions({ rpc: async () => ({ error: { message: 'private' } }) }), error => !error.message.includes('private'));
+});
+
+test('creator subscription account list shows status and links to the creator profile', async () => {
+  const { document } = parseHTML('<section data-account-creator-subscriptions><p data-creator-subscription-status></p><div data-creator-subscription-list></div></section>');
+  const previousDocument = globalThis.document;
+  const previousLocation = globalThis.location;
+  globalThis.document = document;
+  globalThis.location = { origin: 'https://controlandchaos.example.test' };
+  let notify;
+  try {
+    const refresh = initAccountCreatorSubscriptions({
+      auth: { onAuthStateChange: callback => { notify = callback; } },
+      rpc: async name => ({ data: name === 'my_creator_blog_subscriptions' ? [
+        { creator_name: 'Alek Zane', creator_slug: 'alek-zane', expires_at: '2099-10-05T00:00:00Z', is_active: true },
+        { creator_name: 'Past Creator', creator_slug: 'past-creator', expires_at: '2020-01-01T00:00:00Z', is_active: false }
+      ] : null, error: null })
+    });
+    await refresh({ id: 'test-user' });
+    const rows = [...document.querySelectorAll('.account-subscription-row')];
+    assert.equal(rows.length, 2);
+    assert.match(rows[0].textContent, /Alek Zane - Active - expires/);
+    assert.match(rows[1].textContent, /Past Creator - Inactive - expires/);
+    assert.equal(rows[0].querySelector('a').getAttribute('href'), '/directory-profile.html?slug=alek-zane');
+    notify('SIGNED_OUT');
+    assert.equal(document.querySelector('[data-creator-subscription-status]').textContent, '');
+    assert.equal(document.querySelectorAll('.account-subscription-row').length, 0);
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+    if (previousLocation === undefined) delete globalThis.location;
+    else globalThis.location = previousLocation;
+  }
 });
 
 test('signing out discards a pending account subscription response and editing link', async () => {
@@ -651,7 +684,7 @@ test('booking recipient RPC is private and requires an active published booking 
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth,storage to anon,authenticated,service_role;
       grant select,insert,update,delete on storage.objects to anon,authenticated,service_role;`);
-    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql', '202610060014_creator_blog_subscriptions.sql']) {
+    for (const file of ['202610040001_directory_foundation.sql', '202610040002_avatar_verification.sql', '202610050003_directory_subscriptions.sql', '202610050007_directory_rate_cards.sql', '202610050008_directory_booking_hours.sql', '202610050009_directory_gallery.sql', '202610050010_directory_profile_protocol.sql', '202610060011_directory_booking_recipient.sql', '202610060012_directory_gallery_storage.sql', '202610060013_directory_profile_booking_fields.sql', '202610060014_creator_blog_subscriptions.sql', '202610070016_creator_blog_subscription_list.sql']) {
       await database.exec(await fs.readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     assert.deepEqual((await database.query('select public,file_size_limit,allowed_mime_types from storage.buckets where id=$1', ['directory-gallery'])).rows[0], { public: false, file_size_limit: 2097152, allowed_mime_types: ['image/webp'] });
@@ -755,6 +788,33 @@ test('booking recipient RPC is private and requires an active published booking 
     assert.equal((await database.query('select public.creator_blog_start_payout($1,$2,$3,$4) as started', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].started, false);
     const firstExpiry = (await database.query('select public.creator_blog_confirm_payment($1,$2,$3,$4) as expires', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].expires;
     assert.equal((await database.query('select public.creator_blog_confirm_payment($1,$2,$3,$4) as expires', ['66666666-6666-4666-8666-666666666666', fanAvatar, rates[0].id, 1500])).rows[0].expires.getTime(), firstExpiry.getTime());
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    await database.exec('set role authenticated');
+    const creatorSubscriptions = (await database.query('select * from public.my_creator_blog_subscriptions()')).rows;
+    assert.equal(creatorSubscriptions.length, 1);
+    assert.deepEqual(creatorSubscriptions[0], {
+      creator_profile_id: profile,
+      creator_avatar_uuid: rates[0].id,
+      creator_slug: (await database.query('select slug from public.directory_profiles where id=$1', [profile])).rows[0].slug,
+      creator_name: (await database.query('select display_name from public.directory_profiles where id=$1', [profile])).rows[0].display_name,
+      expires_at: firstExpiry,
+      is_active: true
+    });
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+    await database.exec('set role authenticated');
+    assert.equal((await database.query('select * from public.my_creator_blog_subscriptions()')).rows.length, 0);
+    await database.exec('reset role; set role anon');
+    await assert.rejects(database.query('select * from public.my_creator_blog_subscriptions()'), error => error.code === '42501');
+    await database.exec('reset role; set role service_role');
+    await database.query("update cc_private.creator_content_subscriptions set expires_at=now()-interval '1 second' where fan_avatar_uuid=$1 and creator_profile_id=$2", [fanAvatar, profile]);
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    await database.exec('set role authenticated');
+    assert.equal((await database.query('select is_active from public.my_creator_blog_subscriptions()')).rows[0].is_active, false);
+    await database.exec('reset role; set role service_role');
+    await database.query('update cc_private.creator_content_subscriptions set expires_at=$1 where fan_avatar_uuid=$2 and creator_profile_id=$3', [firstExpiry, fanAvatar, profile]);
     await database.query('select * from public.creator_blog_prepare_payment($1,$2,$3,$4)', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500]);
     await database.query('select public.creator_blog_start_payout($1,$2,$3,$4)', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500]);
     assert.equal((await database.query('select public.creator_blog_cancel_payment($1,$2,$3,$4) as cancelled', ['77777777-7777-4777-8777-777777777777', fanAvatar, rates[0].id, 1500])).rows[0].cancelled, true);

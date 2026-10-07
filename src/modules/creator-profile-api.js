@@ -15,6 +15,12 @@ export async function myDirectorySubscriptions(client) {
   return data;
 }
 
+export async function myCreatorBlogSubscriptions(client) {
+  const { data, error } = await client.rpc('my_creator_blog_subscriptions');
+  if (error || !Array.isArray(data)) throw new Error('Unable to check creator subscriptions.');
+  return data;
+}
+
 export function profileChanges(values) {
   if (!values || typeof values !== 'object' || Object.keys(values).some(name => !editable.has(name))) throw new Error('Invalid profile fields.');
   const changes = {};

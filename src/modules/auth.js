@@ -1,6 +1,6 @@
 import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, setWebPassword } from './auth-api.js';
 import { initAvatarVerification } from './avatar-verification.js';
-import { initAccountDirectory } from './account-directory.js';
+import { initAccountCreatorSubscriptions, initAccountDirectory } from './account-directory.js';
 
 export async function initAuth(providedClient, passwordVerifierFactory) {
   const status = document.querySelector('[data-account-status]');
@@ -21,6 +21,7 @@ export async function initAuth(providedClient, passwordVerifierFactory) {
   let busy = false;
   let client;
   let refreshDirectory;
+  let refreshCreatorSubscriptions;
   let refreshGeneration = 0;
   const message = value => { status.textContent = value; };
   const setBusy = value => {
@@ -67,7 +68,7 @@ export async function initAuth(providedClient, passwordVerifierFactory) {
     container.classList.toggle('preview-hidden', !!user && !recovery && !editingPassword);
     if (recovery && user && mode !== 'update') showMode('update');
     if (!user && mode === 'update') { recovery = false; editingPassword = false; showMode('signin'); }
-    await refreshDirectory(user);
+    await Promise.all([refreshDirectory(user), refreshCreatorSubscriptions(user)]);
     if (user && active === refreshGeneration) document.querySelector('[data-avatar-refresh]').click();
   };
   const callback = callbackState(location.href);
@@ -75,6 +76,7 @@ export async function initAuth(providedClient, passwordVerifierFactory) {
   try { client = providedClient || createCreatorClient(); } catch { message('Account service is unavailable. Please try again later.'); return; }
   initAvatarVerification(client);
   refreshDirectory = initAccountDirectory(client);
+  refreshCreatorSubscriptions = initAccountCreatorSubscriptions(client);
   const subscriptionRefresh = document.querySelector('[data-subscription-refresh]');
   subscriptionRefresh.addEventListener('click', async () => {
     subscriptionRefresh.disabled = true;
