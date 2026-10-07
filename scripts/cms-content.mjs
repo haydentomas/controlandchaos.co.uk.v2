@@ -19,7 +19,7 @@ const validateSite = ajv.compile({
   type: 'object', additionalProperties: false,
   required: ['brand', 'logo', 'home', 'fontStylesheet', 'navigation', 'footer'],
   properties: {
-    brand: text, logo: publicUrl, home: { const: '/index.html' }, fontStylesheet: { type: 'string', pattern: '^https://fonts\\.googleapis\\.com/' },
+    brand: text, logo: publicUrl, home: { const: '/' }, fontStylesheet: { type: 'string', pattern: '^https://fonts\\.googleapis\\.com/' },
     navigation: {
       type: 'object', additionalProperties: false, required: ['inworldUrl', 'inworldLabel', 'links'],
       properties: {
@@ -83,7 +83,7 @@ export function preparePosts(records) {
     const share = new URL('https://twitter.com/intent/tweet');
     share.searchParams.set('text', post.title);
     share.searchParams.set('url', canonical);
-    return { ...post, bodyHtml, url: `/blog-${post.id}.html`, canonical, shareUrl: share.href, readMinutes: Math.max(1, Math.ceil(words / 200)) };
+    return { ...post, bodyHtml, page: `blog-${post.id}.html`, url: `/blog-${post.id}`, canonical, shareUrl: share.href, readMinutes: Math.max(1, Math.ceil(words / 200)) };
   }).filter(post => post.published).sort((first, second) => second.published_at.localeCompare(first.published_at) || first.order - second.order || first.id.localeCompare(second.id));
 }
 
@@ -133,7 +133,7 @@ export function prepareGuides(records) {
       anchors.add(anchor);
       return { ...section, section_id: anchor, bodyHtml: renderMarkdown(section.content) };
     });
-    return { ...guide, sections, url: `/guide-${guide.id}.html`, canonical: `https://controlandchaos.co.uk/guides/${guide.id}/` };
+    return { ...guide, sections, page: `guide-${guide.id}.html`, url: `/guide-${guide.id}`, canonical: `https://controlandchaos.co.uk/guides/${guide.id}/` };
   }).filter(guide => guide.published).sort((first, second) => first.order - second.order || first.id.localeCompare(second.id));
 }
 

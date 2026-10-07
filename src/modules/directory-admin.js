@@ -116,7 +116,7 @@ export async function initDirectoryAdmin(clientOverride) {
       const actions = document.createElement('div');
       actions.className = 'admin-card-actions';
       actions.append(actionButton('Edit listing', () => editListing(profile)));
-      actions.append(actionButton('View', () => window.open(`/directory-profile.html?slug=${encodeURIComponent(profile.slug || '')}`, '_blank', 'noopener')));
+      actions.append(actionButton('View', () => window.open(`/directory-profile?slug=${encodeURIComponent(profile.slug || '')}`, '_blank', 'noopener')));
       if (entry.moderation_state === 'suspended' || entry.moderation_state === 'archived' || entry.moderation_state === 'unpublished') {
         actions.append(actionButton('Restore', () => changeListingState(profile.id, 'restore')));
       } else {
@@ -150,7 +150,7 @@ export async function initDirectoryAdmin(clientOverride) {
       const actions = document.createElement('div');
       actions.className = 'admin-card-actions';
       if (subscription.subscription_type === 'creator' && subscription.profile_slug) {
-        actions.append(actionButton('Open profile', () => window.open(`/directory-profile.html?slug=${encodeURIComponent(subscription.profile_slug)}`, '_blank', 'noopener')));
+        actions.append(actionButton('Open profile', () => window.open(`/directory-profile?slug=${encodeURIComponent(subscription.profile_slug)}`, '_blank', 'noopener')));
       }
       if (subscription.is_suspended) actions.append(actionButton('Restore access', () => changeSubscription(subscription, 'restore')));
       else actions.append(actionButton('Suspend access', () => changeSubscription(subscription, 'suspend'), true));
@@ -308,7 +308,7 @@ export async function initDirectoryAdmin(clientOverride) {
     if (event === 'SIGNED_OUT') { requestGeneration++; setAuthorized(false); showStatus('Sign in with the ControlandChaos V2 account to continue.'); }
     if (event === 'SIGNED_IN') authorize();
   });
-  root.querySelector('[data-admin-signin]').addEventListener('click', () => { window.location.href = '/auth.html'; });
+  root.querySelector('[data-admin-signin]').addEventListener('click', () => { window.location.href = '/auth'; });
   root.querySelector('[data-admin-signout]').addEventListener('click', async () => {
     await client.auth.signOut();
     setAuthorized(false);

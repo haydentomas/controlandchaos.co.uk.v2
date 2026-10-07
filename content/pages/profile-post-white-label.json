@@ -71,7 +71,7 @@
     "items": [
       {
         "attributes": {
-          "href": "/profile-white-label.html#profile-tabs-nav",
+          "href": "/profile-white-label#profile-tabs-nav",
           "data-profile-tab": "ratecard",
           "class": "profile-tab-btn"
         },
@@ -81,7 +81,7 @@
       },
       {
         "attributes": {
-          "href": "/profile-feed-white-label.html#profile-tabs-nav",
+          "href": "/profile-feed-white-label#profile-tabs-nav",
           "data-profile-tab": "feed",
           "class": "profile-tab-btn"
         },
@@ -94,7 +94,7 @@
       },
       {
         "attributes": {
-          "href": "/profile-blog-white-label.html#profile-tabs-nav",
+          "href": "/profile-blog-white-label#profile-tabs-nav",
           "data-profile-tab": "blog",
           "class": "profile-tab-btn active",
           "aria-current": "page"
@@ -108,7 +108,7 @@
       },
       {
         "attributes": {
-          "href": "/profile-gallery-white-label.html#profile-tabs-nav",
+          "href": "/profile-gallery-white-label#profile-tabs-nav",
           "data-profile-tab": "gallery",
           "class": "profile-tab-btn"
         },

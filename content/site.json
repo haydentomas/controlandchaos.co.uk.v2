@@ -1,19 +1,19 @@
 {
   "brand": "CONTROL & CHAOS",
   "logo": "/images/logo.png",
-  "home": "/index.html",
+  "home": "/",
   "fontStylesheet": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap",
   "navigation": {
     "inworldUrl": "http://maps.secondlife.com/secondlife/Los%20Pengos/97/181/3000",
     "inworldLabel": "Visit Us InWorld",
     "links": [
-      { "label": "XP & Rules", "url": "/xp-system.html", "icon": "\u26a1", "newTab": false },
-      { "label": "Service Providers", "url": "/directory.html", "icon": "\ud83d\udc51", "newTab": false },
-      { "label": "Store", "url": "/products.html", "icon": "\ud83d\udecd\ufe0f", "newTab": false },
-      { "label": "User Guides", "url": "/guides.html", "icon": "\ud83d\udcd8", "newTab": false },
-      { "label": "Blog", "url": "/blog.html", "icon": "\ud83c\udff0", "newTab": false },
-      { "label": "Events", "url": "/events.html", "icon": "\ud83d\udcc5", "newTab": false },
-      { "label": "Contact", "url": "/contact.html", "icon": "\ud83d\udd17", "newTab": false }
+      { "label": "XP & Rules", "url": "/xp-system", "icon": "\u26a1", "newTab": false },
+      { "label": "Service Providers", "url": "/directory", "icon": "\ud83d\udc51", "newTab": false },
+      { "label": "Store", "url": "/products", "icon": "\ud83d\udecd\ufe0f", "newTab": false },
+      { "label": "User Guides", "url": "/guides", "icon": "\ud83d\udcd8", "newTab": false },
+      { "label": "Blog", "url": "/blog", "icon": "\ud83c\udff0", "newTab": false },
+      { "label": "Events", "url": "/events", "icon": "\ud83d\udcc5", "newTab": false },
+      { "label": "Contact", "url": "/contact", "icon": "\ud83d\udd17", "newTab": false }
     ]
   },
   "footer": {
@@ -23,25 +23,25 @@
       {
         "title": "Store & Products",
         "links": [
-          { "label": "Product Catalogue", "url": "/products.html", "newTab": false },
-          { "label": "All User Guides", "url": "/guides.html", "newTab": false },
-          { "label": "Vow Collar Suite", "url": "/guide-vow-collar.html", "newTab": false }
+          { "label": "Product Catalogue", "url": "/products", "newTab": false },
+          { "label": "All User Guides", "url": "/guides", "newTab": false },
+          { "label": "Vow Collar Suite", "url": "/guide-vow-collar", "newTab": false }
         ]
       },
       {
         "title": "Ecosystem",
         "links": [
-          { "label": "Service Providers", "url": "/directory.html", "newTab": false },
-          { "label": "XP System & Rules", "url": "/xp-system.html", "newTab": false },
-          { "label": "Events Board", "url": "/events.html", "newTab": false }
+          { "label": "Service Providers", "url": "/directory", "newTab": false },
+          { "label": "XP System & Rules", "url": "/xp-system", "newTab": false },
+          { "label": "Events Board", "url": "/events", "newTab": false }
         ]
       },
       {
         "title": "Community",
         "links": [
-          { "label": "Sim Game Rules", "url": "/xp-system.html#sim-rules", "newTab": false },
-          { "label": "Get Listed", "url": "/get-listed.html", "newTab": false },
-          { "label": "Contact & Concierge", "url": "/contact.html", "newTab": false }
+          { "label": "Sim Game Rules", "url": "/xp-system#sim-rules", "newTab": false },
+          { "label": "Get Listed", "url": "/get-listed", "newTab": false },
+          { "label": "Contact & Concierge", "url": "/contact", "newTab": false }
         ]
       }
     ]

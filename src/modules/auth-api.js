@@ -3,6 +3,15 @@ import { directoryConfig } from './directory-api.js';
 
 export const AUTH_STORAGE_KEY = 'cc-v2-creator-auth';
 
+export async function hasDirectoryAdminAccess(client) {
+  try {
+    const { data, error } = await client.rpc('my_directory_admin_access');
+    return !error && data === true;
+  } catch {
+    return false;
+  }
+}
+
 export function createCreatorClient(config = directoryConfig(), options = {}) {
   return createClient(config.url, config.publishableKey, {
     auth: {

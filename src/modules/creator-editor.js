@@ -68,7 +68,7 @@ export async function initCreatorEditor(clientOverride) {
     form.querySelector('[data-creator-publication]').textContent = !row.is_approved ? 'Publication is restricted.' : row.is_published ? 'Published while your subscription is active.' : 'Draft - not publicly visible.';
     const link = form.querySelector('[data-creator-public]');
     link.classList.toggle('preview-hidden', !(row.is_approved && row.is_published));
-    link.href = `/directory-profile.html?slug=${encodeURIComponent(row.slug)}`;
+    link.href = `/directory-profile?slug=${encodeURIComponent(row.slug)}`;
     preview('avatar_image', '[data-creator-avatar-preview]');
     preview('banner_image', '[data-creator-banner-preview]');
   };

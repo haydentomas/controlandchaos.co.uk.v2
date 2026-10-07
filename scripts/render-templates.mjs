@@ -26,7 +26,7 @@ export async function pageInventory(posts, guides) {
   posts ??= await loadPosts();
   guides ??= await loadGuides();
   const manifest = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8'));
-  return [...manifest.filter(item => !item.page.startsWith('blog-') && (!item.page.startsWith('guide-') || item.page === 'guide-template.html')), ...posts.map(post => ({ page: post.url.slice(1), variant: 'cms-blog' })), ...guides.map(guide => ({ page: guide.url.slice(1), variant: 'cms-guide' }))];
+  return [...manifest.filter(item => !item.page.startsWith('blog-') && (!item.page.startsWith('guide-') || item.page === 'guide-template.html')), ...posts.map(post => ({ page: post.page, variant: 'cms-blog' })), ...guides.map(guide => ({ page: guide.page, variant: 'cms-guide' }))];
 }
 
 export function staleBlogPages(previous, active) {
@@ -46,7 +46,7 @@ export async function renderPage(filename, { site, creator, events, posts, guide
   if (name === 'blog' || name.startsWith('blog-')) posts ??= await loadPosts();
   if (name === 'guides' || (name.startsWith('guide-') && name !== 'guide-template')) guides ??= await loadGuides();
   if (name.startsWith('guide-') && name !== 'guide-template') {
-    const guide = guides.find(item => item.url === `/${filename}`);
+    const guide = guides.find(item => item.page === filename);
     if (!guide) throw new Error(`Guide is not published: ${filename}`);
     const image = new URL(guide.listing.image, 'https://controlandchaos.co.uk').href;
     const page = {
@@ -63,7 +63,7 @@ export async function renderPage(filename, { site, creator, events, posts, guide
     return templateEnvironment().render('pages/product-manual.njk', { site, page, guide, otherGuides: guides.filter(item => item.id !== guide.id) });
   }
   if (name.startsWith('blog-')) {
-    const post = posts.find(item => item.url === `/${filename}`);
+    const post = posts.find(item => item.page === filename);
     if (!post) throw new Error(`Post is not published: ${filename}`);
     const image = new URL(post.featured_image || site.logo, 'https://controlandchaos.co.uk').href;
     const page = {
@@ -102,12 +102,12 @@ export async function generateTemplates() {
   const registry = path.join(root, '.generated-blog-pages.json');
   const baseline = JSON.parse(await fs.readFile(path.join(root, 'templates.json'), 'utf8')).map(item => item.page);
   const previous = await fs.readFile(registry, 'utf8').then(JSON.parse).catch(error => { if (error.code === 'ENOENT') return baseline; throw error; });
-  const active = posts.map(post => post.url.slice(1));
+  const active = posts.map(post => post.page);
   for (const filename of staleBlogPages(previous, active)) await fs.rm(path.join(root, filename), { force: true });
   await fs.writeFile(registry, JSON.stringify(active, null, 2) + '\n');
   const guideRegistry = path.join(root, '.generated-guide-pages.json');
   const previousGuides = await fs.readFile(guideRegistry, 'utf8').then(JSON.parse).catch(error => { if (error.code === 'ENOENT') return baseline; throw error; });
-  const activeGuides = guides.map(guide => guide.url.slice(1));
+  const activeGuides = guides.map(guide => guide.page);
   for (const filename of staleGuidePages(previousGuides, activeGuides)) await fs.rm(path.join(root, filename), { force: true });
   await fs.writeFile(guideRegistry, JSON.stringify(activeGuides, null, 2) + '\n');
   return generated;

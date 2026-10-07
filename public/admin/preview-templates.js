@@ -326,7 +326,7 @@ output += "</p>\r\n  <div class=\"card-actions-bar\">\r\n    <a href=\"";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "guide")),"url"), env.opts.autoescape);
 output += "\" class=\"btn btn-gold btn-sm card-body-grow\">Read Manual &#8594;</a>\r\n";
 if(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "guide")),"id") == "xp-titlers") {
-output += "\r\n    <a href=\"/xp-system.html\" class=\"btn btn-secondary btn-sm\">&#9889; XP Levels</a>\r\n";
+output += "\r\n    <a href=\"/xp-system\" class=\"btn btn-secondary btn-sm\">&#9889; XP Levels</a>\r\n";
 ;
 }
 else {

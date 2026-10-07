@@ -27,7 +27,7 @@ export function initAccountDirectory(client) {
           const link = document.createElement('a');
           link.className = 'btn btn-gold';
           link.textContent = 'Edit profile';
-          const url = new URL('/directory-editor.html', location.origin);
+          const url = new URL('/directory-editor', location.origin);
           url.searchParams.set('profile', subscription.profile_id);
           link.href = `${url.pathname}${url.search}`;
           row.append(link);
@@ -104,7 +104,7 @@ export function initAccountCreatorSubscriptions(client) {
         link.textContent = 'Open profile & blog';
         link.setAttribute('aria-label', `Open ${subscription.creator_name}'s creator blog and profile`);
         const query = new URLSearchParams({ slug: subscription.creator_slug });
-        link.href = `/directory-profile.html?${query}`;
+        link.href = `/directory-profile?${query}`;
         row.append(avatar, content, link);
         list.append(row);
       }

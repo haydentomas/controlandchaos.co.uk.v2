@@ -15,7 +15,8 @@ if (!baseUrl) {
   const buildRoot = path.join(root, 'build');
   server = http.createServer(async (request, response) => {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
-    const file = path.resolve(buildRoot, '.' + (pathname === '/' ? '/index.html' : pathname));
+    const pagePath = pathname === '/' ? '/index.html' : pathname.endsWith('.html') ? pathname : `${pathname}.html`;
+    const file = path.resolve(buildRoot, '.' + pagePath);
     if (!file.startsWith(buildRoot + path.sep)) { response.writeHead(403); response.end(); return; }
     try {
       const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
@@ -40,7 +41,7 @@ try {
   let releaseStyles;
   const styleGate = new Promise(resolve => { releaseStyles = resolve; });
   await navigationPage.route('**/assets/*.css', async route => { await styleGate; await route.continue(); });
-  await navigationPage.goto(`${baseUrl}/index.html`, { waitUntil: 'commit' });
+  await navigationPage.goto(`${baseUrl}/`, { waitUntil: 'commit' });
   await navigationPage.locator('#v2-page-canvas').waitFor({ state: 'attached' });
   const earlyCanvas = await navigationPage.evaluate(() => ({
     background: getComputedStyle(document.documentElement).backgroundColor,
@@ -51,16 +52,16 @@ try {
   releaseStyles();
   await navigationPage.waitForLoadState('networkidle');
   await navigationPage.unroute('**/assets/*.css');
-  await navigationPage.locator('.nav-link[href="/products.html"]').click();
-  await navigationPage.waitForURL('**/products.html', { waitUntil: 'networkidle' });
+  await navigationPage.locator('.nav-link[href="/products"]').click();
+  await navigationPage.waitForURL('**/products', { waitUntil: 'networkidle' });
   const nativeTransition = await navigationPage.evaluate(() => window.v2NativePageTransition);
   if (!nativeTransition) throw new Error('Native cross-document transition was not enabled');
   await navigationPage.goBack({ waitUntil: 'networkidle' });
-  if (!navigationPage.url().endsWith('/index.html')) throw new Error('Back navigation was changed');
+  if (!navigationPage.url().endsWith('/')) throw new Error('Back navigation was changed');
   await navigationContext.close();
   const reducedContext = await browser.newContext({ reducedMotion: 'reduce' });
   const reducedPage = await reducedContext.newPage();
-  await reducedPage.goto(`${baseUrl}/index.html`, { waitUntil: 'networkidle' });
+  await reducedPage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
   const reducedAnimation = await reducedPage.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-new(root)').animationName);
   if (reducedAnimation !== 'none') throw new Error('Reduced motion still animates page transitions');
   await reducedContext.close();
@@ -154,7 +155,7 @@ try {
     await interaction.locator('[data-editor-tab="tab-gallery"]').first().click();
     await interaction.locator('#gallery-manager-card').waitFor({ state: 'visible' });
     if (viewport.width < 600) {
-      await interaction.goto(`${baseUrl}/index.html`, { waitUntil: 'networkidle' });
+      await interaction.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
       await interaction.locator('#nav-toggle').click();
       if (await interaction.locator('#nav-toggle').getAttribute('aria-expanded') !== 'true') throw new Error('Mobile menu did not open');
       await interaction.keyboard.press('Escape');

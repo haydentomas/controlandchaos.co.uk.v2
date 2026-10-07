@@ -22,7 +22,7 @@ test('account settings let terminal-authenticated users set a verified web passw
     await page.goto(`${origin}/auth.html`);
     await page.evaluate(async () => {
       const user = { id: 'test-owner', email: 'owner@example.test', email_confirmed_at: '2026-10-04T00:00:00Z' };
-      window.authFixture = { user, calls: [], error: null, callbacks: [] };
+      window.authFixture = { user, calls: [], error: null, callbacks: [], adminAccess: true };
       const fixture = window.authFixture;
       const client = {
         auth: {
@@ -45,6 +45,7 @@ test('account settings let terminal-authenticated users set a verified web passw
           }
         },
         rpc: async name => {
+          if (name === 'my_directory_admin_access') return { data: fixture.adminAccess, error: null };
           if (!['my_directory_subscriptions', 'my_verified_avatars'].includes(name)) throw new Error(`Unexpected RPC: ${name}`);
           return { data: [], error: null };
         }
@@ -58,6 +59,7 @@ test('account settings let terminal-authenticated users set a verified web passw
       } };
       await (await import('/src/modules/auth.js')).initAuth(client, () => verifier);
     });
+    assert.equal(await page.getByRole('link', { name: 'Superadmin' }).isVisible(), true);
     const change = page.getByRole('button', { name: 'Set or change web password' });
     await change.click();
     await page.locator('#account-password').fill('fake-browser-password');

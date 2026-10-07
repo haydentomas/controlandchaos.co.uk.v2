@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { parseHTML } from 'linkedom';
 import { renderPage } from './render-templates.mjs';
-import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, setWebPassword } from '../src/modules/auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, authRedirect, AUTH_STORAGE_KEY, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, hasDirectoryAdminAccess, setWebPassword } from '../src/modules/auth-api.js';
 import { createPublicDirectoryClient } from '../src/modules/directory-api.js';
 
 test('creator sessions use PKCE and separate storage while public directory remains anonymous', async () => {
@@ -27,8 +27,20 @@ test('account page uses real form hooks and suppresses callback referrers', asyn
   assert.equal(document.querySelectorAll('[data-account-mode]').length, 3);
   assert.ok(document.querySelector('[data-account-session] [data-account-change-password]'));
   assert.equal(document.querySelector('[data-account-cancel-password]').getAttribute('type'), 'button');
+  const adminLink = document.querySelector('[data-account-admin-link]');
+  assert.equal(adminLink.getAttribute('href'), '/directory-admin');
+  assert.ok(adminLink.classList.contains('preview-hidden'));
   const handlers = await fs.readFile(new URL('../src/modules/preview-actions.js', import.meta.url), 'utf8');
   assert.match(handlers, /form:not\(\[data-live-auth-form\]\)/);
+});
+
+test('account admin shortcut fails closed unless the authenticated admin RPC returns true', async () => {
+  const calls = [];
+  assert.equal(await hasDirectoryAdminAccess({ rpc: async name => { calls.push(name); return { data: true, error: null }; } }), true);
+  assert.deepEqual(calls, ['my_directory_admin_access']);
+  assert.equal(await hasDirectoryAdminAccess({ rpc: async () => ({ data: false, error: null }) }), false);
+  assert.equal(await hasDirectoryAdminAccess({ rpc: async () => ({ data: true, error: new Error('denied') }) }), false);
+  assert.equal(await hasDirectoryAdminAccess({ rpc: async () => { throw new Error('offline'); } }), false);
 });
 
 test('signed-in web password setting verifies the server identity and password without profile writes', async () => {

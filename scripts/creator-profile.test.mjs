@@ -396,7 +396,7 @@ test('creator subscription account list shows status and links to the creator pr
     assert.match(rows[0].textContent, /Alek Zane[\s\S]*Active[\s\S]*expires/);
     assert.match(rows[1].textContent, /Past Creator[\s\S]*Inactive[\s\S]*expires/);
     assert.equal(rows[0].querySelector('img').getAttribute('src'), 'https://images.example.test/alek.jpg');
-    assert.equal(rows[0].querySelector('a').getAttribute('href'), '/directory-profile.html?slug=alek-zane');
+    assert.equal(rows[0].querySelector('a').getAttribute('href'), '/directory-profile?slug=alek-zane');
     assert.equal(rows[0].querySelector('a').textContent, 'Open profile & blog');
     notify('SIGNED_OUT');
     assert.equal(document.querySelector('[data-creator-subscription-status]').textContent, '');

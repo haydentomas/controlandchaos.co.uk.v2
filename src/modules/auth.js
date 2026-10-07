@@ -1,4 +1,4 @@
-import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, setWebPassword } from './auth-api.js';
+import { accountLinkMessage, accountRequestMessage, authenticate, callbackState, createCreatorClient, exchangeAuthCallback, exchangeTerminalLogin, hasDirectoryAdminAccess, setWebPassword } from './auth-api.js';
 import { initAvatarVerification } from './avatar-verification.js';
 import { initAccountCreatorSubscriptions, initAccountDirectory } from './account-directory.js';
 
@@ -6,6 +6,7 @@ export async function initAuth(providedClient, passwordVerifierFactory) {
   const status = document.querySelector('[data-account-status]');
   const container = document.querySelector('[data-account-form-container]');
   const sessionPanel = document.querySelector('[data-account-session]');
+  const adminLink = document.querySelector('[data-account-admin-link]');
   const form = document.querySelector('[data-live-auth-form]');
   const email = form.elements.email;
   const password = form.elements.password;
@@ -66,9 +67,16 @@ export async function initAuth(providedClient, passwordVerifierFactory) {
     sessionPanel.classList.toggle('preview-hidden', !user);
     document.querySelector('[data-account-email]').textContent = user?.email || '';
     container.classList.toggle('preview-hidden', !!user && !recovery && !editingPassword);
+    adminLink.classList.add('preview-hidden');
     if (recovery && user && mode !== 'update') showMode('update');
     if (!user && mode === 'update') { recovery = false; editingPassword = false; showMode('signin'); }
-    await Promise.all([refreshDirectory(user), refreshCreatorSubscriptions(user)]);
+    const [isAdmin] = await Promise.all([
+      user ? hasDirectoryAdminAccess(client) : false,
+      refreshDirectory(user),
+      refreshCreatorSubscriptions(user)
+    ]);
+    if (active !== refreshGeneration) return;
+    adminLink.classList.toggle('preview-hidden', !isAdmin);
     if (user && active === refreshGeneration) document.querySelector('[data-avatar-refresh]').click();
   };
   const callback = callbackState(location.href);

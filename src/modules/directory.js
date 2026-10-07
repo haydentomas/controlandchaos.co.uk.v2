@@ -28,7 +28,7 @@ export function directoryCard(template, profile) {
     badge.textContent = String(tag);
     card.querySelector('[data-directory-tags]').appendChild(badge);
   }
-  card.querySelector('[data-directory-link]').href = `/directory-profile.html?slug=${encodeURIComponent(profile.slug)}`;
+  card.querySelector('[data-directory-link]').href = `/directory-profile?slug=${encodeURIComponent(profile.slug)}`;
   return card;
 }
 

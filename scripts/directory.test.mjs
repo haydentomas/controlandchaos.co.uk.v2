@@ -86,7 +86,7 @@ test('directory cards render untrusted text safely and link only to the public r
     const card = directoryCard(document.querySelector('template'), profile);
     assert.equal(card.querySelector('[data-directory-name]').textContent, profile.display_name);
     assert.equal(card.querySelector('script,[onerror],img'), null);
-    assert.equal(card.querySelector('[data-directory-link]').getAttribute('href'), '/directory-profile.html?slug=sample-profile');
+    assert.equal(card.querySelector('[data-directory-link]').getAttribute('href'), '/directory-profile?slug=sample-profile');
     assert.equal(publicImageUrl('data:text/html,test'), '');
     assert.equal(publicImageUrl('//unsafe.example/image'), '');
   } finally {

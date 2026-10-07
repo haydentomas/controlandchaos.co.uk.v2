@@ -16,7 +16,8 @@ test('guide records sanitize sections, preserve anchors and reject unsafe or dup
   const guide = { id: 'test-guide', title: 'Manual', badge: 'GUIDE', icon: 'G', price: 'Free', marketplace_url: 'https://marketplace.secondlife.com', pill_text: 'Documentation', description: 'Description', published: true, order: 0, listing: { title: 'Manual', badge: 'GUIDE', description: 'Description', image: '/images/logo.png', featured: false }, sections: [{ title: 'Start', section_id: 'quick-start', content: '## Heading\n\n<script>alert(1)</script><img src=x onerror=alert(1)>' }] };
   const result = prepareGuides([guide, { ...guide, id: 'draft-guide', published: false }]);
   assert.equal(result.length, 1);
-  assert.equal(result[0].url, '/guide-test-guide.html');
+  assert.equal(result[0].url, '/guide-test-guide');
+  assert.equal(result[0].page, 'guide-test-guide.html');
   assert.equal(result[0].sections[0].section_id, 'quick-start');
   const { document } = parseHTML(result[0].sections[0].bodyHtml);
   assert.ok(document.querySelector('h2'));
@@ -28,7 +29,7 @@ test('guide records sanitize sections, preserve anchors and reject unsafe or dup
 
 test('new guides generate pages, working anchors, metadata and safe unpublish cleanup', async () => {
   const original = (await loadGuides())[0];
-  const { url, canonical, sections, ...record } = original;
+  const { url, page, canonical, sections, ...record } = original;
   const guides = prepareGuides([{ ...record, id: 'new-device', title: 'New Device', sections: sections.map(({ bodyHtml, ...section }) => section) }]);
   assert.ok((await pageInventory([], guides)).some(item => item.page === 'guide-new-device.html'));
   const { document } = parseHTML(await renderPage('guide-new-device.html', { guides }));
@@ -41,14 +42,15 @@ test('new guides generate pages, working anchors, metadata and safe unpublish cl
   assert.deepEqual(staleGuidePages(['guide-old.html', 'guide-template.html', '../private.html', 'index.html'], ['guide-new-device.html']), ['guide-old.html']);
   const directory = parseHTML(await renderPage('guides.html', { guides })).document;
   assert.equal(directory.querySelectorAll('[data-cms-guide-card]').length, 1);
-  assert.equal(directory.querySelector('[data-cms-guide-card] a').getAttribute('href'), '/guide-new-device.html');
+  assert.equal(directory.querySelector('[data-cms-guide-card] a').getAttribute('href'), '/guide-new-device');
 });
 
 test('site posts validate, sanitize Markdown and omit unpublished records', () => {
   const post = { id: 'test-post', title: 'Test', category: 'Community', date: 'October 2026', published_at: '2026-10-04', author: 'Staff', summary: 'Summary', content: '## Heading\n\n**Bold**\n\n<script>alert(1)</script><img src="/images/logo.png" onerror="alert(1)">\n\n[Unsafe](javascript:alert(1))', published: true, order: 0 };
   const prepared = preparePosts([post, { ...post, id: 'draft', published: false }]);
   assert.equal(prepared.length, 1);
-  assert.equal(prepared[0].url, '/blog-test-post.html');
+  assert.equal(prepared[0].url, '/blog-test-post');
+  assert.equal(prepared[0].page, 'blog-test-post.html');
   const { document } = parseHTML(prepared[0].bodyHtml);
   assert.ok(document.querySelector('h2'));
   assert.ok(document.querySelector('strong'));
@@ -78,7 +80,7 @@ test('blog ordering uses publication date, then same-date order; empty feeds ren
     { ...existing, id: 'old', published_at: '2026-09-01', order: 0 },
     { ...existing, id: 'new-second', published_at: '2026-10-04', order: 1 },
     { ...existing, id: 'new-first', published_at: '2026-10-04', order: 0 }
-  ].map(({ bodyHtml, url, canonical, shareUrl, readMinutes, ...record }) => record);
+  ].map(({ bodyHtml, url, page, canonical, shareUrl, readMinutes, ...record }) => record);
   assert.deepEqual(preparePosts(records).map(post => post.id), ['new-first', 'new-second', 'old']);
   const { document } = parseHTML(await renderPage('blog.html', { posts: [] }));
   assert.equal(document.querySelectorAll('[data-blog-category]').length, 0);
@@ -296,4 +298,13 @@ test('page fades use native navigation and respect reduced motion', async () => 
   assert.match(css, /::view-transition-new\(root\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /animation:\s*none !important/);
+});
+
+test('generated pages use extensionless internal navigation links', async () => {
+  for (const { page } of await pageInventory()) {
+    const { document } = parseHTML(await renderPage(page));
+    for (const anchor of document.querySelectorAll('a[href^="/"]')) {
+      assert.ok(!new URL(anchor.getAttribute('href'), 'https://example.test').pathname.endsWith('.html'), `${page} contains ${anchor.getAttribute('href')}`);
+    }
+  }
 });
