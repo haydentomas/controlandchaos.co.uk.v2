@@ -780,6 +780,7 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.query('insert into cc_private.verified_avatar_links(avatar_uuid,user_id,sl_username) values ($1,$2,$3)', [fanAvatar, stranger, 'fan.resident']);
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070017_directory_superadmin.sql', import.meta.url), 'utf8'));
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070018_vip_feature_entitlements.sql', import.meta.url), 'utf8'));
+    await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070019_creator_blog_owner_access.sql', import.meta.url), 'utf8'));
     await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
     await database.exec('set role authenticated');
     assert.equal((await database.query('select public.my_directory_admin_access() as allowed')).rows[0].allowed, false);
@@ -804,7 +805,7 @@ test('booking recipient RPC is private and requires an active published booking 
       monthly_price_linden: 0,
       benefits: '',
       terminal_slurl: '',
-      viewer_is_subscribed: false,
+      viewer_is_subscribed: true,
       creator_is_vip: false
     });
     await assert.rejects(database.query('update public.directory_profiles set creator_blog_monthly_linden=100 where id=$1', [basicProfile]), error => error.code === '42501');
@@ -964,6 +965,7 @@ test('booking recipient RPC is private and requires an active published booking 
     assert.equal(ownerOffer.monthly_price_linden, 1500);
     assert.equal(ownerOffer.benefits, 'All subscriber posts and monthly updates.');
     assert.equal(ownerOffer.terminal_slurl, 'secondlife://finance-land/128/128/20');
+    assert.equal(ownerOffer.viewer_is_subscribed, true);
     assert.deepEqual((await database.query('select title,body_markdown from public.creator_blog_editor_posts($1) order by title', [profile])).rows, [
       { title: 'Private lookbook', body_markdown: 'Full subscribers-only details.' },
       { title: 'Public update', body_markdown: 'Visible to everyone.' }
