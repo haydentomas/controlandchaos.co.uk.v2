@@ -529,6 +529,8 @@ test('creator blog editor loads the creator price and saves one unified post lis
 
 test('creator pass dialog copies the creator UUID, uses the terminal SLURL, and never renders locked media', async () => {
   const { document } = parseHTML(await renderPage('directory-profile.html'));
+  const passStyles = await fs.readFile(new URL('../src/templates.css', import.meta.url), 'utf8');
+  assert.match(passStyles, /\.creator-pass-dialog \{ position: fixed; inset: 0;[^}]*height: fit-content;[^}]*margin: auto;/);
   const previousDocument = globalThis.document;
   const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   let copiedValue = '';

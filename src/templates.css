@@ -348,7 +348,7 @@
   html[data-template="directory-profile"] .creator-blog-gate-lock { font-size: 32px; line-height: 1; }
   html[data-template="directory-profile"] .creator-blog-gate strong { color: var(--gold-bright); font-family: var(--font-heading); font-size: 16px; }
   html[data-template="directory-profile"] .creator-blog-gate p { margin: 0 0 6px; color: var(--text-primary); font-size: 13px; line-height: 1.55; }
-  html[data-template="directory-profile"] .creator-pass-dialog { width: min(520px,calc(100vw - 28px)); max-width: none; max-height: min(90vh,820px); overflow: auto; padding: 0; border: 1px solid var(--gold-border); border-radius: 8px; background: #17130f; color: var(--text-primary); box-shadow: 0 24px 70px rgba(0,0,0,.75); }
+  html[data-template="directory-profile"] .creator-pass-dialog { position: fixed; inset: 0; width: min(520px,calc(100vw - 28px)); height: fit-content; max-width: none; max-height: min(90vh,820px); margin: auto; overflow: auto; padding: 0; border: 1px solid var(--gold-border); border-radius: 8px; background: #17130f; color: var(--text-primary); box-shadow: 0 24px 70px rgba(0,0,0,.75); }
   html[data-template="directory-profile"] .creator-pass-dialog::backdrop { background: rgba(8,7,7,.82); backdrop-filter: blur(8px); }
   html[data-template="directory-profile"] .creator-pass-dialog-inner { position: relative; display: grid; gap: 18px; padding: 26px; }
   html[data-template="directory-profile"] .creator-pass-dialog-close { position: absolute; top: 12px; right: 14px; width: 36px; height: 36px; border: 0; background: transparent; color: var(--text-muted); font-size: 24px; cursor: pointer; }
