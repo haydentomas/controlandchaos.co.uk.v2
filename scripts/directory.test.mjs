@@ -114,7 +114,8 @@ test('creator blog renders locked teasers publicly and full posts only when the 
     assert.equal(lockedCard.querySelector('.creator-blog-post-teaser').textContent, 'A public preview.');
     assert.equal(lockedCard.querySelector('.creator-blog-post-body'), null);
     assert.equal(lockedCard.textContent.includes('Full subscribers-only details.'), false);
-    assert.equal(lockedCard.querySelector('a').getAttribute('href'), offer.terminal_slurl);
+    assert.equal(lockedCard.querySelector('a'), null);
+    assert.match(lockedCard.querySelector('button').textContent, /Unlock for L\$1,500/);
     assert.equal(document.querySelector('.creator-blog-membership-action strong').textContent, 'L$1,500 / month');
     await renderCreatorBlogFeed(document.getElementById('feed'), document.getElementById('status'), client, profile, { ...offer, viewer_is_subscribed: true }, [
       { ...locked, is_locked: false, body_markdown: 'Full subscribers-only details.', media_type: 'image', media_path: `${profile.id}/${locked.id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.webp` }

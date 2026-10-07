@@ -10,9 +10,11 @@ import { validateBookingHours, bookingLocalTime, renderBookingHours, initBooking
 import { validateGalleryPhotos, galleryImageUrl, fetchGalleryPhotos, renderProfileGallery, renderGalleryPreview } from '../src/modules/profile-gallery.js';
 import { initProfileGalleryEditor } from '../src/modules/profile-gallery-editor.js';
 import { initCreatorBlogEditor } from '../src/modules/creator-blog.js';
+import { creatorPassBenefits, renderCreatorBlogFeed } from '../src/modules/creator-blog-feed.js';
 import { validateHardwareItems, validateWishlistItems, renderHardwareItems, renderWishlistItems, initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, createHardwareItem, createWishlistItem } from '../src/modules/profile-collections.js';
 import { initAccountCreatorSubscriptions, initAccountDirectory } from '../src/modules/account-directory.js';
 import { CREATOR_PROFILE_COLUMNS, myCreatorBlogSubscriptions, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
+import { renderPage } from './render-templates.mjs';
 
 const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
@@ -499,9 +501,9 @@ test('creator blog editor loads the creator price and saves one unified post lis
       Object.defineProperty(select, 'value', { configurable: true, get: () => value, set: next => { value = String(next); } });
     }
     const editor = initCreatorBlogEditor(document.getElementById('posts'), document.getElementById('add'), document.getElementById('price'), document.getElementById('benefits'));
-    await editor.load(client, { id: profileId, creator_blog_monthly_linden: 1500, creator_blog_benefits: 'All subscriber posts.' });
+    await editor.load(client, { id: profileId, creator_blog_monthly_linden: 1500, creator_blog_benefits: 'Private lookbooks\nVoice notes' });
     assert.equal(document.getElementById('price').value, '1500');
-    assert.equal(document.getElementById('benefits').value, 'All subscriber posts.');
+    assert.equal(document.getElementById('benefits').value, 'Private lookbooks\nVoice notes');
     assert.equal(document.querySelector('[data-blog-editor-post]').querySelector('[aria-expanded]').getAttribute('aria-expanded'), 'false');
     document.getElementById('add').click();
     const newRow = [...document.querySelectorAll('[data-blog-editor-post]')].find(row => row.dataset.blogEditorPost !== initialPost.id);
@@ -516,12 +518,59 @@ test('creator blog editor loads the creator price and saves one unified post lis
     assert.equal(saveRequest.name, 'creator_blog_save_all_v2');
     assert.equal(saveRequest.args.target_profile, profileId);
     assert.equal(saveRequest.args.monthly_price, 1500);
+    assert.equal(saveRequest.args.benefits, 'Private lookbooks\nVoice notes');
     assert.equal(saveRequest.args.posts.length, 2);
     const lockedPost = saveRequest.args.posts.find(post => post.title === 'Subscriber lookbook');
     assert.equal(lockedPost.access_level, 'subscribers');
     assert.equal(lockedPost.teaser, 'A preview for fans.');
     assert.equal(Object.hasOwn(saveRequest.args.posts[0], 'created_at'), false);
   } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('creator pass dialog copies the creator UUID, uses the terminal SLURL, and never renders locked media', async () => {
+  const { document } = parseHTML(await renderPage('directory-profile.html'));
+  const previousDocument = globalThis.document;
+  const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  let copiedValue = '';
+  const feed = document.querySelector('[data-public-blog-feed]');
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: document });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: { writeText: async value => { copiedValue = value; } } } });
+  const dialog = document.querySelector('[data-creator-pass-dialog]');
+  dialog.showModal = () => dialog.setAttribute('open', '');
+  dialog.close = () => dialog.removeAttribute('open');
+  const privateBody = 'PRIVATE_SUBSCRIBER_BODY_NOT_FOR_PUBLIC';
+  const privatePath = 'profile/private-subscriber-image.webp';
+  try {
+    assert.deepEqual(creatorPassBenefits('  Private lookbooks  \n\n Voice notes\r\n '), ['Private lookbooks', 'Voice notes']);
+    await renderCreatorBlogFeed(
+      document.querySelector('[data-public-blog-feed]'),
+      document.querySelector('[data-public-blog-status]'),
+      {},
+      { display_name: 'Alek Zane' },
+      { creator_avatar_uuid: '11111111-2222-4333-8444-555555555555', monthly_price_linden: 1500, benefits: 'Private lookbooks\nVoice notes', terminal_slurl: 'secondlife://LosPengos/97/181/3000', viewer_is_subscribed: false },
+      [{ post_type: 'post', access_level: 'subscribers', is_locked: true, title: 'Private post', teaser: 'Public teaser', body_markdown: privateBody, media_path: privatePath, published_at: '2026-10-07T00:00:00Z' }]
+    );
+    assert.deepEqual([...dialog.querySelectorAll('[data-creator-pass-benefits] li')].map(item => item.textContent), ['Private lookbooks', 'Voice notes']);
+    assert.equal(dialog.querySelector('[data-creator-pass-price]').textContent, 'L$1,500 / 30 days');
+    assert.equal(dialog.querySelector('[data-creator-pass-uuid]').textContent, '11111111-2222-4333-8444-555555555555');
+    assert.equal(dialog.querySelector('[data-creator-pass-teleport]').getAttribute('href'), 'secondlife://LosPengos/97/181/3000');
+    assert.equal(dialog.querySelector('[data-creator-pass-teleport]').hidden, false);
+    assert.equal(dialog.textContent.includes('Direct Enquiry'), false);
+    assert.equal(dialog.textContent.includes('Already subscribed'), false);
+    assert.equal(feed.textContent.includes(privateBody), false);
+    assert.equal(feed.textContent.includes(privatePath), false);
+    assert.equal(feed.querySelector('img,video,audio'), null);
+    document.querySelector('[data-creator-pass-copy]').click();
+    await Promise.resolve();
+    assert.equal(copiedValue, '11111111-2222-4333-8444-555555555555');
+    document.querySelector('.creator-blog-gate button').click();
+    assert.equal(dialog.hasAttribute('open'), true);
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else Object.defineProperty(globalThis, 'document', { configurable: true, value: previousDocument });
+    if (previousNavigator) Object.defineProperty(globalThis, 'navigator', previousNavigator);
+    else delete globalThis.navigator;
+  }
 });
 
 test('booking editor distinguishes unset schedules and no available days without losing overnight times', () => {

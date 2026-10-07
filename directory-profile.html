@@ -175,6 +175,31 @@
     <a href="/directory" class="btn btn-secondary btn-sm">&#8592; Directory</a>
   </div>
 </main>
+<dialog class="creator-pass-dialog" data-creator-pass-dialog aria-labelledby="creator-pass-title">
+  <div class="creator-pass-dialog-inner">
+    <button type="button" class="creator-pass-dialog-close" data-creator-pass-close aria-label="Close membership details">&times;</button>
+    <header class="creator-pass-dialog-header">
+      <span class="creator-pass-crown" aria-hidden="true">&#9819;</span>
+      <h2 id="creator-pass-title" data-creator-pass-title>Unlock creator membership</h2>
+      <p>Get 30-day access to this creator's subscriber-only posts and media.</p>
+    </header>
+    <section class="creator-pass-perks" data-creator-pass-benefits-section hidden>
+      <h3>Included membership perks</h3>
+      <ul data-creator-pass-benefits></ul>
+    </section>
+    <section class="creator-pass-terminal">
+      <header><strong>In-world SL terminal</strong><span data-creator-pass-price></span></header>
+      <p>Copy the creator's verified avatar UUID, then teleport to the subscriber terminal and paste it when prompted.</p>
+      <div class="creator-pass-uuid">
+        <div><span>Creator avatar UUID</span><code data-creator-pass-uuid></code></div>
+        <button type="button" class="btn btn-secondary btn-sm" data-creator-pass-copy>Copy UUID</button>
+      </div>
+      <a class="creator-pass-teleport btn btn-gold" data-creator-pass-teleport href="#" target="_blank" rel="noopener">Teleport to subscriber terminal</a>
+      <p class="creator-pass-terminal-status" data-creator-pass-terminal-status role="status" hidden></p>
+      <p class="creator-pass-copy-status" data-creator-pass-copy-status role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</dialog>
 <div class="lightbox-modal" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" tabindex="-1">
   <div class="lightbox-content">
     <button type="button" id="lightbox-close" class="gallery-lightbox-control gallery-lightbox-close" title="Close" aria-label="Close photo viewer">&#215;</button>

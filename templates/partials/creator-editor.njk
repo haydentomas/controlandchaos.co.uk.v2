@@ -92,7 +92,7 @@
           <p class="text-muted">Public posts and live updates appear alongside subscriber-only posts in one timeline. Subscribers get every published locked post while their monthly pass is active.</p>
           <div class="form-grid-2 creator-blog-settings">
             <div><label class="form-label" for="creator-blog-monthly-price">Monthly subscriber price (L$)</label><input class="form-input" id="creator-blog-monthly-price" type="number" min="0" max="1000000" step="1" data-blog-monthly-price value="0"></div>
-            <div><label class="form-label" for="creator-blog-benefits">Membership summary</label><input class="form-input" id="creator-blog-benefits" maxlength="1000" data-blog-benefits></div>
+            <div><label class="form-label" for="creator-blog-benefits">Included membership perks</label><textarea class="form-input" id="creator-blog-benefits" maxlength="1000" rows="4" data-blog-benefits placeholder="One perk per line"></textarea><p class="text-muted">Add the perks included with this creator pass, one per line. Leave blank to hide the checklist.</p></div>
           </div>
           <p class="text-muted">Subscribers pay through the shared in-world finance terminal. The creator receives the configured monthly amount directly; the directory listing subscription is separate.</p>
           <div class="creator-blog-editor-toolbar"><button class="btn btn-secondary" type="button" data-blog-add-post>Add post / live update</button><button class="btn btn-gold" type="button" data-blog-save>Save blog</button><span class="text-muted" data-blog-count>0 / 100 posts</span></div>

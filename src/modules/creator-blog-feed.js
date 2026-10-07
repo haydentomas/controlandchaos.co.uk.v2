@@ -15,10 +15,72 @@ function readableDate(value) {
   return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 }
 
+export function creatorPassBenefits(value) {
+  return String(value || '').split(/\r?\n/).map(benefit => benefit.trim()).filter(Boolean);
+}
+
 export async function renderCreatorBlogFeed(container, status, client, profile, offer, posts) {
   container.replaceChildren();
   status.textContent = '';
   const subscriptionActive = offer?.viewer_is_subscribed === true;
+  const passDialog = document.querySelector('[data-creator-pass-dialog]');
+  const dialogOpen = () => {
+    if (!passDialog) return;
+    if (typeof passDialog.showModal === 'function') passDialog.showModal();
+    else passDialog.setAttribute('open', '');
+  };
+  if (passDialog) {
+    const benefits = creatorPassBenefits(offer?.benefits);
+    const benefitList = passDialog.querySelector('[data-creator-pass-benefits]');
+    const benefitSection = passDialog.querySelector('[data-creator-pass-benefits-section]');
+    const dialogTitle = passDialog.querySelector('[data-creator-pass-title]');
+    const price = passDialog.querySelector('[data-creator-pass-price]');
+    const creatorUuid = passDialog.querySelector('[data-creator-pass-uuid]');
+    const teleport = passDialog.querySelector('[data-creator-pass-teleport]');
+    const terminalStatus = passDialog.querySelector('[data-creator-pass-terminal-status]');
+    const copyButton = passDialog.querySelector('[data-creator-pass-copy]');
+    const copyStatus = passDialog.querySelector('[data-creator-pass-copy-status]');
+    const uuid = String(offer?.creator_avatar_uuid || '');
+    dialogTitle.textContent = `Unlock ${profile.display_name}'s Inner Circle`;
+    price.textContent = `L$${Number(offer?.monthly_price_linden || 0).toLocaleString('en-US')} / 30 days`;
+    creatorUuid.textContent = uuid || 'Creator UUID unavailable';
+    benefitList.replaceChildren(...benefits.map(benefit => {
+      const item = element('li');
+      item.textContent = benefit;
+      return item;
+    }));
+    benefitSection.hidden = benefits.length === 0;
+    const terminalUrl = String(offer?.terminal_slurl || '');
+    teleport.hidden = !terminalUrl.startsWith('secondlife://');
+    teleport.href = teleport.hidden ? '#' : terminalUrl;
+    terminalStatus.hidden = !teleport.hidden;
+    terminalStatus.textContent = teleport.hidden ? 'The subscriber terminal location is not configured yet.' : '';
+    copyButton.disabled = !uuid;
+    copyStatus.textContent = '';
+    passDialog.querySelector('[data-creator-pass-close]').onclick = () => passDialog.close?.();
+    passDialog.onclick = event => { if (event.target === passDialog) passDialog.close?.(); };
+    copyButton.onclick = async () => {
+      if (!uuid) return;
+      try {
+        if (globalThis.navigator?.clipboard?.writeText) await globalThis.navigator.clipboard.writeText(uuid);
+        else {
+          const input = document.createElement('textarea');
+          input.value = uuid;
+          input.setAttribute('readonly', '');
+          input.style.position = 'fixed';
+          input.style.opacity = '0';
+          document.body.append(input);
+          input.select();
+          const copied = document.execCommand?.('copy');
+          input.remove();
+          if (!copied) throw new Error('Clipboard unavailable.');
+        }
+        copyStatus.textContent = 'Creator UUID copied. Paste it into the terminal after teleporting.';
+      } catch {
+        copyStatus.textContent = 'Could not copy automatically. Select the UUID above and copy it.';
+      }
+    };
+  }
   const teaserPosts = [];
   if (Number(offer?.monthly_price_linden) > 0) {
     const membership = element('section', 'creator-blog-membership-banner');
@@ -34,19 +96,13 @@ export async function renderCreatorBlogFeed(container, status, client, profile, 
     const price = element('strong');
     price.textContent = `L$${Number(offer.monthly_price_linden).toLocaleString('en-US')} / month`;
     membershipAction.append(price);
-    if (!subscriptionActive && offer.terminal_slurl) {
-      const subscribe = element('a', 'btn btn-gold btn-sm');
-      subscribe.href = offer.terminal_slurl;
-      subscribe.textContent = 'Subscribe at the in-world terminal';
+    if (!subscriptionActive) {
+      const subscribe = element('button', 'btn btn-gold btn-sm');
+      subscribe.type = 'button';
+      subscribe.textContent = 'Unlock membership';
       subscribe.setAttribute('aria-label', `Subscribe to ${profile.display_name}'s creator blog`);
+      subscribe.addEventListener('click', dialogOpen);
       membershipAction.append(subscribe);
-      const identity = element('span', 'creator-blog-membership-identity');
-      identity.textContent = `Creator UUID: ${offer.creator_avatar_uuid}`;
-      membershipAction.append(identity);
-    } else if (!subscriptionActive) {
-      const unavailable = element('span', 'text-muted');
-      unavailable.textContent = 'In-world subscriptions are being configured.';
-      membershipAction.append(unavailable);
     }
     membership.append(membershipCopy, membershipAction);
     container.append(membership);
@@ -84,23 +140,29 @@ export async function renderCreatorBlogFeed(container, status, client, profile, 
         card.append(teaser);
       }
       const gate = element('div', 'creator-blog-gate');
+      gate.setAttribute('aria-label', 'Locked subscriber content');
+      const blurredPreview = element('div', 'creator-blog-gate-blur');
+      blurredPreview.setAttribute('aria-hidden', 'true');
+      const gateContent = element('div', 'creator-blog-gate-content');
+      const lock = element('span', 'creator-blog-gate-lock');
+      lock.setAttribute('aria-hidden', 'true');
+      lock.textContent = '🔒';
       const gateTitle = element('strong');
-      gateTitle.textContent = 'Subscriber-only post';
+      gateTitle.textContent = 'Subscriber exclusive content';
       const gateCopy = element('p');
       gateCopy.textContent = offer?.monthly_price_linden > 0
-        ? `Subscribe to ${profile.display_name} for L$${Number(offer.monthly_price_linden).toLocaleString('en-US')} per month to unlock this post and their exclusive archive.`
+        ? `This post is for active ${profile.display_name} subscribers.`
         : 'This post is for subscribers. The creator has not enabled subscriptions yet.';
-      gate.append(gateTitle, gateCopy);
-      if (offer?.monthly_price_linden > 0 && offer.terminal_slurl) {
-        const subscribe = element('a', 'btn btn-gold btn-sm');
-        subscribe.href = offer.terminal_slurl;
-        subscribe.textContent = `Subscribe in Second Life · L$${Number(offer.monthly_price_linden).toLocaleString('en-US')} / month`;
+      gateContent.append(lock, gateTitle, gateCopy);
+      if (offer?.monthly_price_linden > 0) {
+        const subscribe = element('button', 'btn btn-gold btn-sm');
+        subscribe.type = 'button';
+        subscribe.textContent = `Unlock for L$${Number(offer.monthly_price_linden).toLocaleString('en-US')} / month`;
         subscribe.setAttribute('aria-label', `Subscribe to ${profile.display_name} in Second Life`);
-        gate.append(subscribe);
-        const identity = element('p', 'creator-blog-payment-identity');
-        identity.textContent = `Creator avatar: ${offer.creator_avatar_uuid}`;
-        gate.append(identity);
+        subscribe.addEventListener('click', dialogOpen);
+        gateContent.append(subscribe);
       }
+      gate.append(blurredPreview, gateContent);
       card.append(gate);
     } else {
       const body = element('div', 'creator-blog-post-body');
