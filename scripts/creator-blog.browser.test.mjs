@@ -4,6 +4,96 @@ import { chromium } from '@playwright/test';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 
+test('public tribute panel and dialogs work anonymously on desktop and mobile', async () => {
+  const server = await createServer({ server: { host: '127.0.0.1', port: 0, open: false }, logLevel: 'error' });
+  let browser;
+  try {
+    await server.listen();
+    const origin = `http://127.0.0.1:${server.httpServer.address().port}`;
+    browser = await chromium.launch({ channel: 'msedge' });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
+    await page.route('**/src/main.js', route => route.fulfill({ contentType: 'text/javascript', body: "import '/src/templates.css';" }));
+    await page.goto(`${origin}/directory-profile.html?slug=test-creator`);
+    await page.evaluate(async () => {
+      const summary = { total_linden: 7500, count: 12, goal_linden: 10000, goal_title: 'A new look', creator_avatar_uuid: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        terminal_slurl: 'secondlife://Los%20Pengos/108/181/3501',
+        leaders: [{ name: 'LongSupporterNameWithoutSpacesThatMustNotOverflowTheLeaderboard', total_linden: 4000 }, { name: '<img src=x onerror=alert(1)>', total_linden: 2000 }], biggest: { name: 'Top Resident', amount_linden: 3000 } };
+      const profile = { id: '33333333-3333-4333-8333-333333333333', display_name: 'Test Creator', sl_username: 'test.resident', role_type: 'switch',
+        headline: 'Creator profile', about: 'A profile with Linden tributes.', booking_hours: null, hardware_compat: [], wishlist: [], tags: [],
+        avatar_image: '/images/products/shop-banner.png' };
+      const query = table => {
+        const request = { select: () => request, eq: () => request, order: () => request,
+          maybeSingle: async () => ({ data: profile }), then: resolve => Promise.resolve({ data: [] }).then(resolve) };
+        return request;
+      };
+      window.tributeFixture = { summary, calls: [] };
+      await (await import('/src/modules/directory-profile.js')).initDirectoryProfile({
+        from: query,
+        rpc: async name => {
+          window.tributeFixture.calls.push(name);
+          if (name === 'tribute_public_summary') return { data: window.tributeFixture.summary };
+          return { data: [] };
+        }
+      });
+    });
+    await page.locator('[data-tribute-total]').waitFor();
+    assert.equal(await page.locator('[data-tribute-total]').textContent(), 'L$7,500');
+    assert.match(await page.locator('.tribute-goal-status').textContent(), /L\$2,500 to L\$10,000/);
+    await page.screenshot({ path: 'test-results/tribute-desktop.png', fullPage: true });
+    await page.locator('[data-tribute-open]').click();
+    assert.equal(await page.locator('[data-tribute-payment-dialog]').evaluate(dialog => dialog.open), true);
+    await page.locator('[data-tribute-copy]').click();
+    await page.getByText('Creator UUID copied.', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+    assert.equal(await page.locator('[data-tribute-teleport]').getAttribute('href'), 'secondlife://Los%20Pengos/108/181/3501');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('[data-tribute-open]').evaluate(button => button === document.activeElement), true);
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.locator('[data-tribute-leaderboard]').click();
+      assert.equal(await page.locator('[data-tribute-ranking-dialog]').evaluate(dialog => dialog.open), true);
+      assert.equal(await page.locator('.tribute-leaders img').count(), 0);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      assert.equal(await page.locator('[data-tribute-ranking-dialog]').evaluate(dialog => dialog.scrollWidth <= dialog.clientWidth), true);
+      await page.screenshot({ path: `test-results/tribute-leaderboard-${width}.png` });
+      await page.keyboard.press('Escape');
+      await page.locator('[data-tribute-open]').click();
+      assert.equal(await page.locator('[data-tribute-payment-dialog]').evaluate(dialog => dialog.scrollWidth <= dialog.clientWidth), true);
+      await page.screenshot({ path: `test-results/tribute-payment-${width}.png` });
+      await page.keyboard.press('Escape');
+    }
+    await page.evaluate(() => { window.tributeFixture.summary.total_linden = 12000; });
+    await page.locator('[data-tribute-refresh]').click();
+    await page.getByText('L$10,000 goal reached', { exact: true }).waitFor();
+    assert.equal(await page.locator('progress').evaluate(progress => progress.value), 10000);
+    assert.ok(!(await page.evaluate(() => window.tributeFixture.calls)).some(name => /payment|prepare|confirm|save/.test(name)));
+    assert.deepEqual(errors, []);
+    await page.goto(`${origin}/directory-editor.html`);
+    await page.evaluate(async () => {
+      const root = document.querySelector('[data-tribute-settings]');
+      document.querySelector('[data-live-profile-form]').classList.remove('preview-hidden');
+      document.querySelector('[data-creator-fields]').disabled = false;
+      const editor = (await import('/src/modules/profile-tributes.js')).initTributeSettings(root);
+      window.tributeSettingsCalls = [];
+      await editor.load({ rpc: async (name, args) => {
+        window.tributeSettingsCalls.push({ name, args });
+        return { data: name === 'tribute_owner_settings' ? { enabled: false, goal_linden: 0, goal_title: '' } : true };
+      } }, '33333333-3333-4333-8333-333333333333');
+    });
+    await page.locator('[data-tribute-enabled]').check();
+    await page.locator('[data-tribute-goal]').fill('10000');
+    await page.locator('[data-tribute-goal-title]').fill('A new look');
+    await page.locator('[data-tribute-save]').click();
+    await page.getByText('Tribute settings saved.', { exact: true }).waitFor();
+    assert.equal((await page.evaluate(() => window.tributeSettingsCalls.at(-1))).args.goal_linden, 10000);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.deepEqual(errors, []);
+  } finally { await browser?.close(); await server.close(); }
+});
+
 test('owner blog previews render saved and selected media, handle errors, and clear on access loss', async () => {
   const server = await createServer({ server: { host: '127.0.0.1', port: 0, open: false }, logLevel: 'error' });
   let browser;

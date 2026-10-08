@@ -37,6 +37,10 @@ export function createPaymentHandler(environment, clientFactory = createClient) 
       creator_blog_cancel: ['action', 'payment_reference', 'avatar_uuid', 'creator_avatar_uuid', 'amount_linden'],
       creator_blog_refund_confirm: ['action', 'payment_reference', 'avatar_uuid', 'creator_avatar_uuid', 'amount_linden']
     };
+    actionFields.tribute_offer = ['action', 'creator_avatar_uuid'];
+    for (const stage of ['prepare', 'start', 'confirm', 'cancel', 'refund_confirm']) {
+      actionFields[`tribute_${stage}`] = ['action', 'payment_reference', 'avatar_uuid', 'creator_avatar_uuid', 'amount_linden', 'payer_name', 'show_name'];
+    }
     const allowed = actionFields[payload.action];
     if (!allowed || Object.keys(payload).some(name => !allowed.includes(name))) return reply(400, { message: 'Invalid payment request.' });
     const isDirectoryAction = ['plans', 'payment'].includes(payload.action);
@@ -47,8 +51,30 @@ export function createPaymentHandler(environment, clientFactory = createClient) 
         || !uuid.test(payload.avatar_uuid || '') || payload.avatar_uuid === zeroUuid
         || !Number.isInteger(payload.amount_linden) || payload.amount_linden <= 0 || payload.amount_linden > 2147483647)) return reply(400, { message: 'Invalid payment request.' });
     if (payload.action === 'payment' && !plans.has(payload.plan)) return reply(400, { message: 'Invalid payment request.' });
+    if (payload.action.startsWith('tribute_') && payload.action !== 'tribute_offer'
+      && (!uuid.test(payload.payment_reference || '') || payload.payment_reference === zeroUuid
+        || !uuid.test(payload.avatar_uuid || '') || payload.avatar_uuid === zeroUuid
+        || payload.avatar_uuid === payload.creator_avatar_uuid
+        || !Number.isInteger(payload.amount_linden) || payload.amount_linden < 1 || payload.amount_linden > 1000000
+        || typeof payload.show_name !== 'boolean' || typeof payload.payer_name !== 'string'
+        || payload.payer_name.length > 100 || !payload.payer_name.trim())) return reply(400, { message: 'Invalid tribute request.' });
     try {
       const client = clientFactory(environment.SUPABASE_URL, environment.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+      if (payload.action === 'tribute_offer') {
+        const { data, error } = await client.rpc('tribute_offer_for_terminal', { target_creator_avatar: payload.creator_avatar_uuid });
+        if (error) return reply(503, { message: 'Tributes unavailable.' });
+        return data?.length ? reply(200, { offer: data[0] }) : reply(404, { message: 'This creator is not accepting tributes.' });
+      }
+      if (payload.action.startsWith('tribute_')) {
+        const stage = payload.action.slice(8);
+        const { data, error } = await client.rpc('tribute_payment', {
+          stage, payment_reference: payload.payment_reference, payer_avatar: payload.avatar_uuid,
+          target_creator_avatar: payload.creator_avatar_uuid, paid_linden: payload.amount_linden,
+          payer_name: payload.payer_name, show_name: payload.show_name
+        });
+        if (error || !data) return reply(stage === 'prepare' ? 409 : 503, { message: 'Tribute confirmation is delayed. Retain the receipt.' });
+        return reply(200, { payment_reference: payload.payment_reference, ...data });
+      }
       if (payload.action === 'plans') {
         const { data, error } = await client.rpc('directory_payment_plans', { target_avatar: payload.avatar_uuid });
         if (error) return reply(503, { message: 'Plans unavailable.' });

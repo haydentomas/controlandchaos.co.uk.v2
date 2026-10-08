@@ -11,6 +11,25 @@ const environment = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_SECR
 const event = payload => ({ httpMethod: 'POST', headers: { 'x-cc-payment-secret': environment.CC_PAYMENT_KIOSK_SECRET, 'x-secondlife-owner-key': owner, 'x-secondlife-object-key': object }, body: JSON.stringify(payload) });
 const payment = { action: 'payment', payment_reference: reference, avatar_uuid: avatar, plan: 'basic_monthly', amount_linden: 100 };
 
+test('tribute receipts require trusted terminal identity and explicit publication choice', async () => {
+  const calls = [];
+  const handler = createPaymentHandler(environment, () => ({ rpc: async (name, args) => {
+    calls.push({ name, args });
+    return { data: { confirmed: true }, error: null };
+  } }));
+  const tribute = { action: 'tribute_confirm', payment_reference: reference, avatar_uuid: avatar,
+    creator_avatar_uuid: owner, amount_linden: 250, payer_name: 'Test Resident', show_name: false };
+  assert.equal((await handler(event(tribute))).statusCode, 200);
+  assert.equal(calls[0].name, 'tribute_payment');
+  assert.equal(calls[0].args.stage, 'confirm');
+  assert.equal(calls[0].args.show_name, false);
+  for (const changes of [{ amount_linden: 0 }, { amount_linden: 1000001 }, { show_name: undefined }, { payer_name: '' }, { creator_avatar_uuid: avatar }]) {
+    assert.equal((await handler(event({ ...tribute, ...changes }))).statusCode, 400);
+  }
+  assert.equal((await handler({ ...event(tribute), headers: {} })).statusCode, 403);
+  assert.equal(calls.length, 1);
+});
+
 test('creator pass terminal requires finance-owner debit permission and async payout confirmation', async () => {
   const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
   const creatorScript = await fs.readFile(new URL('./CC_V2_Creator_Pass.lsl', import.meta.url), 'utf8');
@@ -44,7 +63,12 @@ test('creator pass terminal requires finance-owner debit permission and async pa
   assert.match(script, /cc_v2_unapplied_/);
   assert.match(script, /llLinksetDataWrite\("cc_v2_payment_" \+ reference, payload\)/);
   assert.ok((script.match(/\n/g) || []).length < 700, 'core terminal should stay below its prior script size');
-  assert.ok((creatorScript.match(/\n/g) || []).length < 700, 'creator helper should stay below the prior terminal script size');
+  assert.ok((creatorScript.match(/\n/g) || []).length < 750, 'combined pass/tribute helper remains bounded; in-world compilation is still required');
+  assert.match(creatorScript, /number == 4102/);
+  assert.match(creatorScript, /llKey2Name\(payer\)/);
+  assert.match(creatorScript, /\["kind"\], "tribute"/);
+  assert.match(creatorScript, /"Show my name", "Anonymous", "Cancel"/);
+  assert.match(creatorScript, /"tribute_" \+ llGetSubString\(action, 13, -1\)/);
 });
 
 test('payment endpoint denies untrusted callers before any database calls', async () => {
@@ -155,7 +179,7 @@ test('combined terminal routes verification separately without enabling payment 
   const startup = script.slice(script.indexOf('state_entry()'), script.indexOf('dataserver(key request'));
   assert.equal((script.match(/touch_start\(integer count\)/g) || []).length, 1);
   assert.ok(script.indexOf('string firstPending()') < script.indexOf('loadPlans()'));
-  assert.match(script, /\["Directory Plans", "Creator Pass", "Verify Avatar", "My Account", "Cancel"\]/);
+  assert.match(script, /\["Directory Plans", "Creator Pass", "Tribute", "Verify Avatar", "My Account", "Cancel"\]/);
   assert.match(script, /"X-CC-Kiosk-Secret", VERIFICATION_SECRET/);
   assert.match(script, /"X-CC-Payment-Secret", KIOSK_SECRET/);
   assert.match(script, /key verificationRequest = NULL_KEY/);

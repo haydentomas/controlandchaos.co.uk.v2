@@ -65,7 +65,9 @@ test('public profile sidebar follows Gallery, toys, protocol, hours, booking and
   const { document } = parseHTML(await fs.readFile(path.join(root, 'directory-profile.html'), 'utf8'));
   const sections = [...document.querySelectorAll('.public-profile-sidebar > section')];
   assert.equal(sections[0].hasAttribute('data-public-gallery-preview-section'), true);
-  assert.deepEqual(sections.slice(1, 6).map(section => section.querySelector('h2').textContent.trim()), [
+  assert.equal(sections[1].hasAttribute('data-public-tributes'), true);
+  assert.equal(sections[1].hidden, true);
+  assert.deepEqual(sections.slice(2, 7).map(section => section.querySelector('h2').textContent.trim()), [
     `${String.fromCodePoint(0x26a1)} My Toys`,
     `${String.fromCodePoint(0x1f6e1)} Hard Limits & Boundaries`,
     `${String.fromCodePoint(0x1f552)} Booking Hours`,

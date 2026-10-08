@@ -89,7 +89,7 @@ openMainMenu(key avatar)
     sessionDeadline = llGetUnixTime() + 60;
     menuChannel = -100000 - (integer)llFrand(1000000000.0);
     listenHandle = llListen(menuChannel, "", customer, "");
-    llDialog(customer, "Control & Chaos V2 Terminal", ["Directory Plans", "Creator Pass", "Verify Avatar", "My Account", "Cancel"], menuChannel);
+    llDialog(customer, "Control & Chaos V2 Terminal", ["Directory Plans", "Creator Pass", "Tribute", "Verify Avatar", "My Account", "Cancel"], menuChannel);
 }
 
 // Linkset data preserves receipts across resets; never clear it or delete a prim with unresolved payments.
@@ -558,7 +558,7 @@ default
         if (menuMode == "main")
         {
             if (message == "Directory Plans") loadPlans();
-            else if (message == "Creator Pass")
+            else if (message == "Creator Pass" || message == "Tribute")
             {
                 if (llGetInventoryType("CC_V2_Creator_Pass") != INVENTORY_SCRIPT)
                 {
@@ -566,8 +566,11 @@ default
                     closeSession();
                     return;
                 }
+                integer action = 4101;
+                if (message == "Tribute") action = 4102;
                 closeSession();
-                llMessageLinked(LINK_SET, 4101, (string)avatar, NULL_KEY);
+                if (action == 4101) llMessageLinked(LINK_SET, 4101, (string)avatar, NULL_KEY);
+                else llMessageLinked(LINK_SET, 4102, (string)avatar, NULL_KEY);
             }
             else if (message == "Verify Avatar") openVerification();
             else if (message == "My Account")

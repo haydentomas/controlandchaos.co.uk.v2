@@ -75,6 +75,7 @@
               <a href="#creator-gallery">Gallery</a>
               <a href="#creator-rates">Rate Cards</a>
               <a href="#creator-blog">Blog</a>
+              <a href="#creator-tributes">Tributes</a>
               <a href="#creator-toys-wishlist">Toys &amp; Wishlist</a>
             </nav>
             <div class="creator-editor-toolbar creator-editor-savebar"><label class="profile-feature-switch"><input type="checkbox" name="is_published"><span>Publish profile</span></label><button class="btn btn-gold" type="submit" data-creator-save>Save profile</button><a class="btn btn-secondary preview-hidden" data-creator-public href="/directory" target="_blank" rel="noopener">View public profile</a><p class="text-muted" data-creator-publication></p></div>
@@ -160,6 +161,19 @@
             <p class="account-status" data-blog-status role="status" aria-live="polite"></p>
             <div data-blog-editor></div>
           </div>
+        </section>
+        <section class="creator-editor-section" id="creator-tributes" data-tribute-settings aria-labelledby="creator-tributes-title">
+          <h2 id="creator-tributes-title" class="account-subheading">Linden Tributes</h2>
+          <fieldset disabled>
+            <label class="profile-feature-switch"><input type="checkbox" data-tribute-enabled><span>Accept public tributes</span></label>
+            <div class="form-grid-2">
+              <div><label class="form-label" for="tribute-goal-title">Goal title</label><input class="form-input" id="tribute-goal-title" maxlength="100" data-tribute-goal-title placeholder="e.g. New outfit"></div>
+              <div><label class="form-label" for="tribute-goal">All-time goal (L$)</label><input class="form-input" id="tribute-goal" type="number" min="0" max="1000000000" step="1" required value="0" data-tribute-goal></div>
+            </div>
+            <p class="text-muted">Set 0 for no goal. Totals are all-time confirmed tributes. Donors choose public names or anonymous at the SL terminal.</p>
+            <button class="btn btn-secondary" type="button" data-tribute-save>Save tribute settings</button>
+          </fieldset>
+          <p class="account-status" data-tribute-settings-status role="status" aria-live="polite"></p>
         </section>
         <section class="creator-editor-section" id="creator-toys-wishlist" aria-labelledby="creator-toys-wishlist-title">
           <h2 id="creator-toys-wishlist-title" class="account-subheading">My Toys &amp; Wishlist</h2>

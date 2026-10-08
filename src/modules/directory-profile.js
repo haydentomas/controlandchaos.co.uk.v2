@@ -8,6 +8,7 @@ import { initBookingEnquiry } from './booking-enquiry.js';
 import { renderHardwareItems, renderWishlistItems } from './profile-collections.js';
 import { renderCreatorBlogFeed } from './creator-blog-feed.js';
 import { missingBlogV2Rpc } from './creator-blog-media.js';
+import { initProfileTributes } from './profile-tributes.js';
 
 function initProfileTabs(hasGallery, hasBlog) {
   const nav = document.querySelector('[data-public-profile-tabs]');
@@ -144,6 +145,7 @@ export async function initDirectoryProfile(clientOverride) {
     document.querySelector('[data-public-profile-booking-section]').classList.toggle('preview-hidden', !hours.children.length);
     content.classList.remove('preview-hidden');
     status.textContent = '';
+    void initProfileTributes(document.querySelector('[data-public-tributes]'), client, profile);
     const blogStatus = document.querySelector('[data-public-blog-status]');
     let offer = null;
     try {

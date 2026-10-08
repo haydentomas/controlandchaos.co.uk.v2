@@ -8,6 +8,7 @@ import { initProfileCollectionEditor, HARDWARE_FIELDS, WISHLIST_FIELDS, validate
 import { fetchGalleryPhotos } from './profile-gallery.js';
 import { initRichTextEditor, flushRichTextEditors, COMPACT_RICH_TEXT_OPTIONS } from './rich-text-editor.js';
 import { initCreatorBlogEditor } from './creator-blog.js';
+import { initTributeSettings } from './profile-tributes.js';
 
 export async function initCreatorEditor(clientOverride) {
   const form = document.querySelector('[data-live-profile-form]');
@@ -23,6 +24,7 @@ export async function initCreatorEditor(clientOverride) {
   const hardwareEditor = initProfileCollectionEditor(form.querySelector('[data-hardware-editor]'), form.querySelector('[data-hardware-add]'), { kind: 'toys', fields: HARDWARE_FIELDS, validate: validateHardwareItems, createItem: createHardwareItem, limit: 30 });
   const wishlistEditor = initProfileCollectionEditor(form.querySelector('[data-wishlist-editor]'), form.querySelector('[data-wishlist-add]'), { kind: 'wishlist', fields: WISHLIST_FIELDS, validate: validateWishlistItems, createItem: createWishlistItem, limit: 20 });
   const creatorBlogEditor = initCreatorBlogEditor(form.querySelector('[data-blog-editor]'), form.querySelector('[data-blog-add-post]'), form.querySelector('[data-blog-monthly-price]'), form.querySelector('[data-blog-benefits]'));
+  const tributeSettings = initTributeSettings(form.querySelector('[data-tribute-settings]'));
   let client;
   let generation = 0;
   let saving = false;
@@ -44,6 +46,7 @@ export async function initCreatorEditor(clientOverride) {
     hardwareEditor.clear();
     wishlistEditor.clear();
     creatorBlogEditor.clear();
+    tributeSettings.clear();
     picker.replaceChildren();
     form.classList.add('preview-hidden');
     status.textContent = message;
@@ -93,6 +96,8 @@ export async function initCreatorEditor(clientOverride) {
       if (active !== generation) return;
       galleryEditor.load(photos);
       paint(row);
+      await tributeSettings.load(client, row.id);
+      if (active !== generation) return;
       if (selectedIsVip) try {
         await creatorBlogEditor.load(client, row);
         form.querySelector('[data-blog-save]').disabled = false;

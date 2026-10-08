@@ -15,12 +15,61 @@ import { validateHardwareItems, validateWishlistItems, renderHardwareItems, rend
 import { initAccountCreatorSubscriptions, initAccountDirectory } from '../src/modules/account-directory.js';
 import { CREATOR_PROFILE_COLUMNS, myCreatorBlogSubscriptions, myDirectorySubscriptions, loadCreatorProfile, saveCreatorProfile, profileChanges, subscriptionLabel } from '../src/modules/creator-profile-api.js';
 import { renderPage } from './render-templates.mjs';
+import { renderProfileTributes, initTributeSettings } from '../src/modules/profile-tributes.js';
 
 const profileId = '33333333-3333-4333-8333-333333333333';
 const values = { display_name: 'Test Creator', headline: '', tagline: '', about: 'Profile text', starting_rate: '', role_type: 'switch', availability: 'available', avatar_image: '', banner_image: '', tags: ['RLV'], is_published: false };
 const rates = [{ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Consultations', description: 'Private appointments', items: [{ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'Introduction', price: 'L$1,000', unit: '30 minutes', description: 'A first appointment' }] }];
 const hours = { timezone: 'America/Los_Angeles', days: ['sat', 'sun'], start_time: '20:00', end_time: '23:00', slot_minutes: 60, notes: 'Advance booking recommended.' };
 const photos = [{ id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', title: 'Portrait', category: 'Portraits', description: 'Profile portrait', image_url: 'https://images.example.test/portrait.jpg', is_published: true }, { id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', title: 'Draft photo', category: '', description: '', image_url: 'https://images.example.test/private.jpg', is_published: false }];
+
+test('tribute panel clamps completed goals and renders public names as literal text', () => {
+  const { document } = parseHTML('<section id="tribute"></section>');
+  const previous = globalThis.document;
+  globalThis.document = document;
+  try {
+    const root = document.getElementById('tribute');
+    const summary = { total_linden: 1200, count: 2, goal_linden: 1000, goal_title: 'New outfit', creator_avatar_uuid: rates[0].id,
+      terminal_slurl: 'javascript:alert(1)', leaders: [{ name: '<img src=x onerror=alert(1)>', total_linden: 1200 }], biggest: { name: 'Test Resident', amount_linden: 900 } };
+    const view = renderProfileTributes(root, { display_name: 'Creator' }, summary);
+    assert.equal(root.querySelector('[data-tribute-total]').textContent, 'L$1,200');
+    assert.equal(root.querySelector('progress').value, 1000);
+    assert.equal(root.classList.contains('tribute-goal-complete'), true);
+    assert.equal(root.querySelector('[data-tribute-teleport]').hidden, true);
+    assert.equal(root.querySelectorAll('img,script').length, 0);
+    assert.match(root.querySelector('.tribute-leader-name').textContent, /<img/);
+    assert.equal(root.querySelector('[data-tribute-leaderboard]').title, 'Tribute leaderboard');
+    view.update({ ...summary, total_linden: 0, count: 0, goal_linden: 0, leaders: [], biggest: null, terminal_slurl: 'secondlife://Los%20Pengos/108/181/3501' });
+    assert.equal(root.querySelector('progress').hidden, true);
+    assert.equal(root.querySelector('[data-tribute-teleport]').hidden, false);
+    assert.equal(root.querySelector('.tribute-biggest').hidden, true);
+    assert.match(root.textContent, /first named tribute/);
+  } finally { if (previous === undefined) delete globalThis.document; else globalThis.document = previous; }
+});
+
+test('tribute settings save through owner RPC and reject stale loads after access loss', async () => {
+  const { document } = parseHTML(await renderPage('directory-editor.html'));
+  const root = document.querySelector('[data-tribute-settings]');
+  const calls = [];
+  let resolve;
+  const client = { rpc: async (name, args) => {
+    calls.push({ name, args });
+    if (name === 'tribute_owner_settings') return { data: { enabled: true, goal_linden: 5000, goal_title: 'Outfit' } };
+    return { data: true };
+  } };
+  const editor = initTributeSettings(root);
+  await editor.load(client, profileId);
+  assert.equal(root.querySelector('fieldset').disabled, false);
+  for (const selector of ['[data-tribute-goal]', '[data-tribute-goal-title]']) root.querySelector(selector).reportValidity = () => true;
+  await root.querySelector('[data-tribute-save]').onclick();
+  assert.deepEqual(calls[1], { name: 'tribute_save_settings', args: { target_profile: profileId, enabled: true, goal_linden: 5000, goal_title: 'Outfit' } });
+  const pending = editor.load({ rpc: () => new Promise(done => { resolve = done; }) }, profileId);
+  editor.clear();
+  resolve({ data: { enabled: true, goal_linden: 5000, goal_title: 'Stale' } });
+  await pending;
+  assert.equal(root.querySelector('fieldset').disabled, true);
+  assert.equal(root.querySelector('[data-tribute-goal-title]').value, '');
+});
 
 test('gallery validation accepts metadata and safe image locations but rejects forged ownership and unsafe URLs', () => {
   assert.deepEqual(validateGalleryPhotos(photos), photos);
@@ -781,6 +830,7 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070017_directory_superadmin.sql', import.meta.url), 'utf8'));
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070018_vip_feature_entitlements.sql', import.meta.url), 'utf8'));
     await database.exec(await fs.readFile(new URL('../supabase/migrations/202610070019_creator_blog_owner_access.sql', import.meta.url), 'utf8'));
+    await database.exec(await fs.readFile(new URL('../supabase/migrations/202610080020_profile_tributes.sql', import.meta.url), 'utf8'));
     await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
     await database.exec('set role authenticated');
     assert.equal((await database.query('select public.my_directory_admin_access() as allowed')).rows[0].allowed, false);
@@ -796,6 +846,59 @@ test('booking recipient RPC is private and requires an active published booking 
     await database.query('update public.directory_profiles set is_published=true,rate_categories=$1::jsonb,booking_hours=$2::jsonb where id=$3', [JSON.stringify(rates), JSON.stringify(hours), profile]);
     const basicPhotos = ['10111111-1111-4111-8111-111111111111','20222222-2222-4222-8222-222222222222','30333333-3333-4333-8333-333333333333','40444444-4444-4444-8444-444444444444'].map((id, index) => ({ ...photos[0], id, title: `Basic card photo ${index + 1}`, image_url: `https://images.example.test/basic-${index + 1}.jpg`, is_published: true }));
     await database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [basicProfile, JSON.stringify({ is_published: true }), JSON.stringify(basicPhotos), '']);
+    await database.query('select public.tribute_save_settings($1,true,1000,$2)', [basicProfile, 'New outfit']);
+    assert.equal((await database.query('select public.tribute_owner_settings($1) as settings', [basicProfile])).rows[0].settings.enabled, true);
+    const unlinkedPayer = '99999999-9999-4999-8999-999999999999';
+    const tributeReference = '88888888-8888-4888-8888-888888888888';
+    const tribute = (stage, reference = tributeReference, showName = false, amount = 250) => database.query(
+      'select public.tribute_payment($1,$2,$3,$4,$5,$6,$7) as result', [stage, reference, unlinkedPayer, basicAvatar, amount, 'Unlinked Resident', showName]);
+    await database.exec('reset role; set role anon');
+    await assert.rejects(tribute('prepare'), error => error.code === '42501');
+    await assert.rejects(database.query('select * from cc_private.tribute_payments'), error => error.code === '42501');
+    await assert.rejects(database.query('select public.tribute_save_settings($1,true,1,$2)', [basicProfile, 'Forged']), error => error.code === '42501');
+    assert.equal((await database.query('select public.tribute_public_summary($1) as summary', [basicProfile])).rows[0].summary.total_linden, 0);
+    await database.exec('reset role; set role service_role');
+    await tribute('prepare');
+    await assert.rejects(tribute('confirm'), /tribute_not_forwarding/);
+    assert.equal((await tribute('start')).rows[0].result.start_payout, true);
+    assert.equal((await tribute('start')).rows[0].result.start_payout, false);
+    await tribute('confirm');
+    await tribute('confirm');
+    await assert.rejects(tribute('prepare', tributeReference, true), /tribute_reference_conflict/);
+    const publicReference = '77777777-7777-4777-8777-777777777777';
+    for (const stage of ['prepare', 'start', 'confirm']) await tribute(stage, publicReference, true, 100);
+    const failedReference = '66666666-6666-4666-8666-666666666666';
+    for (const stage of ['prepare', 'start', 'cancel', 'refund_confirm', 'refund_confirm']) await tribute(stage, failedReference, true, 500);
+    assert.equal((await database.query('select count(*)::integer as count from cc_private.creator_content_subscriptions where fan_avatar_uuid=$1', [unlinkedPayer])).rows[0].count, 0);
+    await database.exec('reset role; set role anon');
+    const tributeSummary = (await database.query('select public.tribute_public_summary($1) as summary', [basicProfile])).rows[0].summary;
+    assert.equal(tributeSummary.total_linden, 350);
+    assert.equal(tributeSummary.count, 2);
+    assert.deepEqual(tributeSummary.leaders, [{ name: 'Unlinked Resident', total_linden: 100, count: 1 }]);
+    assert.deepEqual(tributeSummary.biggest, { name: 'Unlinked Resident', amount_linden: 100 });
+    assert.ok(!JSON.stringify(tributeSummary).includes(unlinkedPayer));
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [stranger]);
+    await database.exec('set role authenticated');
+    await assert.rejects(database.query('select public.tribute_save_settings($1,true,1,$2)', [basicProfile, 'Stolen']), error => error.code === '42501');
+    await assert.rejects(database.query('select public.tribute_owner_settings($1)', [basicProfile]), error => error.code === '42501');
+    await database.exec('reset role');
+    await database.query("select set_config('request.jwt.claim.sub',$1,false)", [owner]);
+    await database.exec('set role authenticated');
+    await database.query('select public.tribute_save_settings($1,false,1000,$2)', [basicProfile, 'New outfit']);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select public.tribute_public_summary($1) as summary', [basicProfile])).rows[0].summary, null);
+    await database.exec('reset role; set role service_role');
+    await assert.rejects(tribute('prepare', '55555555-5555-4555-8555-555555555555'), /tribute_unavailable/);
+    await database.exec('reset role; set role authenticated');
+    await database.query('select public.tribute_save_settings($1,true,1000,$2)', [basicProfile, 'New outfit']);
+    await database.query('update public.directory_profiles set is_published=false where id=$1', [basicProfile]);
+    await database.exec('reset role; set role anon');
+    assert.equal((await database.query('select public.tribute_public_summary($1) as summary', [basicProfile])).rows[0].summary, null);
+    await database.exec('reset role; set role service_role');
+    assert.equal((await database.query('select * from public.tribute_offer_for_terminal($1)', [basicAvatar])).rows.length, 0);
+    await database.exec('reset role; set role authenticated');
+    await database.query('update public.directory_profiles set is_published=true where id=$1', [basicProfile]);
     assert.equal((await database.query('select cc_private.directory_profile_is_vip($1) as is_vip', [profile])).rows[0].is_vip, true);
     assert.equal((await database.query('select cc_private.directory_profile_is_vip($1) as is_vip', [basicProfile])).rows[0].is_vip, false);
     await assert.rejects(database.query('select * from public.save_directory_profile_booking($1,$2::jsonb,$3::jsonb,$4)', [basicProfile, '{}', JSON.stringify([...basicPhotos, { ...basicPhotos[0], id: '50555555-5555-4555-8555-555555555555', title: 'Fifth photo' }]), '']), /gallery_photo_limit/);

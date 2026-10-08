@@ -6,7 +6,7 @@ string ACCOUNT_URL = "https://controlandchaosv2.netlify.app/auth.html";
 string CONFIG_NOTECARD = "CC_V2_Terminal_Config";
 string KIOSK_SECRET = "";
 string VERIFICATION_SECRET = "";
-string SCRIPT_VERSION = "creator-pass-v1";
+string SCRIPT_VERSION = "creator-pass-tribute-v2";
 
 key customer = NULL_KEY;
 key creatorAvatar = NULL_KEY;
@@ -39,6 +39,8 @@ integer awaitingDebit = FALSE;
 integer resumePreparedPayment = FALSE;
 integer debitDeclined = FALSE;
 string activeMarker = "";
+integer tributeMode = FALSE;
+integer showPayerName = FALSE;
 
 integer validSecret(string value)
 {
@@ -79,11 +81,19 @@ integer storePhase(string phase)
 string paymentBody(string action)
 {
     string record = llLinksetDataRead(creatorPaymentKey);
-    return llList2Json(JSON_OBJECT, ["action", action,
+    integer isTribute = llJsonGetValue(record, ["kind"]) == "tribute";
+    if (isTribute) action = "tribute_" + llGetSubString(action, 13, -1);
+    string body = llList2Json(JSON_OBJECT, ["action", action,
         "payment_reference", llJsonGetValue(record, ["payment_reference"]),
         "avatar_uuid", llJsonGetValue(record, ["avatar_uuid"]),
         "creator_avatar_uuid", llJsonGetValue(record, ["creator_avatar_uuid"]),
         "amount_linden", (integer)llJsonGetValue(record, ["amount_linden"]) ]);
+    if (isTribute)
+    {
+        body = llJsonSetValue(body, ["payer_name"], llJsonGetValue(record, ["payer_name"]));
+        body = llJsonSetValue(body, ["show_name"], llJsonGetValue(record, ["show_name"]));
+    }
+    return body;
 }
 
 sendCreatorRequest(string action)
@@ -178,6 +188,8 @@ closeSession()
     creatorAvatar = NULL_KEY;
     creatorName = "";
     creatorPrice = 0;
+    tributeMode = FALSE;
+    showPayerName = FALSE;
     awaitingDebit = FALSE;
     mode = 0;
     modeDeadline = 0;
@@ -199,7 +211,7 @@ retainUnexpectedPayment(key payer, integer amount)
     llRegionSayTo(payer, 0, "Payment received but not applied. Do not pay again. Receipt: " + reference + ". The owner has been notified.");
 }
 
-openCreatorPass(key avatar)
+openCreatorPass(key avatar, integer isTribute)
 {
     if (!configurationReady || llStringLength(KIOSK_SECRET) < 32 || llStringLength(VERIFICATION_SECRET) < 32)
     {
@@ -212,6 +224,8 @@ openCreatorPass(key avatar)
         return;
     }
     customer = avatar;
+    tributeMode = isTribute;
+    showPayerName = FALSE;
     activeMarker = (string)avatar + ":" + (string)llGetUnixTime();
     if (llLinksetDataWrite("cc_v2_creator_active", activeMarker) != LINKSETDATA_OK)
     {
@@ -223,7 +237,9 @@ openCreatorPass(key avatar)
     modeDeadline = llGetUnixTime() + 60;
     menuChannel = -100000 - (integer)llFrand(1000000000.0);
     listenHandle = llListen(menuChannel, "", customer, "");
-    llTextBox(customer, "Enter the creator's verified Second Life avatar UUID to view their monthly blog pass.", menuChannel);
+    string prompt = "Enter the creator's verified Second Life avatar UUID to view their monthly blog pass.";
+    if (tributeMode) prompt = "Enter the creator's avatar UUID from their Tribute popup. No website account is required.";
+    llTextBox(customer, prompt, menuChannel);
 }
 
 loadOffer(key targetAvatar)
@@ -235,12 +251,14 @@ loadOffer(key targetAvatar)
         return;
     }
     creatorAvatar = targetAvatar;
+    string action = "creator_blog_offer";
+    if (tributeMode) action = "tribute_offer";
     offerRequest = llHTTPRequest(PAYMENT_URL,
         [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_CUSTOM_HEADER, "X-CC-Payment-Secret", KIOSK_SECRET],
-        llList2Json(JSON_OBJECT, ["action", "creator_blog_offer", "creator_avatar_uuid", (string)creatorAvatar]));
+        llList2Json(JSON_OBJECT, ["action", action, "creator_avatar_uuid", (string)creatorAvatar]));
     offerDeadline = llGetUnixTime() + 30;
     mode = 2;
-    llRegionSayTo(customer, 0, "Checking the creator's monthly pass...");
+    llRegionSayTo(customer, 0, "Checking the creator...");
 }
 
 showPaymentPrompt()
@@ -253,7 +271,9 @@ showPaymentPrompt()
     mode = 4;
     modeDeadline = llGetUnixTime() + 60;
     llSetPayPrice(PAY_HIDE, [creatorPrice, PAY_HIDE, PAY_HIDE, PAY_HIDE]);
-    llRegionSayTo(customer, 0, "Right-click this terminal and pay exactly L$" + (string)creatorPrice + " for a 30-day creator pass. Do not pay more than once.");
+    string purpose = " for a 30-day creator pass.";
+    if (tributeMode) purpose = " as a tribute. This does not unlock a subscription.";
+    llRegionSayTo(customer, 0, "Right-click this terminal and pay exactly L$" + (string)creatorPrice + purpose + " Do not pay more than once.");
 }
 
 loadConfiguration()
@@ -304,7 +324,7 @@ default
 
     link_message(integer sender, integer number, string message, key id)
     {
-        if (number == 4101) openCreatorPass((key)message);
+        if (number == 4101 || number == 4102) openCreatorPass((key)message, number == 4102);
     }
 
     dataserver(key request, string data)
@@ -379,14 +399,20 @@ default
             string offeredAvatar = llJsonGetValue(body, ["offer", "creator_avatar_uuid"]);
             creatorPrice = (integer)llJsonGetValue(body, ["offer", "monthly_price_linden"]);
             creatorName = llJsonGetValue(body, ["offer", "creator_name"]);
-            if (status != 200 || offeredAvatar != (string)creatorAvatar || creatorPrice <= 0 || llGetUnixTime() >= modeDeadline)
+            if (status != 200 || offeredAvatar != (string)creatorAvatar || (!tributeMode && creatorPrice <= 0) || llGetUnixTime() >= modeDeadline)
             {
-                llRegionSayTo(customer, 0, "This creator has no active subscriber pass available. No payment is due.");
+                llRegionSayTo(customer, 0, "This creator is not accepting this payment. No payment is due.");
                 closeSession();
                 return;
             }
             mode = 3;
             modeDeadline = llGetUnixTime() + 60;
+            if (tributeMode)
+            {
+                mode = 6;
+                llDialog(customer, "Tribute to " + creatorName + ". Publish your SL name on this creator's tribute leaderboard? Anonymous tributes still count toward the goal.", ["Show my name", "Anonymous", "Cancel"], menuChannel);
+                return;
+            }
             llDialog(customer, creatorName + " monthly creator pass: L$" + (string)creatorPrice + ". Subscribe for 30 days?", ["Pay Pass", "Cancel"], menuChannel);
             return;
         }
@@ -448,8 +474,11 @@ default
             }
             if (creatorPaymentAction == "creator_blog_confirm")
             {
+                integer isTribute = llJsonGetValue(record, ["kind"]) == "tribute";
+                if (isTribute && llJsonGetValue(body, ["confirmed"]) != JSON_TRUE) return;
                 clearReceipt();
-                llRegionSayTo(payer, 0, "Creator subscription active for 30 days. Thank you. Account: " + ACCOUNT_URL);
+                if (isTribute) llRegionSayTo(payer, 0, "Tribute delivered and recorded on the creator's profile. Thank you.");
+                else llRegionSayTo(payer, 0, "Creator subscription active for 30 days. Thank you. Account: " + ACCOUNT_URL);
                 return;
             }
             if (creatorPaymentAction == "creator_blog_cancel")
@@ -498,6 +527,30 @@ default
         if (avatar != customer || channel != menuChannel) return;
         if (llGetUnixTime() >= modeDeadline) { closeSession(); return; }
         if (message == "Cancel") { closeSession(); return; }
+        if (mode == 6 && (message == "Show my name" || message == "Anonymous"))
+        {
+            showPayerName = message == "Show my name";
+            mode = 7;
+            modeDeadline = llGetUnixTime() + 60;
+            llTextBox(customer, "Tribute to " + creatorName + ": enter a whole Linden amount from 1 to 1000000. Your payment goes to the creator; no subscription access is granted.", menuChannel);
+            return;
+        }
+        if (mode == 7)
+        {
+            string amountText = llStringTrim(message, STRING_TRIM);
+            integer index;
+            integer valid = llStringLength(amountText) > 0 && llStringLength(amountText) <= 7;
+            for (index = 0; index < llStringLength(amountText); index++)
+                if (llSubStringIndex("0123456789", llGetSubString(amountText, index, index)) < 0) valid = FALSE;
+            creatorPrice = (integer)amountText;
+            if (!valid || creatorPrice < 1 || creatorPrice > 1000000) { closeSession(); return; }
+            mode = 3;
+            modeDeadline = llGetUnixTime() + 60;
+            string visibility = "Anonymous";
+            if (showPayerName) visibility = "Show my SL name";
+            llDialog(customer, "Tribute to " + creatorName + ": L$" + (string)creatorPrice + ". " + visibility + ". Proceed?", ["Pay Tribute", "Cancel"], menuChannel);
+            return;
+        }
         if (mode == 1)
         {
             key target = (key)llStringTrim(message, STRING_TRIM);
@@ -510,7 +563,7 @@ default
             loadOffer(target);
             return;
         }
-        if (mode == 3 && message == "Pay Pass")
+        if (mode == 3 && ((!tributeMode && message == "Pay Pass") || (tributeMode && message == "Pay Tribute")))
         {
             mode = 5;
             awaitingDebit = TRUE;
@@ -531,6 +584,14 @@ default
         creatorPaymentKey = "cc_v2_creator_payment_" + reference;
         string record = llList2Json(JSON_OBJECT, ["payment_reference", reference, "avatar_uuid", (string)payer,
             "creator_avatar_uuid", (string)creatorAvatar, "amount_linden", amount, "phase", "prepare", "refund_confirm", JSON_FALSE]);
+        if (tributeMode)
+        {
+            record = llJsonSetValue(record, ["kind"], "tribute");
+            record = llJsonSetValue(record, ["payer_name"], llGetSubString(llKey2Name(payer), 0, 99));
+            string visible = JSON_FALSE;
+            if (showPayerName) visible = JSON_TRUE;
+            record = llJsonSetValue(record, ["show_name"], visible);
+        }
         if (llLinksetDataWrite(creatorPaymentKey, record) != LINKSETDATA_OK)
         {
             retainUnexpectedPayment(payer, amount);

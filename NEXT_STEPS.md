@@ -4,6 +4,25 @@ Updated: 2026-10-08. This file is the authoritative resume point; older historic
 
 ## Resume Here
 
+### Public Tributes Rollout - 2026-10-08
+
+Public Linden tributes are implemented and the user approved committing/pushing the tested changes to deploy them. Migration 20 (`supabase/migrations/202610080020_profile_tributes.sql`) was applied by the user: all eight permission/existence flags and both RLS flags were confirmed true. The user confirmed real local Studio settings save/reload persistence and the public tribute panel/popup appearance. Basic and VIP creators can accept tributes while their approved profile is published and paid. Payers need no website account or verified website identity. Anonymous website visitors can read totals/goals and an opt-in named leaderboard, but cannot submit or confirm payments. Donor UUIDs and anonymous amounts are excluded from public rankings; anonymous amounts remain in the overall total.
+
+Profile Studio has a Tributes section with its own Save tribute settings button: enable tributes, set an optional all-time goal/title (0 hides the goal). The public profile has total/count, goal progress, payment popup (copy creator UUID and open the shared terminal) and a leaderboard popup with top 10 publicly named supporters and the largest public individual tribute. Totals refresh every 30 seconds while visible and on window focus; a refresh icon is also available.
+
+Rollout and remaining installation steps:
+
+1. Migration 20 and `supabase/verify-profile-tributes.sql` are user-applied and verified. Do not rerun the migration. No migration was run remotely by the assistant.
+2. Deploy the frontend and payment endpoint. The existing shared creator terminal SLURL is reused; no new secrets or object IDs are needed.
+3. With no active session or unresolved payment, install both complete updated scripts (`CC_V2_Directory_Terminal.lsl` and `CC_V2_Creator_Pass.lsl`) in the existing finance-alt prim. Preserve the private config notecard and all Linkset Data. The helper now reports `creator-pass-tribute-v2`. LSL compilation, memory use and live tribute payments still require in-world verification.
+4. Enable tributes for a test profile and set a goal. Read-only checks: signed-out public panel, popup UUID/SLURL, terminal Tribute creator lookup, privacy and amount prompts; cancel before paying. Any real tribute/refund/uncertain-transfer test requires fresh explicit approval.
+
+The terminal offers Tribute separately from Creator Pass, obtains donor name-publication consent and an exact whole-Linden amount (1 to 1,000,000), captures the paying avatar's SL legacy name, and forwards the full amount using the existing debit/async transfer safeguards. Confirmed payouts count once, without granting subscription access. Failed payouts are refunded only through the definite-failure path; ambiguous payouts remain blocked for manual reconciliation and must never be automatically transferred again.
+
+The user's temporary shared-terminal SQL file is unchanged and excluded from the release commit. Commit/push/deployment are now approved; no further live SQL write, SL installation, debit grant or real tribute payment is implied. Confirm the hosted deployment before updating SL scripts.
+
+Local validation: full suite 178/178 passed; focused mocked Edge browser workflow passed at desktop, 390px and 320px (public profile, clipboard, modal focus/Escape, goal completion, leaderboard escaping, settings save). Production build passed with the existing editor chunk-size warning; production dependency audit reports zero advisories. The install reported development-tool advisories, which were not remediated as part of this feature. Preview: `http://127.0.0.1:4182/`; creators must opt in to display tributes. Browser screenshots are in `test-results/tribute-*.png`.
+
 ### Current Release State — 2026-10-08
 
 The V2 production site is at `main@bca49ee`, and the latest Netlify Production deploy is ready. The protected Superadmin console, signed-in account shortcut, extensionless internal URLs, and V1-inspired creator-pass dialog are live. The dialog copies the creator's verified avatar UUID and uses the shared terminal location when configured; it intentionally has no Direct IM or self-service “already subscribed” bypass.

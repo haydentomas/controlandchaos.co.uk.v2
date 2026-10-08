@@ -1,4 +1,48 @@
 @layer components {
+  .public-tribute-panel { min-width: 0; padding: 20px 0; border-block: 1px solid var(--gold-border); }
+  .public-tribute-panel[hidden], .public-tribute-panel [hidden] { display: none !important; }
+  .tribute-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  html[data-template="directory-profile"] .tribute-heading h2 { flex: 1; margin: 0; font-size: 18px; }
+  .tribute-icon-button { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; padding: 0; border: 1px solid var(--gold-border-subtle); border-radius: 6px; background: transparent; color: var(--gold-bright); cursor: pointer; }
+  .tribute-icon-button:hover { background: rgba(212,175,55,.1); }
+  .tribute-icon-button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+  .tribute-icon-button:disabled { opacity: .5; cursor: default; }
+  .tribute-total { display: block; font: 800 28px var(--font-heading); color: var(--text-primary); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .tribute-count, .tribute-caption { color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+  .tribute-count { display: block; margin: 2px 0 18px; }
+  .tribute-goal-title { margin: 0 0 8px; color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
+  .tribute-progress { display: block; appearance: none; width: 100%; height: 10px; border: 0; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,.1); accent-color: var(--gold-bright); }
+  .tribute-progress::-webkit-progress-bar { background: rgba(255,255,255,.1); border-radius: 4px; }
+  .tribute-progress::-webkit-progress-value { background: var(--gold-bright); border-radius: 4px; transition: width .4s ease; }
+  .tribute-progress::-moz-progress-bar { background: var(--gold-bright); }
+  .tribute-goal-complete .tribute-progress { accent-color: #7ed99a; }
+  .tribute-goal-complete .tribute-progress::-webkit-progress-value { background: #7ed99a; }
+  .tribute-goal-complete .tribute-progress::-moz-progress-bar { background: #7ed99a; }
+  .tribute-goal-status { margin: 8px 0 16px; color: var(--gold-bright); font-size: 12px; }
+  .tribute-action { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; white-space: normal; text-align: center; }
+  .tribute-action svg { flex: 0 0 18px; }
+  .tribute-caption { margin: 10px 0 0; overflow-wrap: anywhere; }
+  .tribute-status { margin: 8px 0 0; font-size: 12px; color: var(--gold-bright); overflow-wrap: anywhere; }
+  .tribute-status:empty { display: none; }
+  .tribute-dialog { position: fixed; inset: 0; width: min(480px,calc(100vw - 28px)); max-width: none; max-height: 88dvh; height: fit-content; margin: auto; padding: 24px; border: 1px solid var(--gold-border); border-radius: 8px; background: #17130f; color: var(--text-primary); overflow: auto; }
+  .tribute-dialog::backdrop { background: rgba(8,7,7,.85); }
+  .tribute-dialog-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .tribute-dialog-heading h2 { margin: 4px 0 0; min-width: 0; font: 700 22px var(--font-heading); color: var(--gold-bright); overflow-wrap: anywhere; }
+  .tribute-dialog-intro, .tribute-steps { color: var(--text-muted); font-size: 14px; line-height: 1.7; }
+  .tribute-steps { padding-left: 22px; }
+  .tribute-steps li { margin-bottom: 8px; }
+  .tribute-uuid-row { display: flex; align-items: center; gap: 12px; border-block: 1px solid var(--gold-border-subtle); padding: 14px 0; margin: 16px 0; }
+  .tribute-uuid-row code { flex: 1; min-width: 0; color: var(--gold-bright); overflow-wrap: anywhere; font-size: 13px; user-select: all; }
+  .tribute-eyebrow { display: block; color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; }
+  .tribute-biggest { margin: 16px 0; padding-block: 12px; border-block: 1px solid var(--gold-border-subtle); color: #7ed99a; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+  .tribute-leaders { list-style: none; padding: 0; margin: 18px 0; }
+  .tribute-leaders li { display: grid; grid-template-columns: 24px minmax(0,1fr) minmax(70px,auto); gap: 10px; align-items: center; min-height: 52px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13px; }
+  .tribute-rank { color: var(--text-muted); font-family: var(--font-mono); }
+  .tribute-leaders li:first-child .tribute-rank { color: var(--gold-bright); }
+  .tribute-leader-name { overflow-wrap: anywhere; }
+  .tribute-leaders strong { text-align: right; color: var(--gold-bright); overflow-wrap: anywhere; }
+  @media (max-width: 480px) { .tribute-dialog { padding: 18px; } }
+  @media (prefers-reduced-motion: reduce) { .tribute-progress::-webkit-progress-value { transition: none; } }
   .creator-editor { max-width: 1240px; }
   .creator-editor fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   .creator-editor [data-creator-fields] { display: block; }
