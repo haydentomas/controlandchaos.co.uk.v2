@@ -54,14 +54,15 @@ export function renderProfileTributes(root, profile, summary) {
   tribute.type = 'button';
   tribute.dataset.tributeOpen = '';
   tribute.prepend(createElement(Gift, { width: 18, height: 18, 'aria-hidden': 'true' }));
-  const caption = node('p', 'tribute-caption', 'Tributes paid in-world appear here after confirmation.');
+  const caption = node('p', 'tribute-caption', 'Terminal tributes count toward this creator\'s website total and goal. Share your name to join the leaderboard.');
   const status = node('p', 'tribute-status');
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
 
   const paymentDialog = dialog(`Tribute to ${profile.display_name}`, 'tribute-payment-title');
   paymentDialog.dataset.tributePaymentDialog = '';
-  paymentDialog.append(node('p', 'tribute-dialog-intro', 'A gift in Linden dollars, sent directly to this creator. No website login required.'));
+  paymentDialog.append(node('p', 'tribute-dialog-intro', 'Support this creator in Linden dollars and make it count here: terminal tributes add to their website total and goal. Choose Show my name to join their supporter leaderboard. No website login required.'));
+  paymentDialog.append(node('p', 'tribute-caption', 'Creators may offer extra supporter perks. Check their profile or ask them first; perks are decided and delivered by the creator, not automatically unlocked by a tribute.'));
   const steps = node('ol', 'tribute-steps');
   for (const text of ['Copy the creator UUID below.', 'Open the terminal in SL and choose Tribute.', 'Paste the UUID, choose name visibility and amount, then pay.']) steps.append(node('li', '', text));
   paymentDialog.append(steps);
@@ -79,7 +80,7 @@ export function renderProfileTributes(root, profile, summary) {
   teleport.rel = 'noopener';
   teleport.prepend(createElement(ExternalLink, { width: 18, height: 18, 'aria-hidden': 'true' }));
   const terminalStatus = node('p', 'tribute-status');
-  paymentDialog.append(uuidRow, copyStatus, teleport, terminalStatus, node('p', 'tribute-caption', 'Tributes do not unlock subscriber content. Choose Anonymous at the terminal to keep your name off the leaderboard.'));
+  paymentDialog.append(uuidRow, copyStatus, teleport, terminalStatus, node('p', 'tribute-caption', 'Direct avatar payments are not recorded here. Tributes do not unlock subscriber content. Choose Anonymous at the terminal to support the total without appearing on the leaderboard.'));
 
   const rankingDialog = dialog('Tribute leaderboard', 'tribute-ranking-title');
   rankingDialog.dataset.tributeRankingDialog = '';

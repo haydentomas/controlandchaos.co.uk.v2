@@ -39,6 +39,9 @@ test('tribute panel clamps completed goals and renders public names as literal t
     assert.equal(root.querySelectorAll('img,script').length, 0);
     assert.match(root.querySelector('.tribute-leader-name').textContent, /<img/);
     assert.equal(root.querySelector('[data-tribute-leaderboard]').title, 'Tribute leaderboard');
+    assert.match(root.querySelector('[data-tribute-payment-dialog]').textContent, /terminal tributes add to their website total and goal/);
+    assert.match(root.querySelector('[data-tribute-payment-dialog]').textContent, /perks are decided and delivered by the creator, not automatically unlocked/);
+    assert.match(root.querySelector('[data-tribute-payment-dialog]').textContent, /Direct avatar payments are not recorded here/);
     view.update({ ...summary, total_linden: 0, count: 0, goal_linden: 0, leaders: [], biggest: null, terminal_slurl: 'secondlife://Los%20Pengos/108/181/3501' });
     assert.equal(root.querySelector('progress').hidden, true);
     assert.equal(root.querySelector('[data-tribute-teleport]').hidden, false);
