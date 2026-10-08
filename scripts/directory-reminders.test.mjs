@@ -12,6 +12,7 @@ const event = payload => ({ httpMethod: 'POST', headers: { 'x-cc-payment-secret'
 
 test('terminal reminder polling is separate from payments and persists submission before acknowledgement retry', async () => {
   const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  const creatorScript = await fs.readFile(new URL('./CC_V2_Creator_Pass.lsl', import.meta.url), 'utf8');
   assert.match(script, /key reminderRequest = NULL_KEY/);
   assert.match(script, /pumpReminders\(\);/);
   assert.match(script, /nextReminderPoll = llGetUnixTime\(\) \+ 300/);
@@ -20,10 +21,10 @@ test('terminal reminder polling is separate from payments and persists submissio
   assert.match(script, /sendReminderRequest\("ack", llJsonGetValue\(journal, \["ack"\]\)\)/);
   assert.ok(script.indexOf('"state", "sending"') < script.indexOf('llInstantMessage((key)recipient, message)'));
   assert.match(script, /sendReminderRequest\("authorize"/);
-    assert.match(script, /llTransferLindenDollars\(creatorAvatar, creatorAmount\)/);
-    assert.match(script, /llRequestPermissions\(llGetOwner\(\), PERMISSION_DEBIT\)/);
-    const reminderFlow = script.slice(script.indexOf('sendReminderRequest'), script.indexOf('integer validConfigSecret'));
-    assert.doesNotMatch(reminderFlow, /llGiveMoney|llTransferLindenDollars|PERMISSION_DEBIT/);
+  assert.match(creatorScript, /llTransferLindenDollars\(creatorAvatar, creatorAmount\)/);
+  assert.match(creatorScript, /llRequestPermissions\(llGetOwner\(\), PERMISSION_DEBIT\)/);
+  const reminderFlow = script.slice(script.indexOf('sendReminderRequest'), script.indexOf('integer validConfigSecret'));
+  assert.doesNotMatch(reminderFlow, /llGiveMoney|llTransferLindenDollars|PERMISSION_DEBIT/);
 });
 
 test('reminder endpoint authenticates terminal and derives kiosk identity, recipient and text server-side', async () => {

@@ -13,16 +13,38 @@ const payment = { action: 'payment', payment_reference: reference, avatar_uuid: 
 
 test('creator pass terminal requires finance-owner debit permission and async payout confirmation', async () => {
   const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  const creatorScript = await fs.readFile(new URL('./CC_V2_Creator_Pass.lsl', import.meta.url), 'utf8');
   assert.doesNotMatch(script, /llGiveMoney/);
-  assert.match(script, /llRequestPermissions\(llGetOwner\(\), PERMISSION_DEBIT\)/);
-  assert.match(script, /llTransferLindenDollars\(creatorAvatar, creatorAmount\)/);
-  assert.match(script, /transaction_result\(key transaction, integer success, string data\)/);
-  assert.match(script, /creator_blog_start/);
-  assert.match(script, /creator_blog_confirm/);
-  assert.match(script, /cc_v2_creator_payment_/);
+  assert.doesNotMatch(script, /llTransferLindenDollars|PERMISSION_DEBIT/);
+  assert.match(script, /llMessageLinked\(LINK_SET, 4101/);
+  assert.match(creatorScript, /llRequestPermissions\(llGetOwner\(\), PERMISSION_DEBIT\)/);
+  assert.match(creatorScript, /llTransferLindenDollars\(creatorAvatar, creatorAmount\)/);
+  assert.match(creatorScript, /transaction_result\(key transaction, integer success, string data\)/);
+  assert.match(creatorScript, /creator_blog_start/);
+  assert.match(creatorScript, /creator_blog_confirm/);
+  assert.match(creatorScript, /cc_v2_creator_payment_/);
+  assert.match(creatorScript, /cc_v2_creator_active/);
+  assert.match(creatorScript, /\["payout", "creator_avatar_uuid"\]/);
+  assert.match(creatorScript, /\["payout", "amount_linden"\]/);
+  assert.match(creatorScript, /\["payout", "payment_state"\]/);
+  assert.doesNotMatch(creatorScript, /\["payment", "creator_avatar_uuid"\]/);
+  assert.match(creatorScript, /phase == "payout_uncertain"\) sendCreatorRequest\("creator_blog_prepare"\)/);
+  assert.match(creatorScript, /phase == "start"[\s\S]*?debitGranted[\s\S]*?creator_blog_start/);
+  assert.match(creatorScript, /preparedState != "prepared"/);
+  assert.match(creatorScript, /storePhase\("manual_reconciliation"\)/);
+  assert.match(creatorScript, /phase == "manual_reconciliation"/);
+  assert.match(creatorScript, /string CONFIG_NOTECARD = "CC_V2_Terminal_Config"/);
+  assert.match(creatorScript, /llGetNotecardLine\(CONFIG_NOTECARD, configLine\)/);
+  assert.match(creatorScript, /if \(creatorPaymentKey == "" && !blocked && activeMarker != ""/);
+  const creatorStartup = creatorScript.slice(creatorScript.indexOf('state_entry()'), creatorScript.indexOf('link_message('));
+  assert.doesNotMatch(creatorStartup, /llRequestPermissions/);
+  assert.match(creatorStartup, /activeMarker != "" && !blocked/);
+  assert.match(creatorStartup, /llLinksetDataDelete\("cc_v2_creator_active"\)/);
   assert.match(script, /All sales are final\. No refunds\./);
   assert.match(script, /cc_v2_unapplied_/);
   assert.match(script, /llLinksetDataWrite\("cc_v2_payment_" \+ reference, payload\)/);
+  assert.ok((script.match(/\n/g) || []).length < 700, 'core terminal should stay below its prior script size');
+  assert.ok((creatorScript.match(/\n/g) || []).length < 700, 'creator helper should stay below the prior terminal script size');
 });
 
 test('payment endpoint denies untrusted callers before any database calls', async () => {
@@ -89,6 +111,12 @@ test('creator subscription actions are available only through the trusted in-wor
   for (const action of ['creator_blog_prepare', 'creator_blog_start', 'creator_blog_confirm', 'creator_blog_cancel', 'creator_blog_refund_confirm']) {
     const result = await handler(event({ action, ...purchase }));
     assert.equal(result.statusCode, 200, action);
+    if (action === 'creator_blog_prepare') {
+      assert.deepEqual(JSON.parse(result.body), {
+        payment_reference: reference,
+        payout: { creator_profile_id: reference, creator_avatar_uuid: creator, amount_linden: 1500, payment_state: 'prepared' }
+      });
+    }
   }
   assert.equal(calls.map(call => call.name).join(','), 'creator_blog_offer_for_terminal,creator_blog_prepare_payment,creator_blog_start_payout,creator_blog_confirm_payment,creator_blog_cancel_payment,creator_blog_confirm_refund');
   assert.equal((await handler(event({ action: 'creator_blog_prepare', ...purchase, creator_profile_id: reference }))).statusCode, 400);
@@ -124,6 +152,7 @@ test('creator blog payout endpoint gates every action behind the trusted termina
 
 test('combined terminal routes verification separately without enabling payment for menu or verification sessions', async () => {
   const script = await fs.readFile(new URL('./CC_V2_Directory_Terminal.lsl', import.meta.url), 'utf8');
+  const startup = script.slice(script.indexOf('state_entry()'), script.indexOf('dataserver(key request'));
   assert.equal((script.match(/touch_start\(integer count\)/g) || []).length, 1);
   assert.ok(script.indexOf('string firstPending()') < script.indexOf('loadPlans()'));
   assert.match(script, /\["Directory Plans", "Creator Pass", "Verify Avatar", "My Account", "Cancel"\]/);
@@ -132,7 +161,10 @@ test('combined terminal routes verification separately without enabling payment 
   assert.match(script, /key verificationRequest = NULL_KEY/);
   assert.match(script, /key paymentRequest = NULL_KEY/);
   assert.match(script, /menuMode != "pay"/);
-  assert.match(script, /menuMode == "creator_pay"/);
+  assert.match(script, /llMessageLinked\(LINK_SET, 4101/);
+  assert.match(script, /creatorPassBlocked\(\)/);
+  assert.doesNotMatch(startup, /cc_v2_creator_active|cc_v2_creator_payment_/);
+  assert.match(script, /llLinksetDataRead\("cc_v2_creator_active"\)/);
   assert.match(script, /verificationRequest != NULL_KEY && now >= verificationDeadline/);
   assert.match(script, /"avatar_uuid", \(string\)avatar, "username", username/);
   assert.match(script, /"action", "issue", "avatar_uuid", \(string\)accountAvatar/);

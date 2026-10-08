@@ -1,8 +1,64 @@
 # V2 Resume Handoff
 
-Updated: 2026-10-06. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
+Updated: 2026-10-08. This file is the authoritative resume point; older historical statements in [HANDOFF.md](HANDOFF.md) do not override it.
 
 ## Resume Here
+
+### Current Release State — 2026-10-08
+
+The V2 production site is at `main@bca49ee`, and the latest Netlify Production deploy is ready. The protected Superadmin console, signed-in account shortcut, extensionless internal URLs, and V1-inspired creator-pass dialog are live. The dialog copies the creator's verified avatar UUID and uses the shared terminal location when configured; it intentionally has no Direct IM or self-service “already subscribed” bypass.
+
+The user applied VIP entitlement migration 18 and owner-view migration 19 to the shared Supabase project, then confirmed the verification query returned `true, true`. Basic profiles can expose up to four card photos and have no full Gallery tab or Creator Blog; VIP profiles can use the 20-photo Gallery and Creator Blog/paid subscriber content. Basic downgrades retain hidden VIP photos, and existing active fan passes continue to work through expiry. Custom domains remain a future VIP feature; they are not implemented in V2.
+
+The creator-blog/terminal feature was verified with one approved L$3,200 payment to Alek Zane; do not repeat it. The finance alt owns the split terminal pair and the user reports its account flow works. Payment/refund/ambiguous-transfer tests still require explicit approval; never retry uncertain Linden transfers or clear Linkset Data.
+
+**Next discussion:** decide which premium features follow the Gallery/Blog split, starting with V1 custom domains and any other VIP-only profile sections. No further feature scope or live payment test is implied until the user chooses it.
+
+**Local terminal source:** the split LSL source and companion are tested and reflect the in-world pair, but are not included in `main@bca49ee` yet. Remaining local terminal/checkpoint diffs must be reviewed and committed/pushed separately; they have not been deployed to Second Life by Git.
+
+### 2026-10-07 Terminal And CMS Update
+
+The finance-alt-owned prim runs the split pair (`CC_V2_Directory_Terminal.lsl` and `CC_V2_Creator_Pass.lsl`) with the existing private `CC_V2_Terminal_Config`. The previous combined v4.2 script hit `Stack-Heap Collision`; both split scripts reported ready and loaded configuration in-world. Object UUID: `86113e1e-c04c-8806-f4e2-caab710bc0e8`. The user confirms the correct finance alt now controls the terminal and My Account connects again after trusted verification settings were repaired. No debit grant or payment test has occurred. The helper requests debit only after an explicit `Pay Pass` selection.
+
+Hosted Decap CMS login is also restored: the user registered a GitHub OAuth App and installed its provider on the V2 Netlify site after confirming the provider list was empty. The user reports the production site shows the 20-photo gallery feature; the last Netlify deploy screenshot identified Production as `main@b68d7fe`.
+
+The user approved promoting the creator-blog feature branch. It was fast-forward pushed to `origin/main` as `7e0718f`; the creator-pass backend is deployed. The account-subscription feature is at `f56af8c`; the responsive account dashboard polish is deployed at `main@32d34f4`.
+
+At 01:50 the user paid L$3,200 for the creator pass. The helper initially stopped with receipt `c383a5a9-c528-8679-1341-dca62df43a31` because Production returns the prepared row under JSON key `payout`, but the helper read `payment`. The user installed the corrected helper; it safely re-queried that same idempotent receipt, verified backend state `prepared`, and completed the payout. The user screenshot confirms Second Life says L$3,200 was paid to Alek Zane, and the terminal reported "Creator subscription active for 30 days." The end-to-end creator payout/activation test is successful. Do not repeat the payment.
+
+The corrected helper validates creator/amount/state, checks owner debit permission before payout start, and moves any non-prepared/ambiguous state to `manual_reconciliation`; it will not retry an uncertain Linden transfer. Focused payment tests pass; the full suite passed 166/166, diagnostics and `git diff --check` are clean.
+
+The user confirmed the bank alt can reach the live creator-pass offer endpoint, linked the target creator, changed that creator's monthly price to L$3,200, and saw the terminal display the updated amount. This verifies the read-only offer lookup and current trusted identity/backend connection; it does not itself verify payout or entitlement activation.
+
+The signed-in account page shows a responsive two-column dashboard on desktop and a single column on mobile. Creator subscriptions appear as cards with avatar imagery when available, an initials fallback, active/inactive status, expiry, and an Open profile & blog action. Migration `supabase/migrations/202610070016_creator_blog_subscription_list.sql` provides the authenticated, user-scoped RPC; the user reports applying it. Production is deployed at `main@32d34f4`, and the user's screenshot confirms the account layout and Alek's active L$3,200 creator pass. Database/UI tests verify user isolation, anonymous denial, expiry, image handling, links, and sign-out clearing. Full suite: 168 passed; production build passed. Local Playwright browser coverage was unavailable because Chromium is not installed.
+
+The preceding Directory Plans block was from a local stale Creator Pass marker cached in the core. The local core fix removes creator marker/receipt state from the sticky startup `blocked` flag and checks it dynamically. Nine focused terminal/payment tests pass; diagnostics and `git diff --check` are clean. This fix is still local-only and has not been installed in-world. The price reported here is a creator pass price and is separate from the directory Basic Monthly L$1 test price.
+
+The L$3,200 creator-pass flow is now verified. A separate issue remains: the local core has the stale Creator Pass marker fix, but it has not been confirmed installed in-world. Next, if the user still wants the Basic Monthly L$1 directory-plan test, install the updated core and inspect the plan list only; cancel without paying. Do not repeat the creator payment or clear Linkset Data. Any additional transfer/refund/ambiguous-state tests need explicit separate approval.
+
+The user has confirmed the live account layout and active Alek subscription card. No further payment is needed; the user plans to pause after this check.
+
+### Superadmin Console Release Details
+**Historical status note:** This section records the original console release. Its local-only/pending wording below predates approval and deployment; the Current Release State above is authoritative.
+
+The old `directory-admin` page was a static mock with a browser token prompt; the local replacement is a real authenticated V2 superadmin console. Migration `supabase/migrations/202610070017_directory_superadmin.sql` bootstraps the superadmin only when exactly one active verified avatar link has SL username `controlandchaos`; otherwise it fails closed. The user reports migration 17 was applied successfully. RPCs gate every listing/subscriber read and moderation action. Listing archive is recoverable, edits are allowlisted, subscriber suspend/restore/extend are audited, and payment records/credentials are excluded. Tests cover superadmin bootstrap, non-admin/anonymous denial, listing edits/suspend/archive/restore, and subscriber status/actions; the full suite passes 169 and production build passes. The console UI/module is still local; a separate Production deployment is not yet approved or performed. Once approved and deployed, sign in at `/directory-admin.html` with the verified `controlandchaos` account and verify the access check before making changes.
+
+## Historical Terminal Resume Notes
+
+Paused at the user's request on 2026-10-06 at 22:09. Resume with finance-terminal readiness, not more migrations/imports:
+
+1. The finance alt owns the running split terminal; object UUID is `86113e1e-c04c-8806-f4e2-caab710bc0e8`. The trusted verification settings have been repaired per the user's report. Do not change the IDs or secrets again unless a new mismatch is established.
+2. Hosted Decap login was restored by installing the V2 GitHub OAuth provider; no repo config change or redeploy was needed for that provider setup.
+3. Production is deployed at `main@f56af8c`, including the account creator-subscription list and migration 16 RPC. Verify the bank alt's account list; do not pay again.
+4. One explicitly approved L$3,200 creator-pass test completed successfully: Alek Zane was paid and the terminal confirmed 30-day activation. Do not repeat it. Further refund/ambiguous-transfer tests require separate approval. Never automatically retry an uncertain Linden transfer. Profile publication, terminal location and other real subscription payments remain separately approval-gated.
+
+Completed: user-applied migrations 14/15 and legacy import; mixed-media owner save/reload; local and hosted-preview image/video access; anonymous feed redaction and Storage denial; live expired-link rejection. Do not repeat migrations or the importer. Main, terminal and permanent profile publication remain unchanged. Latest testing notes are saved locally but not yet committed/pushed; the user's pre-existing checkpoint Git commands remain unstaged.
+
+### Historical Testing Archive
+
+At 21:49 the user confirmed hosted-preview Blog Studio media works and supplied a screenshot of two saved private attachments: a video at 0:02 / 0:09 and a rendered image. This verifies user-reported hosted owner image display/video playback for the tested draft. The same database/storage is shared with local Vite; deployment did not migrate or copy files to a new database. Next review finance-alt trusted configuration and approve a primary-site rollout separately before any v4.2 terminal replacement/debit/payment test. Main and terminal remain unchanged.
+
+At 21:47, following the preview-login instructions, the user supplied a successful signed-in account screenshot showing the new Web login section and active Basic Monthly directory subscription. This is user-reported preview sign-in success; the screenshot does not independently show its origin, deploy hash or Supabase redirect settings. Exact preview callback support was tested and pushed as `7e0718f`. Next verify the hosted preview Blog Studio loads saved mixed attachments and owner playback without saving/publishing; no terminal update or main rollout is implied.
 
 At 21:44 the user's screenshot confirmed successful Netlify branch deploy `8767cd4`; the exact branch auth URL returned HTTP 200. The user approved adding that exact preview origin to frontend auth callback validation, testing and committing/pushing only this feature branch. The Supabase redirect allowlist also needs the exact `https://feature-creator-blog-pass-through-20261006--controlandchaosv2.netlify.app/auth.html` URL added privately by the user; do not change Site URL or use wildcard redirects. Real preview login remains unverified; main and the terminal stay unchanged.
 

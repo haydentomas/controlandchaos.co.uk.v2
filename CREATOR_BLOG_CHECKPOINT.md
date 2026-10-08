@@ -1,10 +1,32 @@
 # Creator Blog Checkpoint
 
-Updated: 2026-10-06
+Updated: 2026-10-08
 Branch: `feature/creator-blog-pass-through-20261006`
 Base commit: `b68d7fe` (`feat: collapse toys and wishlist sections`)
 
-## Current State
+## Current State — 2026-10-08
+
+Production `main` is at `bca49ee` (`fix: preserve creator owner blog access`); Netlify reports it ready. The user applied VIP entitlements migration 18 and owner blog-access migration 19, then confirmed both verification booleans are true. Basic listings expose at most four profile-card photos and no Gallery tab or Creator Blog; VIP listings get the full 20-photo Gallery and Creator Blog/paid subscriber content. A Basic downgrade keeps overflow VIP photos stored and hidden, and active fan passes retain content/media access through their expiry. Custom domains remain a planned VIP perk, not a V2 feature yet.
+
+The public creator-pass popup is live: creator-specific benefits, exact verified avatar UUID copy, and the shared terminal teleport location when configured. There is no Direct IM or “already subscribed” bypass. The authenticated account page has a role-gated Superadmin shortcut, and internal page links use clean URLs.
+
+The split `CC_V2_Directory_Terminal.lsl` / `CC_V2_Creator_Pass.lsl` pair is reported running on the finance-alt-owned prim. One approved L$3,200 creator-pass payment to Alek Zane completed and must not be repeated. The tested split script source and related tests are still local changes; committing/pushing them is separate from the VIP site release and does not install scripts in-world. Unrelated local payment/reminder test edits and checkpoint notes must be reviewed before any cleanup commit.
+
+**Next discussion:** decide which premium profile features follow gallery/blog, beginning with custom-domain requirements and other V1 VIP perks. Do not run more real payment/refund tests or change terminal trust configuration without separate approval.
+
+## Historical Creator Blog And Terminal Checkpoint
+
+Paused by the user on 2026-10-06 at 22:09. **2026-10-07 update:** The finance alt owns and controls the running split terminal, `CC_V2_Directory_Terminal.lsl` plus `CC_V2_Creator_Pass.lsl`, with the existing private `CC_V2_Terminal_Config`. The earlier combined v4.2 script hit `Stack-Heap Collision`; both split scripts report ready and load configuration. Prim UUID: `86113e1e-c04c-8806-f4e2-caab710bc0e8`. Terminal account connection works after trusted verification settings were repaired.
+
+Hosted Decap CMS login is restored: a GitHub OAuth App was registered and its provider installed on the V2 Netlify site after the user confirmed no provider was installed. The user reports the production site displays the 20-photo gallery feature. The creator-blog branch was fast-forward pushed to `origin/main` at `7e0718f`; the account-subscription list was deployed in `f56af8c`, followed by responsive account layout/card polish at `main@32d34f4`.
+
+At 01:50 the user paid L$3,200 for Alek Zane's creator pass. The helper accepted receipt `c383a5a9-c528-8679-1341-dca62df43a31` but stopped before payout because it parsed `payment` instead of the API's `payout` JSON key. The corrected helper safely re-queried the same idempotent receipt, verified the backend still said `prepared`, and resumed it. The user reports Second Life confirmed payment to Alek Zane and the terminal logged "Creator subscription active for 30 days." This creator payout/activation test succeeded; do not repeat the payment.
+
+Separate issue: selecting Directory Plans previously returned "Subscriptions are unavailable or a payment is awaiting confirmation" before querying plans. No payment was made in that attempt. The local core fix removes the Creator Pass session marker from its sticky startup block and checks creator state dynamically; nine focused tests pass, diagnostics and `git diff --check` are clean. This core fix is local-only and not confirmed installed in-world.
+
+Next safe check, if still wanted: install the local core stale-lock fix in-world, then inspect Directory Plans and confirm whether Basic Monthly is still L$1; cancel without paying. The creator-pass test is complete; do not repeat it. Further payout/refund/ambiguous-transfer tests require separate approval. Never clear Linkset Data or change the working terminal IDs/secrets.
+
+The signed-in account page has a responsive two-column desktop layout and single-column mobile layout. Creator subscriptions are cards with an avatar image where available, initials fallback, active/expiry status, and direct Open profile & blog link. Migration `202610070016_creator_blog_subscription_list.sql` adds the authenticated user-scoped RPC; the user reports applying it. Production is deployed at `main@32d34f4`, and the user confirms the live page shows Alek's active subscription card. Validation: 168 tests and production build pass; Playwright browser validation unavailable because Chromium is not installed. No additional payment is needed; the user plans to pause.
 
 Rollout update: the user approved pushing the feature branch for a Netlify branch deploy, leaving main and the v4.1 in-world terminal unchanged. Commit `1778816` is pushed. Branch-deploy settings are enabled for this branch per the user's screenshot; build/preview availability is not yet confirmed. A further approved documentation commit/push will trigger the newly enabled branch build. Preview auth callback configuration remains pending.
 
@@ -40,7 +62,9 @@ The approved V1 import carried over Alek Zane's 3 feed posts, 1 public blog post
 - Edited-file diagnostics and `git diff --check`: clean.
 - The LSL script has static contract tests; it has not been compiled or tested in-world.
 
-## Continue At Home
+## Historical Continue At Home Notes
+
+The steps below were written before the 2026-10-08 VIP release and are retained as a testing history. Their statements that migrations 18/19, production deployment, or tier gating are pending are superseded by the current status above.
 
 1. Fetch and check out `feature/creator-blog-pass-through-20261006` from `origin`.
 2. Read this guide and `NEXT_STEPS.md`; confirm `git status` is clean before resuming.
@@ -51,4 +75,4 @@ The approved V1 import carried over Alek Zane's 3 feed posts, 1 public blog post
 7. For in-world payment testing, first coordinate the finance alt as terminal owner, keep the object non-group-deeded, set the exact trusted owner/object IDs in Netlify, and verify its private notecard setup. Grant `PERMISSION_DEBIT` only by an explicit in-world action from the finance-alt owner. Do not use real customer funds for the first test.
 8. Compile and test the complete LSL script in-world. Exercise successful creator payout, definite payout failure/refund, and ambiguous transfer/manual-reconciliation behavior before enabling sales.
 
-No GitHub `main` update or production deployment is part of this checkpoint. A branch push may create a preview depending on Netlify branch settings.
+No GitHub `main` update or production deployment was part of that historical checkpoint. Later approved releases are recorded in the current status above.
